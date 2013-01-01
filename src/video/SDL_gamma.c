@@ -92,22 +92,11 @@ static void CalculateGammaFromRamp(float *gamma, Uint16 *ramp)
 
 int SDL_SetGamma(float red, float green, float blue)
 {
-	int succeeded;
+	int succeeded = -1;
 	SDL_VideoDevice *video = current_video;
 	SDL_VideoDevice *this  = current_video;	
 
-	succeeded = -1;
-	/* Prefer using SetGammaRamp(), as it's more flexible */
-	{
-		Uint16 ramp[3][256];
-
-		CalculateGammaRamp(red, ramp[0]);
-		CalculateGammaRamp(green, ramp[1]);
-		CalculateGammaRamp(blue, ramp[2]);
-		succeeded = SDL_SetGammaRamp(ramp[0], ramp[1], ramp[2]);
-	}
-	if ( (succeeded < 0) && video->SetGamma ) {
-		SDL_ClearError();
+	if ( video->SetGamma ) {
 		succeeded = video->SetGamma(this, red, green, blue);
 	}
 	return succeeded;
