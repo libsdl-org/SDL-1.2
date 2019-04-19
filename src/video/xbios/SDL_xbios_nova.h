@@ -117,4 +117,6 @@ typedef struct {
 	unsigned long	mem_size;	/* Global size of video memory */
 } nova_xcb_t;
 
+void SDL_XBIOS_VideoInit_Nova(_THIS, void *cookie_nova);
+
 #endif /* _SDL_xbios_nova_h */

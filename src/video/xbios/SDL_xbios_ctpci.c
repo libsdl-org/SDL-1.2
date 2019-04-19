@@ -64,8 +64,10 @@ static const Uint8 mode_bpp[]={
 
 /*--- Variables ---*/
 
+#ifndef CTPCI_USE_TABLE
 static int enum_actually_add;
 static SDL_VideoDevice *enum_this;
+#endif
 
 /*--- Functions ---*/
 
@@ -93,6 +95,7 @@ void SDL_XBIOS_VideoInit_Ctpci(_THIS)
 	this->FlipHWSurface = flipHWSurface;
 }
 
+#ifndef CTPCI_USE_TABLE
 static unsigned long /*cdecl*/ enumfunc(SCREENINFO *inf, unsigned long flag)
 {
 	xbiosmode_t modeinfo;
@@ -107,6 +110,7 @@ static unsigned long /*cdecl*/ enumfunc(SCREENINFO *inf, unsigned long flag)
 
 	return ENUMMODE_CONT;
 }
+#endif
 
 static void listModes(_THIS, int actually_add)
 {
