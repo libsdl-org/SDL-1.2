@@ -49,6 +49,6 @@ enum {
 
 /*--- Functions ---*/
 
-unsigned long Atari_get_EdDI_version(void *function_pointer);
+unsigned short Atari_get_EdDI_version(void *function_pointer);
 
 #endif /* _SDL_Atari_eddi_s_h */

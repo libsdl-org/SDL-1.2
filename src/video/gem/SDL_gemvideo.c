@@ -252,7 +252,7 @@ static void VDI_ReadNOVAInfo(_THIS, short *work_out)
 
 static void VDI_ReadExtInfo(_THIS, short *work_out)
 {
-	unsigned long EdDI_version;
+	unsigned short EdDI_version;
 	long cookie_EdDI;
 	Uint16 clut_type;
 
