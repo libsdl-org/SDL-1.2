@@ -113,6 +113,16 @@ _SDL_AtariIkbd_Restore:
 	rts
 
 ikbd_installed:
+        /*
+         * even though SDL_AtariXbios_Restore() is called via Supexec(),
+         * it is also a etv_term vector which needs to preserve all registers
+         */
+#if defined(__mcoldfire__)
+        lea	sp@(-8),sp
+        moveml	d1/a0,sp@
+#else
+        moveml	d1/a0,sp@-
+#endif
 	| Disable interrupts
 
 	movew	sr,d1
@@ -158,6 +168,13 @@ ikbd_finbuffer:
 	| Interrupts done
 
 	clrw	_SDL_AtariIkbd_enabled
+
+#if defined(__mcoldfire__)
+        moveml	sp@,d1-/a0
+        lea	sp@(8),sp
+#else
+        moveml	sp@+,d1/a0
+#endif
 	rts
 
 	.bss

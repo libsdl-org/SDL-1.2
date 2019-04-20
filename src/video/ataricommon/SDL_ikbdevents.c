@@ -52,6 +52,7 @@ void AtariIkbd_InitOSKeymap(_THIS)
 	atari_prevmouseb = 0;
 
 	Supexec(SDL_AtariIkbd_Install);
+	Setexc(VEC_PROCTERM, SDL_AtariIkbd_Restore);
 }
 
 static int atari_GetButton(int button)
