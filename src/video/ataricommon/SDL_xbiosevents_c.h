@@ -38,7 +38,7 @@
 #define ATARI_XBIOS_MOUSEEVENTS (1<<0)
 #define ATARI_XBIOS_JOYSTICKEVENTS (1<<1)
 
-extern int SDL_AtariXbios_enabled;
+extern SDL_bool SDL_AtariXbios_enabled;
 
 extern void SDL_AtariXbios_InstallVectors(int vectors_mask);
 extern void SDL_AtariXbios_RestoreVectors(void);

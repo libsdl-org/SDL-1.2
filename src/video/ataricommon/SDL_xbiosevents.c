@@ -36,7 +36,7 @@
 
 /* Variables */
 
-int SDL_AtariXbios_enabled=0;
+SDL_bool SDL_AtariXbios_enabled=SDL_FALSE;
 
 /* Local variables */
 
@@ -58,7 +58,7 @@ void SDL_AtariXbios_InstallVectors(int vectors_mask)
 		atari_prevmouseb = 0;
 
 	if (vectors_mask==0) {
-		SDL_AtariXbios_enabled=0;
+		SDL_AtariXbios_enabled=SDL_FALSE;
 		return;
 	}
 
@@ -78,14 +78,14 @@ void SDL_AtariXbios_InstallVectors(int vectors_mask)
 	/* Back to user mode */
 	SuperToUser(oldpile);
 
-	SDL_AtariXbios_enabled=1;
+	SDL_AtariXbios_enabled=SDL_TRUE;
 }
 
 void SDL_AtariXbios_RestoreVectors(void)
 {
 	void *oldpile;
 
-	if (SDL_AtariXbios_enabled==0) {
+	if (!SDL_AtariXbios_enabled) {
 		return;
 	}
 
@@ -118,7 +118,7 @@ static int atari_GetButton(int button)
 
 void SDL_AtariXbios_PostMouseEvents(_THIS, SDL_bool buttonEvents)
 {
-	if (SDL_AtariXbios_enabled==0) {
+	if (!SDL_AtariXbios_enabled) {
 		return;
 	}
 
