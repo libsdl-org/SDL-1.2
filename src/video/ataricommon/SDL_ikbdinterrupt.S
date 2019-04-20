@@ -42,13 +42,6 @@
 /*--- Install our IKBD vector ---*/
 
 _SDL_AtariIkbdInstall:
-#if defined(__mcoldfire__)
-	lea	sp@(-16),sp
-	moveml	d0-d1/a0-a1,sp@
-#else
-	moveml	d0-d1/a0-a1,sp@-
-#endif
-
 	| Disable interrupts
 
 	movew	sr,d1
@@ -107,21 +100,19 @@ _SDL_AtariIkbdInstall:
 #if defined(__mcoldfire__)
 	movel	#0xffff,d0
 	movew	d0,_SDL_AtariIkbd_enabled
-
-	moveml	sp@,d0-d1/a0-a1
-	lea	sp@(16),sp
 #else
 	movew	#0xffff,_SDL_AtariIkbd_enabled
-
-	moveml	sp@+,d0-d1/a0-a1
 #endif
 	rts
 
 /*--- Uninstall our IKBD vector ---*/
 
 _SDL_AtariIkbdUninstall:
-	movel	a0,sp@-
+	tstw	_SDL_AtariIkbd_enabled
+	bnes	ikbd_installed
+	rts
 
+ikbd_installed:
 	| Disable interrupts
 
 	movew	sr,d1
@@ -164,7 +155,9 @@ ikbd_finbuffer:
 
 	movew	d1,sr
 
-	movel	sp@+,a0
+	| Interrupts done
+
+	clrw	_SDL_AtariIkbd_enabled
 	rts
 
 	.bss
