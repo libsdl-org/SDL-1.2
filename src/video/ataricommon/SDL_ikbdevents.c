@@ -51,7 +51,7 @@ void AtariIkbd_InitOSKeymap(_THIS)
 	SDL_AtariIkbd_mouseb = SDL_AtariIkbd_mousex = SDL_AtariIkbd_mousey = 0;
 	atari_prevmouseb = 0;
 
-	Supexec(SDL_AtariIkbdInstall);
+	Supexec(SDL_AtariIkbd_Install);
 }
 
 static int atari_GetButton(int button)
@@ -122,5 +122,5 @@ void AtariIkbd_PumpEvents(_THIS)
 
 void AtariIkbd_ShutdownEvents(void)
 {
-	Supexec(SDL_AtariIkbdUninstall);
+	Supexec(SDL_AtariIkbd_Restore);
 }

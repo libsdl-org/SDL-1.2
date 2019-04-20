@@ -28,8 +28,8 @@
 
 	.text
 
-	.globl	_SDL_AtariIkbdInstall
-	.globl	_SDL_AtariIkbdUninstall
+	.globl	_SDL_AtariIkbd_Install
+	.globl	_SDL_AtariIkbd_Restore
 
 	.globl	_SDL_AtariIkbd_keyboard
 	.globl	_SDL_AtariIkbd_mouseb
@@ -41,7 +41,7 @@
 
 /*--- Install our IKBD vector ---*/
 
-_SDL_AtariIkbdInstall:
+_SDL_AtariIkbd_Install:
 	| Disable interrupts
 
 	movew	sr,d1
@@ -107,7 +107,7 @@ _SDL_AtariIkbdInstall:
 
 /*--- Uninstall our IKBD vector ---*/
 
-_SDL_AtariIkbdUninstall:
+_SDL_AtariIkbd_Restore:
 	tstw	_SDL_AtariIkbd_enabled
 	bnes	ikbd_installed
 	rts
