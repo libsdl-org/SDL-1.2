@@ -39,6 +39,8 @@
 
 	.globl	_SDL_AtariIkbd_enabled
 
+	.globl	_Atari_UnhookXbra
+
 /*--- Install our IKBD vector ---*/
 
 _SDL_AtariIkbd_Install:
@@ -113,16 +115,6 @@ _SDL_AtariIkbd_Restore:
 	rts
 
 ikbd_installed:
-        /*
-         * even though SDL_AtariXbios_Restore() is called via Supexec(),
-         * it is also a etv_term vector which needs to preserve all registers
-         */
-#if defined(__mcoldfire__)
-        lea	sp@(-8),sp
-        moveml	d1/a0,sp@
-#else
-        moveml	d1/a0,sp@-
-#endif
 	| Disable interrupts
 
 	movew	sr,d1
@@ -144,12 +136,15 @@ ikbd_restoreierb:
 	bset	#6,a0@(0x15)
 ikbd_restoreimrb:
 
-#if defined(__mcoldfire__)
-	movel	old_ikbd,a0
-	movel	a0,0x118:w
-#else
-	movel	old_ikbd,0x118:w
-#endif
+	movew	d1,sp@-
+
+	pea	ikbd(pc)
+	movel	#0x4c53444c,sp@-	/* "LSDL" */
+	pea	0x118/4:w
+	jsr	_Atari_UnhookXbra
+	lea	sp@(12),sp
+
+	movew	sp@+,d1
 
 	| Clear keyboard buffer
 
@@ -168,13 +163,6 @@ ikbd_finbuffer:
 	| Interrupts done
 
 	clrw	_SDL_AtariIkbd_enabled
-
-#if defined(__mcoldfire__)
-        moveml	sp@,d1-/a0
-        lea	sp@(8),sp
-#else
-        moveml	sp@+,d1/a0
-#endif
 	rts
 
 	.bss
@@ -210,7 +198,7 @@ ikbd:
 	moveb	0xfffffc02:w,d0
 
 	| Joystick packet ?
-	
+
 	cmpb	#0xff,d0
 	beqs	ikbd_yes_joystick
 
@@ -401,7 +389,7 @@ ikbd_joystick:
 #endif
 
 	.data
-	
+
 	.even
 _SDL_AtariIkbd_enabled:
 	.word	0

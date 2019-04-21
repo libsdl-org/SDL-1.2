@@ -47,6 +47,6 @@ typedef struct xbra
 
 /* Functions */
 
-extern XbraHandler Atari_UnhookXbra(Uint16 vecnum, Uint32 app_id, XbraHandler handler);
+extern XbraHandler Atari_UnhookXbra(Uint32 vecnum, Uint32 app_id, XbraHandler handler);
 
 #endif /* _SDL_ATARI_XBRA_H_ */

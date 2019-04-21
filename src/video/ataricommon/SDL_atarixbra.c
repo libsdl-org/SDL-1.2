@@ -33,18 +33,28 @@
 
 /* Functions */
 
-XbraHandler Atari_UnhookXbra(Uint16 vecnum, Uint32 app_id, XbraHandler handler)
+XbraHandler Atari_UnhookXbra(Uint32 vecnum, Uint32 app_id, XbraHandler handler)
 {
 	XBRA *rx;
 	XbraHandler vecadr, *stepadr, ret = NULL;
 
-	vecadr = Setexc(vecnum, VEC_INQUIRE);
+	if (vecnum <= 0x16C) {	/* 0x5B0 is the last official system vector/variable */
+		vecadr = Setexc(vecnum, VEC_INQUIRE);
+	} else {
+		vecadr = *((volatile XbraHandler*)vecnum);
+	}
+
 	rx = (XBRA*)((Uint32)vecadr - sizeof(XBRA));
 
 	/* Special Case: Vector to remove is first in chain. */
 	if(rx->xbra_id == XBRA_ID && rx->app_id == app_id && vecadr == handler)
 	{
-		return Setexc(vecnum, rx->oldvec);
+		if (vecnum <= 0x16C) {
+			return Setexc(vecnum, rx->oldvec);
+		} else {
+			*((volatile XbraHandler*)vecnum) = rx->oldvec;
+			return vecadr;
+		}
 	}
 
 	stepadr = &rx->oldvec;
