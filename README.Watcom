@@ -26,8 +26,8 @@ To compile and use the SDL with Open Watcom you will need the following:
 - A fairly recent DirectX SDK. The original unmodified DX8 SDK works, as
   well as the minimal DirectX 7 SDK from the Allegro download site
   (<http://alleg.sourceforge.net/files/dx70_min.zip>).
-- The SDL sources from Subversion
-- The file Watcom-Win32.zip (now available in Subversion)
+- The SDL sources from Git
+- The file Watcom-Win32.zip (now available in Git)
 
 
 Building the Library

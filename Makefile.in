@@ -148,7 +148,6 @@ dist $(distfile):
 	$(SHELL) $(auxdir)/mkinstalldirs $(distdir)
 	tar cf - $(DIST) | (cd $(distdir); tar xf -)
 	cp $(distdir)/include/SDL_config.h.default $(distdir)/include/SDL_config.h
-	rm -rf `find $(distdir) -name .svn`
 	rm -rf $(distdir)/test/autom4te*
 	find $(distdir) \( \
 	    -name '*~' -o \
@@ -165,9 +164,9 @@ dist $(distfile):
 rpm: $(distfile)
 	rpmbuild -ta $?
 
-# Create a SVN snapshot that people can run update on
+# Create a Git snapshot that people can run update on
 snapshot:
-	svn co http://svn.libsdl.org/branches/SDL-1.2
+	git clone https://github.com/libsdl-org/SDL-1.2.git
 	(cd SDL-1.2 && ./autogen.sh && rm -rf autom4te.cache)
 	cp SDL-1.2/include/SDL_config.h.default SDL-1.2/include/SDL_config.h
 	tar zcf $(HOME)/SDL-1.2.tar.gz SDL-1.2
