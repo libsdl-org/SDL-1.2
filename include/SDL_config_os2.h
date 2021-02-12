@@ -70,8 +70,8 @@
 #define HAVE__STRREV 1
 #define HAVE__STRUPR 1
 #define HAVE__STRLWR 1
-#define HAVE_INDEX 1
-#define HAVE_RINDEX 1
+/* #undef HAVE_INDEX */
+/* #undef HAVE_RINDEX */
 #define HAVE_STRCHR 1
 #define HAVE_STRRCHR 1
 #define HAVE_STRSTR 1
