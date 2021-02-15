@@ -62,7 +62,7 @@ static void illegal_instruction(int sig)
 static __inline__ int CPU_haveCPUID(void)
 {
 	int has_CPUID = 0;
-#if defined(__GNUC__) && defined(i386)
+#if defined(__GNUC__) && defined(__i386__)
 	__asm__ (
 "        pushfl                      # Get original EFLAGS             \n"
 "        popl    %%eax                                                 \n"
@@ -152,7 +152,7 @@ done:
 static __inline__ int CPU_getCPUIDFeatures(void)
 {
 	int features = 0;
-#if defined(__GNUC__) && defined(i386)
+#if defined(__GNUC__) && defined(__i386__)
 	__asm__ (
 "        xorl    %%eax,%%eax         # Set up for CPUID instruction    \n"
 "        pushl   %%ebx                                                 \n"
@@ -207,7 +207,7 @@ static __inline__ int CPU_getCPUIDFeatures(void)
 done:
 	}
 #elif defined(__sun) && (defined(__i386) || defined(__amd64))
-	    __asm(
+	__asm(
 "        xorl    %eax,%eax         \n"
 "        pushl   %ebx              \n"
 "        cpuid                     \n"
@@ -233,7 +233,7 @@ done:
 static __inline__ int CPU_getCPUIDFeaturesExt(void)
 {
 	int features = 0;
-#if defined(__GNUC__) && defined(i386)
+#if defined(__GNUC__) && defined(__i386__)
 	__asm__ (
 "        movl    $0x80000000,%%eax   # Query for extended functions    \n"
 "        pushl   %%ebx                                                 \n"
@@ -284,8 +284,8 @@ static __inline__ int CPU_getCPUIDFeaturesExt(void)
         mov     features,edx
 done:
 	}
-#elif defined(__sun) && ( defined(__i386) || defined(__amd64) )
-	    __asm (
+#elif defined(__sun) && (defined(__i386) || defined(__amd64))
+	__asm (
 "        movl    $0x80000000,%eax \n"
 "        pushl   %ebx             \n"
 "        cpuid                    \n"
@@ -302,7 +302,7 @@ done:
 "        movl    %edx,-8(%rbp)   \n"
 #endif
 "1:                               \n"
-	    );
+	);
 #endif
 	return features;
 }
