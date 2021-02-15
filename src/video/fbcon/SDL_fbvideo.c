@@ -50,7 +50,7 @@
 
 /*#define FBCON_DEBUG*/
 
-#if defined(__i386__) && defined(FB_TYPE_VGA_PLANES)
+#if defined(__i386__) && defined(HAVE_SYS_IO_H) && defined(FB_TYPE_VGA_PLANES)
 #define VGA16_FBCON_SUPPORT
 #include <sys/io.h>		/* For ioperm() */
 #ifndef FB_AUX_VGA_PLANES_VGA4

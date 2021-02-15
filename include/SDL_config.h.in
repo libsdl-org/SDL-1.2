@@ -76,6 +76,7 @@
 #undef HAVE_ICONV_H
 #undef HAVE_SIGNAL_H
 #undef HAVE_ALTIVEC_H
+#undef HAVE_SYS_IO_H
 
 /* C library functions */
 #undef HAVE_MALLOC

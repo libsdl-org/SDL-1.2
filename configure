@@ -19635,6 +19635,18 @@ $as_echo "$have_cocoa" >&6; }
 
 CheckFBCON()
 {
+    for ac_header in sys/io.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "sys/io.h" "ac_cv_header_sys_io_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_io_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SYS_IO_H 1
+_ACEOF
+
+fi
+
+done
+
     # Check whether --enable-video-fbcon was given.
 if test "${enable_video_fbcon+set}" = set; then :
   enableval=$enable_video_fbcon;

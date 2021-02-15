@@ -1350,6 +1350,7 @@ AS_HELP_STRING([--enable-video-cocoa], [use Cocoa/Quartz video driver [[default=
 dnl Find the framebuffer console includes
 CheckFBCON()
 {
+    AC_CHECK_HEADERS(sys/io.h)
     AC_ARG_ENABLE(video-fbcon,
 AS_HELP_STRING([--enable-video-fbcon], [use framebuffer console video driver [[default=yes]]]),
                   , enable_video_fbcon=yes)
