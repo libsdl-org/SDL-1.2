@@ -933,7 +933,7 @@ static SDL_keysym *TranslateKey(UINT scancode, SDL_keysym *keysym, int pressed)
 
 int DX5_CreateWindow(_THIS)
 {
-	char *windowid = SDL_getenv("SDL_WINDOWID");
+	char *windowid;
 	int i;
 
 	/* Clear out DirectInput variables in case we fail */
@@ -945,6 +945,7 @@ int DX5_CreateWindow(_THIS)
 
 	SDL_RegisterApp(NULL, 0, 0);
 
+	windowid = SDL_getenv("SDL_WINDOWID");
 	SDL_windowid = (windowid != NULL);
 	if ( SDL_windowid ) {
 		#ifdef _WIN64
