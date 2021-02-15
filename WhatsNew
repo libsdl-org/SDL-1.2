@@ -75,6 +75,7 @@ Changes include:
 - Linux, joystick: enhance detection of gamepads.
 - Linux, joystick: allow for custom joystick names.
 - FreeBSD, joystick: compile fixes.
+- BSD, joystick: fix USB joystick input for FreeBSD 9.0+ (bug 1552)
 - BSD, joystick: increase the number of uhid devices to scan (bug 1561)
 - Linux, ALSA: fix excessive I/O causing high CPU usage (bug 4941.)
 - Linux, evdev: ignore joystick axis events if they aren't in a sane
