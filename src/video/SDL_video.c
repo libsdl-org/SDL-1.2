@@ -588,7 +588,7 @@ static void SDL_CreateShadowSurface(int depth)
     #include <sys/neutrino.h>
 #endif /* __QNXNTO__ */
 
-#ifdef WIN32
+#ifdef _WIN32
 	extern int sysevents_mouse_pressed;
 #endif
 
@@ -605,7 +605,7 @@ SDL_Surface * SDL_SetVideoMode (int width, int height, int bpp, Uint32 flags)
 	int is_opengl;
 	SDL_GrabMode saved_grab;
 
-	#ifdef WIN32
+	#if defined(_WIN32) && !defined(SDL_VIDEO_DISABLED)
 		sysevents_mouse_pressed = 0;
 	#endif
 
@@ -832,9 +832,9 @@ SDL_Surface * SDL_SetVideoMode (int width, int height, int bpp, Uint32 flags)
 		   ) {
 			video->is_32bit = 0;
 			SDL_VideoSurface = SDL_CreateRGBSurface(
-				flags, 
-				width, 
-				height,  
+				flags,
+				width,
+				height,
 				16,
 				31 << 11,
 				63 << 5,
@@ -847,10 +847,10 @@ SDL_Surface * SDL_SetVideoMode (int width, int height, int bpp, Uint32 flags)
 		{
 			video->is_32bit = 1;
 			SDL_VideoSurface = SDL_CreateRGBSurface(
-				flags, 
-				width, 
-				height, 
-				32, 
+				flags,
+				width,
+				height,
+				32,
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
 				0x000000FF,
 				0x0000FF00,
@@ -1656,7 +1656,7 @@ void SDL_GL_Lock()
 		this->glDisable(GL_FOG);
 		this->glDisable(GL_ALPHA_TEST);
 		this->glDisable(GL_DEPTH_TEST);
-		this->glDisable(GL_SCISSOR_TEST);	
+		this->glDisable(GL_SCISSOR_TEST);
 		this->glDisable(GL_STENCIL_TEST);
 		this->glDisable(GL_CULL_FACE);
 

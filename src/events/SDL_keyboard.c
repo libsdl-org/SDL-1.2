@@ -341,7 +341,7 @@ extern void WIN_ResetDeadKeys(void);
 
 void SDL_KeyboardQuit(void)
 {
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(SDL_VIDEO_DISABLED)
 	WIN_ResetDeadKeys();
 #endif
 }
@@ -370,7 +370,7 @@ int SDL_EnableUNICODE(int enable)
 	if ( enable >= 0 ) {
 		SDL_TranslateUNICODE = enable;
 	}
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(SDL_VIDEO_DISABLED)
 	if (enable != old_mode) {
 		WIN_ResetDeadKeys();
 	}
