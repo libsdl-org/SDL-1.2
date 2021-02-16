@@ -138,6 +138,8 @@ int TestCPUInfo(SDL_bool verbose)
 		printf("SSE %s\n", SDL_HasSSE() ? "detected" : "not detected");
 		printf("SSE2 %s\n", SDL_HasSSE2() ? "detected" : "not detected");
 		printf("AltiVec %s\n", SDL_HasAltiVec() ? "detected" : "not detected");
+		printf("ARM SIMD %s\n", SDL_HasARMSIMD() ? "detected" : "not detected");
+		printf("NEON %s\n", SDL_HasNEON() ? "detected" : "not detected");
 	}
 	return(0);
 }
