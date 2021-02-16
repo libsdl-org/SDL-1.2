@@ -2883,7 +2883,7 @@ SDL_loblit SDL_CalculateAlphaBlit(SDL_Surface *surface, int blit_index)
 		   || (sf->Bmask == 0xff && df->Bmask == 0x1f)))
 		{
 #if SDL_ARM_NEON_BLITTERS
-		    if(SDL_HasARMNEON())
+		    if(SDL_HasNEON())
 		        return BlitARGBto565PixelAlphaARMNEON;
 #endif
 #if SDL_ARM_SIMD_BLITTERS
@@ -2930,7 +2930,7 @@ SDL_loblit SDL_CalculateAlphaBlit(SDL_Surface *surface, int blit_index)
 				return BlitRGBtoRGBPixelAlphaAltivec;
 #endif
 #if SDL_ARM_NEON_BLITTERS
-			if (SDL_HasARMNEON())
+			if (SDL_HasNEON())
 				return BlitRGBtoRGBPixelAlphaARMNEON;
 #endif
 #if SDL_ARM_SIMD_BLITTERS

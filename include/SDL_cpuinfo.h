@@ -64,6 +64,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasAltiVec(void);
 extern DECLSPEC SDL_bool SDLCALL SDL_HasARMSIMD(void);
 
 /** This function returns true if the CPU has ARM NEON features */
+extern DECLSPEC SDL_bool SDLCALL SDL_HasNEON(void);
 extern DECLSPEC SDL_bool SDLCALL SDL_HasARMNEON(void);
 
 /* Ends C function definitions when using C++ */
