@@ -1,12 +1,22 @@
 
-                         Simple DirectMedia Layer
+# DEPRECATED
 
-                                  (SDL)
+The 1.2 branch of SDL is deprecated. While we occasionally collect fixes
+in revision control, there has not been a formal release since 2012, and
+we have no intention to do future releases, either.
 
-                                Version 1.2
+Current development is happening in SDL 2.0.x, which gets regular
+releases and can be found at:
 
----
-http://www.libsdl.org/
+https://github.com/libsdl-org/SDL
+
+Thanks!
+
+
+
+# Simple DirectMedia Layer (SDL) Version 1.2
+
+https://www.libsdl.org/
 
 This is the Simple DirectMedia Layer, a general API that provides low
 level access to audio, keyboard, mouse, joystick, 3D hardware via OpenGL,
@@ -31,19 +41,11 @@ library.
 The best way to learn how to use SDL is to check out the header files in
 the "include" subdirectory and the programs in the "test" subdirectory.
 The header files and test programs are well commented and always up to date.
-More documentation is available in HTML format in "docs/index.html", and
-a documentation wiki is available online at:
-	http://www.libsdl.org/cgi/docwiki.cgi
+More documentation is available in HTML format in "docs/index.html".
 
 The test programs in the "test" subdirectory are in the public domain.
 
-Frequently asked questions are answered online:
-	http://www.libsdl.org/faq.php
-
-If you need help with the library, or just want to discuss SDL related
-issues, you can join the developers mailing list:
-	http://www.libsdl.org/mailing-list.php
-
 Enjoy!
-	Sam Lantinga				(slouken@libsdl.org)
+
+Sam Lantinga (slouken@libsdl.org)
 
