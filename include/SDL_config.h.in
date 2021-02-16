@@ -141,6 +141,8 @@
 #undef HAVE_GETPAGESIZE
 #undef HAVE_MPROTECT
 #undef HAVE_SEM_TIMEDWAIT
+#undef HAVE_GETAUXVAL
+#undef HAVE_ELF_AUX_INFO
 
 #else
 /* We may need some replacement for stdarg.h here */

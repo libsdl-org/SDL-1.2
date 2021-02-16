@@ -604,7 +604,7 @@ int SDL_FillRect(SDL_Surface *dst, SDL_Rect *dstrect, Uint32 color)
 	row = (Uint8 *)dst->pixels+dstrect->y*dst->pitch+
 			dstrect->x*dst->format->BytesPerPixel;
 #if SDL_ARM_NEON_BLITTERS
-    if (SDL_HasARMNEON() && dst->format->BytesPerPixel != 3) {
+    if (SDL_HasNEON() && dst->format->BytesPerPixel != 3) {
         void FillRect8ARMNEONAsm(int32_t w, int32_t h, uint8_t *dst, int32_t dst_stride, uint8_t src);
         void FillRect16ARMNEONAsm(int32_t w, int32_t h, uint16_t *dst, int32_t dst_stride, uint16_t src);
         void FillRect32ARMNEONAsm(int32_t w, int32_t h, uint32_t *dst, int32_t dst_stride, uint32_t src);

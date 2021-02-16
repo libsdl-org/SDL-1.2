@@ -37,6 +37,38 @@
 #include <setjmp.h>
 #endif
 
+#if defined(__QNXNTO__)
+#include <sys/syspage.h>
+#endif
+
+#if defined(__LINUX__) && defined(__arm__)
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <elf.h>
+
+/*#include <asm/hwcap.h>*/
+#ifndef AT_HWCAP
+#define AT_HWCAP 16
+#endif
+#ifndef AT_PLATFORM
+#define AT_PLATFORM 15
+#endif
+#ifndef HWCAP_NEON
+#define HWCAP_NEON (1 << 12)
+#endif
+#endif
+
+#if defined(HAVE_GETAUXVAL) || defined(HAVE_ELF_AUX_INFO)
+#include <sys/auxv.h>
+#endif
+
+#ifdef __RISCOS__
+#include <kernel.h>
+#include <swis.h>
+#endif
+
 #define CPU_HAS_RDTSC	0x00000001
 #define CPU_HAS_MMX	0x00000002
 #define CPU_HAS_MMXEXT	0x00000004
@@ -46,7 +78,7 @@
 #define CPU_HAS_SSE2	0x00000080
 #define CPU_HAS_ALTIVEC	0x00000100
 #define CPU_HAS_ARM_SIMD 0x00000200
-#define CPU_HAS_ARM_NEON 0x00000400
+#define CPU_HAS_NEON     0x00000400
 
 #if SDL_ALTIVEC_BLITTERS && HAVE_SETJMP && !__MACOSX__ && !__OpenBSD__
 /* This is the brute force way of detecting instruction sets...
@@ -392,14 +424,21 @@ static __inline__ int CPU_haveAltiVec(void)
 	return altivec; 
 }
 
-#ifdef __linux__
+#if (defined(__ARM_ARCH) && (__ARM_ARCH >= 6)) || defined(__aarch64__)
+static int
+CPU_haveARMSIMD(void)
+{
+	return 1;
+}
 
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <elf.h>
+#elif !defined(__arm__)
+static int
+CPU_haveARMSIMD(void)
+{
+	return 0;
+}
 
+#elif defined(__LINUX__)
 static __inline__ int CPU_haveARMSIMD(void)
 {
 	int arm_simd = 0;
@@ -425,30 +464,7 @@ static __inline__ int CPU_haveARMSIMD(void)
 	return arm_simd;
 }
 
-static __inline__ int CPU_haveARMNEON(void)
-{
-	int arm_neon = 0;
-	int fd;
-
-	fd = open("/proc/self/auxv", O_RDONLY);
-	if (fd >= 0)
-	{
-		Elf32_auxv_t aux;
-		while (read(fd, &aux, sizeof aux) == sizeof aux)
-		{
-			if (aux.a_type == AT_HWCAP)
-				arm_neon = (aux.a_un.a_val & 4096) != 0;
-		}
-		close(fd);
-	}
-	return arm_neon;
-}
-
 #elif defined(__RISCOS__)
-
-#include <kernel.h>
-#include <swis.h>
-
 static __inline__ int CPU_haveARMSIMD(void)
 {
 	_kernel_swi_regs regs;
@@ -467,32 +483,81 @@ static __inline__ int CPU_haveARMSIMD(void)
 	return regs.r[0];
 }
 
-static __inline__ int CPU_haveARMNEON(void)
-{
-	/* Use the VFPSupport_Features SWI to access the MVFR registers */
-	_kernel_swi_regs regs;
-	regs.r[0] = 0;
-	if (_kernel_swi(VFPSupport_Features, &regs, &regs) == NULL) {
-		if ((regs.r[2] & 0xFFF000) == 0x111000) {
-			return 1;
-		}
-	}
-	return 0;
-}
-
 #else
 
 static __inline__ int CPU_haveARMSIMD(void)
 {
-	return 0;
-}
-
-static __inline__ int CPU_haveARMNEON(void)
-{
+#warning SDL_HasARMSIMD is not implemented for this ARM platform. Write me.
 	return 0;
 }
 
 #endif
+
+#if defined(__LINUX__) && defined(__arm__) && !defined(HAVE_GETAUXVAL)
+static __inline__  int readProcAuxvForNeon(void)
+{
+	int neon = 0;
+	int fd;
+
+	fd = open("/proc/self/auxv", O_RDONLY);
+	if (fd >= 0)
+	{
+		Elf32_auxv_t aux;
+		while (read(fd, &aux, sizeof (aux)) == sizeof (aux)) {
+			if (aux.a_type == AT_HWCAP) {
+				neon = (aux.a_un.a_val & HWCAP_NEON) == HWCAP_NEON;
+				break;
+			}
+		}
+		close(fd);
+	}
+	return neon;
+}
+#endif
+
+static __inline__ int CPU_haveNEON(void)
+{
+/* The way you detect NEON is a privileged instruction on ARM, so you have
+   query the OS kernel in a platform-specific way. :/ */
+#if (defined(__ARM_ARCH) && (__ARM_ARCH >= 8)) || defined(__aarch64__)
+	return 1;  /* ARMv8 always has non-optional NEON support. */
+#elif defined(__APPLE__) && defined(__ARM_ARCH) && (__ARM_ARCH >= 7)
+	/* (note that sysctlbyname("hw.optional.neon") doesn't work!) */
+	return 1;  /* all Apple ARMv7 chips and later have NEON. */
+#elif defined(__APPLE__)
+	return 0;  /* assume anything else from Apple doesn't have NEON. */
+#elif !defined(__arm__)
+	return 0;  /* not an ARM CPU at all. */
+#elif defined(__OpenBSD__)
+	return 1;  /* OpenBSD only supports ARMv7 CPUs that have NEON. */
+#elif defined(HAVE_ELF_AUX_INFO)
+	unsigned long hasneon = 0;
+	if (elf_aux_info(AT_HWCAP, (void *)&hasneon, (int)sizeof(hasneon)) != 0)
+		return 0;
+	return ((hasneon & HWCAP_NEON) == HWCAP_NEON);
+#elif defined(__QNXNTO__)
+	return SYSPAGE_ENTRY(cpuinfo)->flags & ARM_CPU_FLAG_NEON;
+#elif defined(__LINUX__) && defined(HAVE_GETAUXVAL)
+	return ((getauxval(AT_HWCAP) & HWCAP_NEON) == HWCAP_NEON);
+#elif defined(__LINUX__)
+	return readProcAuxvForNeon();
+#elif defined(__RISCOS__)
+	/* Use the VFPSupport_Features SWI to access the MVFR registers */
+	{
+		_kernel_swi_regs regs;
+		regs.r[0] = 0;
+		if (_kernel_swi(VFPSupport_Features, &regs, &regs) == NULL) {
+		if ((regs.r[2] & 0xFFF000) == 0x111000) {
+			return 1;
+			}
+		}
+		return 0;
+	}
+#else
+#warning SDL_HasNEON is not implemented for this ARM platform. Write me.
+	return 0;
+#endif
+}
 
 static Uint32 SDL_CPUFeatures = 0xFFFFFFFF;
 
@@ -527,8 +592,8 @@ static Uint32 SDL_GetCPUFeatures(void)
 		if ( CPU_haveARMSIMD() ) {
 			SDL_CPUFeatures |= CPU_HAS_ARM_SIMD;
 		}
-		if ( CPU_haveARMNEON() ) {
-			SDL_CPUFeatures |= CPU_HAS_ARM_NEON;
+		if ( CPU_haveNEON() ) {
+			SDL_CPUFeatures |= CPU_HAS_NEON;
 		}
 	}
 	return SDL_CPUFeatures;
@@ -606,12 +671,17 @@ SDL_bool SDL_HasARMSIMD(void)
 	return SDL_FALSE;
 }
 
-SDL_bool SDL_HasARMNEON(void)
+SDL_bool SDL_HasNEON(void)
 {
-	if ( SDL_GetCPUFeatures() & CPU_HAS_ARM_NEON ) {
+	if ( SDL_GetCPUFeatures() & CPU_HAS_NEON ) {
 		return SDL_TRUE;
 	}
 	return SDL_FALSE;
+}
+
+SDL_bool SDL_HasARMNEON(void)
+{
+	return SDL_HasNEON();
 }
 
 #ifdef TEST_MAIN
@@ -629,7 +699,7 @@ int main()
 	printf("SSE2: %d\n", SDL_HasSSE2());
 	printf("AltiVec: %d\n", SDL_HasAltiVec());
 	printf("ARM SIMD: %d\n", SDL_HasARMSIMD());
-	printf("ARM NEON: %d\n", SDL_HasARMNEON());
+	printf("NEON: %d\n", SDL_HasNEON());
 	return 0;
 }
 
