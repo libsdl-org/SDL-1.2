@@ -679,11 +679,6 @@ SDL_bool SDL_HasNEON(void)
 	return SDL_FALSE;
 }
 
-SDL_bool SDL_HasARMNEON(void)
-{
-	return SDL_HasNEON();
-}
-
 #ifdef TEST_MAIN
 
 #include <stdio.h>
