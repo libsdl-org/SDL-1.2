@@ -152,7 +152,7 @@ if test x$enable_libc = xyes; then
 
     dnl Checks for library functions.
     case "$host" in
-    *-*-cygwin* | *-*-mingw32*)
+    *-*-cygwin* | *-*-mingw*)
         ;;
     *)
         AC_FUNC_ALLOCA
@@ -890,7 +890,7 @@ AS_HELP_STRING([--enable-arm-simd], [use SIMD assembly blitters on ARM [[default
         save_CFLAGS="$CFLAGS"
         have_arm_simd=no
         CFLAGS="-x assembler-with-cpp $CFLAGS"
-        
+
         AC_MSG_CHECKING(for ARM SIMD)
         AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
         .text
@@ -905,12 +905,11 @@ AS_HELP_STRING([--enable-arm-simd], [use SIMD assembly blitters on ARM [[default
         uqadd8 r0, r0, r0
         ]])], have_arm_simd=yes)
         AC_MSG_RESULT($have_arm_simd)
-        
+
         CFLAGS="$save_CFLAGS"
-        
+
         if test x$have_arm_simd = xyes; then
             AC_DEFINE(SDL_ARM_SIMD_BLITTERS)
-dnl            SOURCES="$SOURCES $srcdir/src/video/arm/pixman-arm-simd*.c"
             SOURCES="$SOURCES $srcdir/src/video/arm/pixman-arm-simd*.S"
         fi
     fi
@@ -926,7 +925,7 @@ AS_HELP_STRING([--enable-arm-neon], [use NEON assembly blitters on ARM [[default
         save_CFLAGS="$CFLAGS"
         have_arm_neon=no
         CFLAGS="-x assembler-with-cpp $CFLAGS"
-        
+
         AC_MSG_CHECKING(for ARM NEON)
         AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
         .text
@@ -943,12 +942,11 @@ AS_HELP_STRING([--enable-arm-neon], [use NEON assembly blitters on ARM [[default
         vmovn.u16 d0, q0
         ]])], have_arm_neon=yes)
         AC_MSG_RESULT($have_arm_neon)
-        
+
         CFLAGS="$save_CFLAGS"
-        
+
         if test x$have_arm_neon = xyes; then
             AC_DEFINE(SDL_ARM_NEON_BLITTERS)
-dnl            SOURCES="$SOURCES $srcdir/src/video/arm/pixman-arm-neon*.c"
             SOURCES="$SOURCES $srcdir/src/video/arm/pixman-arm-neon*.S"
         fi
     fi
@@ -2278,7 +2276,7 @@ CheckUSBHID()
             AC_CHECK_HEADER(libusb.h, [USB_CFLAGS="-DHAVE_LIBUSB_H"])
             AC_CHECK_LIB(usb, hid_init, [USB_LIBS="$USB_LIBS -lusb"])
         fi
-            
+
         save_CFLAGS="$CFLAGS"
         CFLAGS="$CFLAGS $USB_CFLAGS"
 
@@ -2344,7 +2342,7 @@ CheckUSBHID()
                 USB_CFLAGS="$USB_CFLAGS -DUSBHID_UCR_DATA"
             fi
             AC_MSG_RESULT($have_usbhid_ucr_data)
-            
+
             AC_MSG_CHECKING(for new usbhid API)
             have_usbhid_new=no
             AC_TRY_COMPILE([
@@ -2618,7 +2616,7 @@ case "$host" in
             have_timers=yes
         fi
         ;;
-    *-*-cygwin* | *-*-mingw32*)
+    *-*-cygwin* | *-*-mingw*)
         ARCH=win32
         if test "$build" != "$host"; then # cross-compiling
             # Default cross-compile location

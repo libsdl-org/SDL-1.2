@@ -2885,7 +2885,7 @@ fi
 
 
 case "$host" in
-    *-*-cygwin* | *-*-mingw32*)
+    *-*-cygwin* | *-*-mingw*)
         EXE=".exe"
         MATHLIB=""
         SYS_GL_LIBS="-lopengl32"
@@ -2959,12 +2959,12 @@ fi
         else
             SYS_GL_LIBS="-lOSMesa"
         fi
-		;;
-    *-*-riscos*)
-	EXE=",e1f"
-	MATHLIB=""
-	SYS_GL_LIBS=""
-	;;
+        ;;
+    *-*-riscos* )
+        EXE=",e1f"
+        MATHLIB=""
+        SYS_GL_LIBS=""
+        ;;
     *)
         EXE=""
         MATHLIB="-lm"

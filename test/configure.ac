@@ -14,7 +14,7 @@ AC_C_CONST
 
 dnl Figure out which math library to use
 case "$host" in
-    *-*-cygwin* | *-*-mingw32*)
+    *-*-cygwin* | *-*-mingw*)
         EXE=".exe"
         MATHLIB=""
         SYS_GL_LIBS="-lopengl32"
@@ -48,12 +48,12 @@ case "$host" in
         else
             SYS_GL_LIBS="-lOSMesa"
         fi
-		;;
-    *-*-riscos*)
-	EXE=",e1f"
-	MATHLIB=""
-	SYS_GL_LIBS=""
-	;;
+        ;;
+    *-*-riscos* )
+        EXE=",e1f"
+        MATHLIB=""
+        SYS_GL_LIBS=""
+        ;;
     *)
         EXE=""
         MATHLIB="-lm"

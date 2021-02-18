@@ -15795,7 +15795,7 @@ fi
     fi
 
         case "$host" in
-    *-*-cygwin* | *-*-mingw32*)
+    *-*-cygwin* | *-*-mingw*)
         ;;
     *)
         # The Ultrix 4.2 mips builtin alloca declared by alloca.h only works
@@ -22123,7 +22123,7 @@ case "$host" in
             have_timers=yes
         fi
         ;;
-    *-*-cygwin* | *-*-mingw32*)
+    *-*-cygwin* | *-*-mingw*)
         ARCH=win32
         if test "$build" != "$host"; then # cross-compiling
             # Default cross-compile location
