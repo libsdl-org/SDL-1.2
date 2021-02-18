@@ -4,6 +4,10 @@
 #define INCL_WIN
 #include <os2.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define FSLIBCALL _System
 #define DECLSPEC  __declspec(dllexport)
 
@@ -35,23 +39,23 @@ typedef struct _FSLib_VideoMode
   unsigned int       uiBPP;
   FSLib_PixelFormat  PixelFormat;
 
-  void *pNext;
+  struct _FSLib_VideoMode * pNext;
 
 } FSLib_VideoMode, *FSLib_VideoMode_p;
 
 // Initialization of FSLib for the calling process.
 // Returns 1 if successful!
-DECLSPEC int               FSLIBCALL FSLib_Initialize();
+DECLSPEC int               FSLIBCALL FSLib_Initialize(void);
 
 // Uninitialization of FSLib.
-DECLSPEC void              FSLIBCALL FSLib_Uninitialize();
+DECLSPEC void              FSLIBCALL FSLib_Uninitialize(void);
 
 // Get all available fullscreen video modes
-DECLSPEC FSLib_VideoMode_p FSLIBCALL FSLib_GetVideoModeList();
+DECLSPEC FSLib_VideoMode_p FSLIBCALL FSLib_GetVideoModeList(void);
 // Free list of available fullscreen video modes
 DECLSPEC int               FSLIBCALL FSLib_FreeVideoModeList(FSLib_VideoMode_p pVideoModeListHead);
 // Get pointer to desktop video mode (Don't free it, it's static!)
-DECLSPEC FSLib_VideoMode_p FSLIBCALL FSLib_GetDesktopVideoMode();
+DECLSPEC FSLib_VideoMode_p FSLIBCALL FSLib_GetDesktopVideoMode(void);
 
 
 // Create a FSLib client window with given frame, telling the
@@ -116,5 +120,9 @@ DECLSPEC int               FSLIBCALL FSLib_IsFSLibWindow(HWND hwndClient);
 //   Notifies user window proc about changing
 //   to/from fullscreen mode (flag is in mp2)
 #define FSLN_TOGGLEFSMODE        0
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

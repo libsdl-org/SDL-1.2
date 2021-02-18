@@ -1,5 +1,5 @@
 --- FSLib.c~	2007-01-16 11:55:20.000000000 +0200
-+++ FSLib.c	2020-10-20 04:02:10.000000000 +0300
++++ FSLib.c	2021-02-02 11:01:40.000000000 +0300
 @@ -66,7 +66,7 @@ static HMQ               hmq;
  
  static int               tidSNAPThread;
@@ -9,16 +9,107 @@
  static HEV               hevSNAPCommandAvailable;  // Posted when there is a command for the SNAP-Thread!
  static HEV               hevSNAPResultReady;       // Posted when the result is ready for the command.
  static int               iSNAPCommand;             // Command code
-@@ -120,6 +120,8 @@ static void SNAP_SetVideoMode(GA_modeInf
+@@ -84,7 +84,7 @@ static void             *pSNAPCommandPar
+ typedef struct _FSLib_HWNDList
+ {
+   HWND hwndClient;
+-  void *pNext;
++  struct _FSLib_HWNDList *pNext;
+ } FSLib_HWNDList, *FSLib_HWNDList_p;
+ 
+ static FSLib_HWNDList_p  pHWNDListHead = NULL;
+@@ -95,13 +95,13 @@ static int               bFSLib_Initiali
+ static unsigned long ulTimerFreq = 1;
+ static unsigned long long llStartTime = 0;
+ 
+-static void InitTimer()
++static void InitTimer(void)
+ {
+   DosTmrQueryFreq(&ulTimerFreq);
+   DosTmrQueryTime((PQWORD) &llStartTime);
+ }
+ 
+-static unsigned long long GetTimeElapsed()
++static unsigned long long GetTimeElapsed(void)
+ {
+   unsigned long long llTime;
+ 
+@@ -111,17 +111,18 @@ static unsigned long long GetTimeElapsed
+ #endif
+ 
+ // Some prototypes
+-static int  SNAP_Initialize();
+-static void SNAP_Uninitialize();
+-static int  SNAP_StartVideoModeUsage();
+-static void SNAP_StopVideoModeUsage();
++static int  SNAP_Initialize(void);
++static void SNAP_Uninitialize(void);
++static int  SNAP_StartVideoModeUsage(void);
++static void SNAP_StopVideoModeUsage(void);
+ static void SNAP_SetVideoMode_core(GA_modeInfo *pVideoMode);
+ static void SNAP_SetVideoMode(GA_modeInfo *pVideoMode);
  static void SNAP_ThreadFunc(void *pParm);
  
- static int  FSLib_RegisterWindowClass();
-+static void FSLib_FindBestFSMode(FSLib_VideoMode_p pSrcBufferDesc,
-+				 GA_modeInfo *pFSModeInfo);
+-static int  FSLib_RegisterWindowClass();
++static int  FSLib_RegisterWindowClass(void);
++static void FSLib_FindBestFSMode(FSLib_VideoMode_p pSrcBufferDesc, GA_modeInfo *pFSModeInfo);
  
- static void SNAP_StopVideoModeUsage()
+-static void SNAP_StopVideoModeUsage()
++static void SNAP_StopVideoModeUsage(void)
  {
-@@ -359,14 +361,14 @@ static void SNAP_StopPresentationManager
+   if (bUnloadRef2D)
+   {
+@@ -133,7 +134,7 @@ static void SNAP_StopVideoModeUsage()
+   }
+ }
+ 
+-static int SNAP_StartVideoModeUsage()
++static int SNAP_StartVideoModeUsage(void)
+ {
+   int iResult = 1;
+ 
+@@ -215,8 +216,7 @@ static int SNAP_StartVideoModeUsage()
+   return iResult;
+ }
+ 
+-
+-static void SNAP_Uninitialize()
++static void SNAP_Uninitialize(void)
+ {
+   //  If current video mode != desktop video mode, then set desktop video mode!
+   if (!iInPM)
+@@ -280,7 +280,7 @@ static void SNAP_Uninitialize()
+   }
+ }
+ 
+-static int SNAP_Initialize()
++static int SNAP_Initialize(void)
+ {
+ #ifdef DEBUG_BUILD
+   printf("[SNAP_Initialize] : Initializing...\n");
+@@ -313,7 +313,6 @@ static int SNAP_Initialize()
+   return 1;
+ }
+ 
+-
+ static int SNAP_SameVideoMode(GA_modeInfo *pVideoMode1, GA_modeInfo *pVideoMode2)
+ {
+   int iResult = 0;
+@@ -338,7 +337,7 @@ static int SNAP_SameVideoMode(GA_modeInf
+   return iResult;
+ }
+ 
+-static void SNAP_StopPresentationManager()
++static void SNAP_StopPresentationManager(void)
+ {
+   HAB hab;
+   HWND hwnd;
+@@ -355,18 +354,18 @@ static void SNAP_StopPresentationManager
+ 
+   hwnd = WinQueryDesktopWindow(hab, 0);
+ #ifdef DEBUG_BUILD
+-  if (hwnd==NULL)
++  if (hwnd==NULLHANDLE)
      printf("[SNAP_StopPresentationManager] : Error at WinQueryDesktopWindow()!\n");
  #endif
    hdc = WinQueryWindowDC(hwnd);                    // Get HDC of desktop
@@ -35,7 +126,15 @@
        printf("[SNAP_StopPresentationManager] : Error at WinOpenWindowDC()!\n");
  #endif
    }
-@@ -387,18 +389,18 @@ static void SNAP_RestartPresentationMana
+@@ -380,25 +379,25 @@ static void SNAP_StopPresentationManager
+   }
+ }
+ 
+-static void SNAP_RestartPresentationManager()
++static void SNAP_RestartPresentationManager(void)
+ {
+   HWND hwnd;
+   HDC  hdc;
  
    hwnd = WinQueryDesktopWindow(hab, 0);
  #ifdef DEBUG_BUILD
@@ -57,7 +156,7 @@
        printf("[SNAP_RestartPresentationManager] : Error at WinOpenWindowDC()!\n");
  #endif
    }
-@@ -577,7 +579,7 @@ static void SNAP_ThreadUninitialize(int 
+@@ -577,7 +576,7 @@ static void SNAP_ThreadUninitialize(int 
  #ifdef DEBUG_BUILD
        printf("[SNAP_ThreadFunc] :   GA_unloadDriver()...\n");
  #endif
@@ -66,7 +165,7 @@
      }
      if ((hmq) && (!iEmergency))
      {
-@@ -795,7 +797,7 @@ static void SNAP_ThreadFunc(void *pParm)
+@@ -795,7 +794,7 @@ static void SNAP_ThreadFunc(void *pParm)
  #ifdef DEBUG_BUILD
      printf("[SNAP_ThreadFunc] : Could not query init funcs\n");
  #endif
@@ -75,7 +174,7 @@
      WinDestroyMsgQueue(hmq);
      WinTerminate(hab);
      iSNAPThreadStatus = SNAPTHREADSTATUS_STOPPED_ERROR;
-@@ -810,7 +812,7 @@ static void SNAP_ThreadFunc(void *pParm)
+@@ -810,7 +809,7 @@ static void SNAP_ThreadFunc(void *pParm)
  #ifdef DEBUG_BUILD
      printf("[SNAP_ThreadFunc] : Could not query driver funcs\n");
  #endif
@@ -84,7 +183,7 @@
      WinDestroyMsgQueue(hmq);
      WinTerminate(hab);
      iSNAPThreadStatus = SNAPTHREADSTATUS_STOPPED_ERROR;
-@@ -860,7 +862,7 @@ static void SNAP_ThreadFunc(void *pParm)
+@@ -860,7 +859,7 @@ static void SNAP_ThreadFunc(void *pParm)
    // Create semaphores
    if ((rc = DosCreateMutexSem(NULL, &hmtxUseSNAP, 0, FALSE))!=NO_ERROR)
    {
@@ -93,7 +192,7 @@
  #ifdef DEBUG_BUILD
      printf("[SNAP_ThreadFunc] : Could not create mutex semaphore! rc = %d\n", rc);
  #endif
-@@ -873,7 +875,7 @@ static void SNAP_ThreadFunc(void *pParm)
+@@ -873,7 +872,7 @@ static void SNAP_ThreadFunc(void *pParm)
    if ((rc = DosCreateEventSem(NULL, &hevSNAPCommandAvailable, 0, FALSE))!=NO_ERROR)
    {
      DosCloseMutexSem(hmtxUseSNAP); hmtxUseSNAP = NULLHANDLE;
@@ -102,7 +201,7 @@
  #ifdef DEBUG_BUILD
      printf("[SNAP_ThreadFunc] : Could not create event semaphore! rc = %d\n", rc);
  #endif
-@@ -887,7 +889,7 @@ static void SNAP_ThreadFunc(void *pParm)
+@@ -887,7 +886,7 @@ static void SNAP_ThreadFunc(void *pParm)
    {
      DosCloseEventSem(hevSNAPCommandAvailable); hevSNAPCommandAvailable = NULLHANDLE;
      DosCloseMutexSem(hmtxUseSNAP); hmtxUseSNAP = NULLHANDLE;
@@ -111,7 +210,7 @@
  #ifdef DEBUG_BUILD
      printf("[SNAP_ThreadFunc] : Could not create event semaphore! rc = %d\n", rc);
  #endif
-@@ -907,7 +909,7 @@ static void SNAP_ThreadFunc(void *pParm)
+@@ -907,7 +906,7 @@ static void SNAP_ThreadFunc(void *pParm)
      DosCloseEventSem(hevSNAPResultReady); hevSNAPResultReady = NULLHANDLE;
      DosCloseEventSem(hevSNAPCommandAvailable); hevSNAPCommandAvailable = NULLHANDLE;
      DosCloseMutexSem(hmtxUseSNAP); hmtxUseSNAP = NULLHANDLE;
@@ -120,7 +219,16 @@
      WinDestroyMsgQueue(hmq);
      WinTerminate(hab);
      iSNAPThreadStatus = SNAPTHREADSTATUS_STOPPED_ERROR;
-@@ -1012,7 +1014,7 @@ DECLSPEC int               FSLIBCALL FSL
+@@ -980,7 +979,7 @@ static void FSLib_GAmodeInfo2FSLibVideoM
+   memcpy(&(pVideoMode->PixelFormat), &(pModeInfo->PixelFormat), sizeof(FSLib_PixelFormat));
+ }
+ 
+-DECLSPEC int               FSLIBCALL FSLib_Initialize()
++DECLSPEC int               FSLIBCALL FSLib_Initialize(void)
+ {
+   int rc;
+ 
+@@ -1012,7 +1011,7 @@ DECLSPEC int               FSLIBCALL FSL
    // Register new class
    if (!FSLib_RegisterWindowClass())
    {
@@ -129,7 +237,16 @@
      SNAP_Uninitialize();
  #ifdef DEBUG_BUILD
      printf("[FSLib_Initialize] : Could not register new window class!\n");
-@@ -1053,7 +1055,7 @@ DECLSPEC void              FSLIBCALL FSL
+@@ -1027,7 +1026,7 @@ DECLSPEC int               FSLIBCALL FSL
+   return 1;
+ }
+ 
+-DECLSPEC void              FSLIBCALL FSLib_Uninitialize()
++DECLSPEC void              FSLIBCALL FSLib_Uninitialize(void)
+ {
+   if (bFSLib_Initialized)
+   {
+@@ -1053,7 +1052,7 @@ DECLSPEC void              FSLIBCALL FSL
  #ifdef DEBUG_BUILD
      printf("[FSLib_Uninitialize] : Destroying semaphore\n");
  #endif
@@ -138,7 +255,16 @@
      // Uninitialize SNAP
  #ifdef DEBUG_BUILD
      printf("[FSLib_Uninitialize] : Uninitializing SNAP\n");
-@@ -1092,7 +1094,7 @@ static void FSLib_EmergencyUninitialize(
+@@ -1066,7 +1065,7 @@ DECLSPEC void              FSLIBCALL FSL
+   }
+ }
+ 
+-static void FSLib_EmergencyUninitialize()
++static void FSLib_EmergencyUninitialize(void)
+ {
+   if (bFSLib_Initialized)
+   {
+@@ -1092,7 +1091,7 @@ static void FSLib_EmergencyUninitialize(
  #ifdef DEBUG_BUILD
      printf("[FSLib_EmergencyUninitialize] : Destroying mutex semaphore\n");
  #endif
@@ -147,7 +273,7 @@
  
      // We don't have to uninitialize SNAP here, it will be done by
      // SNAPThread's Exception handler
-@@ -1288,23 +1290,23 @@ static MRESULT EXPENTRY FSLib_WndProc(HW
+@@ -1288,23 +1287,23 @@ static MRESULT EXPENTRY FSLib_WndProc(HW
  	fflush(stdout);
  #endif
  	// Set up window storage initial values
@@ -180,7 +306,22 @@
          pswpFrameSWP = (PSWP) malloc(sizeof(SWP));
          WinSetWindowULong(hwnd, FSLIB_WINDOWDATA_PSWP_FRAMESWP, (ULONG) pswpFrameSWP);
  
-@@ -1518,8 +1520,8 @@ static MRESULT EXPENTRY FSLib_WndProc(HW
+@@ -1464,12 +1463,12 @@ static MRESULT EXPENTRY FSLib_WndProc(HW
+ 	  if (!prectlVisibleArea)
+ 	  {
+             iMaxNumOfVisibleAreaRectangles = 50;
+-	    prectlVisibleArea = malloc(iMaxNumOfVisibleAreaRectangles*sizeof(RECTL));
++	    prectlVisibleArea = (PRECTL) malloc(iMaxNumOfVisibleAreaRectangles * sizeof(RECTL));
+           }
+ 
+ 	  // Get the all ORed rectangles
+           if (prectlVisibleArea)
+-	  do {
++	   do {
+ 	    rgnctl.ircStart = 1;
+ 	    rgnctl.crc = iMaxNumOfVisibleAreaRectangles;
+ 	    rgnctl.crcReturned = 0;
+@@ -1518,8 +1517,8 @@ static MRESULT EXPENTRY FSLib_WndProc(HW
              printf("[FSLib_WndProc] : WM_VRNENABLED : Redrawing dirty window.\n");
  	    fflush(stdout);
  #endif
@@ -191,3 +332,132 @@
            }
  
  #ifdef DEBUG_BUILD
+@@ -1726,8 +1725,7 @@ static MRESULT EXPENTRY FSLib_WndProc(HW
+ }
+ 
+ 
+-
+-static int FSLib_RegisterWindowClass()
++static int FSLib_RegisterWindowClass(void)
+ {
+   HAB hab;
+ 
+@@ -1866,8 +1864,14 @@ static void FSLib_FindBestFSMode(FSLib_V
+ #endif
+ }
+ 
++#ifdef __cplusplus
++extern "C" {
++#endif
+ // -- Definition of DosGetInfoSeg() API to be called from 32bits code: --
+ USHORT APIENTRY16 DOS16GETINFOSEG(PUSHORT pselGlobal, PUSHORT pselLocal);
++#ifdef __cplusplus
++}
++#endif
+ #define DosGetInfoSeg DOS16GETINFOSEG
+ 
+ /* Global Information Segment */
+@@ -1908,7 +1912,7 @@ typedef struct _GINFOSEG {	/* gis */
+ } GINFOSEG;
+ typedef GINFOSEG FAR *PGINFOSEG;
+ 
+-static int FSLib_IsPMTheForegroundFSSession()
++static int FSLib_IsPMTheForegroundFSSession(void)
+ {
+   APIRET         rc;
+   USHORT         globalSeg, localSeg;
+@@ -1936,7 +1940,7 @@ static int FSLib_IsPMTheForegroundFSSess
+ 
+ 
+ // Get all available fullscreen video modes
+-DECLSPEC FSLib_VideoMode_p FSLIBCALL FSLib_GetVideoModeList()
++DECLSPEC FSLib_VideoMode_p FSLIBCALL FSLib_GetVideoModeList(void)
+ {
+   FSLib_VideoMode_p pResult, pLast, pNewEntry;
+   GA_modeInfo modeInfo;
+@@ -1997,7 +2001,7 @@ DECLSPEC int               FSLIBCALL FSL
+   return 1;
+ }
+ // Get pointer to desktop video mode (Don't free it, it's static!)
+-DECLSPEC FSLib_VideoMode_p FSLIBCALL FSLib_GetDesktopVideoMode()
++DECLSPEC FSLib_VideoMode_p FSLIBCALL FSLib_GetDesktopVideoMode(void)
+ {
+   return &desktopVideoModeInfo;
+ }
+@@ -2623,8 +2627,8 @@ DECLSPEC int               FSLIBCALL FSL
+                   printf("[FSLib_BitBlt] : End of Blitting\n");
+                   fflush(stdout);
+ #endif
+-
+                 }
++
+ #ifdef SWCURSOR_HACK
+                 // Resore mouse cursor if have to
+                 if ((cursorFuncs.BeginAccess) && (cursorFuncs.EndAccess) && (bMouseHidden))
+@@ -2642,7 +2646,6 @@ DECLSPEC int               FSLIBCALL FSL
+ 
+                 DosReleaseMutexSem(hmtxUseSNAP);
+               }
+-              
+             }
+ #ifdef DEBUG_BUILD
+             else
+@@ -2658,7 +2661,6 @@ DECLSPEC int               FSLIBCALL FSL
+             printf("[FSLib_BitBlt] : Not enough memory for modified visible area!\n");
+           }
+ #endif
+-
+         }
+       }
+     }
+--- FSLib.h~	2005-02-15 16:37:58.000000000 +0200
++++ FSLib.h	2021-02-02 11:01:40.000000000 +0300
+@@ -4,6 +4,10 @@
+ #define INCL_WIN
+ #include <os2.h>
+ 
++#ifdef __cplusplus
++extern "C" {
++#endif
++
+ #define FSLIBCALL _System
+ #define DECLSPEC  __declspec(dllexport)
+ 
+@@ -35,23 +39,23 @@ typedef struct _FSLib_VideoMode
+   unsigned int       uiBPP;
+   FSLib_PixelFormat  PixelFormat;
+ 
+-  void *pNext;
++  struct _FSLib_VideoMode * pNext;
+ 
+ } FSLib_VideoMode, *FSLib_VideoMode_p;
+ 
+ // Initialization of FSLib for the calling process.
+ // Returns 1 if successful!
+-DECLSPEC int               FSLIBCALL FSLib_Initialize();
++DECLSPEC int               FSLIBCALL FSLib_Initialize(void);
+ 
+ // Uninitialization of FSLib.
+-DECLSPEC void              FSLIBCALL FSLib_Uninitialize();
++DECLSPEC void              FSLIBCALL FSLib_Uninitialize(void);
+ 
+ // Get all available fullscreen video modes
+-DECLSPEC FSLib_VideoMode_p FSLIBCALL FSLib_GetVideoModeList();
++DECLSPEC FSLib_VideoMode_p FSLIBCALL FSLib_GetVideoModeList(void);
+ // Free list of available fullscreen video modes
+ DECLSPEC int               FSLIBCALL FSLib_FreeVideoModeList(FSLib_VideoMode_p pVideoModeListHead);
+ // Get pointer to desktop video mode (Don't free it, it's static!)
+-DECLSPEC FSLib_VideoMode_p FSLIBCALL FSLib_GetDesktopVideoMode();
++DECLSPEC FSLib_VideoMode_p FSLIBCALL FSLib_GetDesktopVideoMode(void);
+ 
+ 
+ // Create a FSLib client window with given frame, telling the
+@@ -117,4 +121,8 @@ DECLSPEC int               FSLIBCALL FSL
+ //   to/from fullscreen mode (flag is in mp2)
+ #define FSLN_TOGGLEFSMODE        0
+ 
++#ifdef __cplusplus
++}
++#endif
++
+ #endif

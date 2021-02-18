@@ -84,7 +84,7 @@ static void             *pSNAPCommandParameter;    // Command parameter (if need
 typedef struct _FSLib_HWNDList
 {
   HWND hwndClient;
-  void *pNext;
+  struct _FSLib_HWNDList *pNext;
 } FSLib_HWNDList, *FSLib_HWNDList_p;
 
 static FSLib_HWNDList_p  pHWNDListHead = NULL;
@@ -95,13 +95,13 @@ static int               bFSLib_Initialized = 0;
 static unsigned long ulTimerFreq = 1;
 static unsigned long long llStartTime = 0;
 
-static void InitTimer()
+static void InitTimer(void)
 {
   DosTmrQueryFreq(&ulTimerFreq);
   DosTmrQueryTime((PQWORD) &llStartTime);
 }
 
-static unsigned long long GetTimeElapsed()
+static unsigned long long GetTimeElapsed(void)
 {
   unsigned long long llTime;
 
@@ -111,19 +111,18 @@ static unsigned long long GetTimeElapsed()
 #endif
 
 // Some prototypes
-static int  SNAP_Initialize();
-static void SNAP_Uninitialize();
-static int  SNAP_StartVideoModeUsage();
-static void SNAP_StopVideoModeUsage();
+static int  SNAP_Initialize(void);
+static void SNAP_Uninitialize(void);
+static int  SNAP_StartVideoModeUsage(void);
+static void SNAP_StopVideoModeUsage(void);
 static void SNAP_SetVideoMode_core(GA_modeInfo *pVideoMode);
 static void SNAP_SetVideoMode(GA_modeInfo *pVideoMode);
 static void SNAP_ThreadFunc(void *pParm);
 
-static int  FSLib_RegisterWindowClass();
-static void FSLib_FindBestFSMode(FSLib_VideoMode_p pSrcBufferDesc,
-				 GA_modeInfo *pFSModeInfo);
+static int  FSLib_RegisterWindowClass(void);
+static void FSLib_FindBestFSMode(FSLib_VideoMode_p pSrcBufferDesc, GA_modeInfo *pFSModeInfo);
 
-static void SNAP_StopVideoModeUsage()
+static void SNAP_StopVideoModeUsage(void)
 {
   if (bUnloadRef2D)
   {
@@ -135,7 +134,7 @@ static void SNAP_StopVideoModeUsage()
   }
 }
 
-static int SNAP_StartVideoModeUsage()
+static int SNAP_StartVideoModeUsage(void)
 {
   int iResult = 1;
 
@@ -217,8 +216,7 @@ static int SNAP_StartVideoModeUsage()
   return iResult;
 }
 
-
-static void SNAP_Uninitialize()
+static void SNAP_Uninitialize(void)
 {
   //  If current video mode != desktop video mode, then set desktop video mode!
   if (!iInPM)
@@ -282,7 +280,7 @@ static void SNAP_Uninitialize()
   }
 }
 
-static int SNAP_Initialize()
+static int SNAP_Initialize(void)
 {
 #ifdef DEBUG_BUILD
   printf("[SNAP_Initialize] : Initializing...\n");
@@ -315,7 +313,6 @@ static int SNAP_Initialize()
   return 1;
 }
 
-
 static int SNAP_SameVideoMode(GA_modeInfo *pVideoMode1, GA_modeInfo *pVideoMode2)
 {
   int iResult = 0;
@@ -340,7 +337,7 @@ static int SNAP_SameVideoMode(GA_modeInfo *pVideoMode1, GA_modeInfo *pVideoMode2
   return iResult;
 }
 
-static void SNAP_StopPresentationManager()
+static void SNAP_StopPresentationManager(void)
 {
   HAB hab;
   HWND hwnd;
@@ -357,7 +354,7 @@ static void SNAP_StopPresentationManager()
 
   hwnd = WinQueryDesktopWindow(hab, 0);
 #ifdef DEBUG_BUILD
-  if (hwnd==NULL)
+  if (hwnd==NULLHANDLE)
     printf("[SNAP_StopPresentationManager] : Error at WinQueryDesktopWindow()!\n");
 #endif
   hdc = WinQueryWindowDC(hwnd);                    // Get HDC of desktop
@@ -382,7 +379,7 @@ static void SNAP_StopPresentationManager()
   }
 }
 
-static void SNAP_RestartPresentationManager()
+static void SNAP_RestartPresentationManager(void)
 {
   HWND hwnd;
   HDC  hdc;
@@ -982,7 +979,7 @@ static void FSLib_GAmodeInfo2FSLibVideoMode(GA_modeInfo *pModeInfo,
   memcpy(&(pVideoMode->PixelFormat), &(pModeInfo->PixelFormat), sizeof(FSLib_PixelFormat));
 }
 
-DECLSPEC int               FSLIBCALL FSLib_Initialize()
+DECLSPEC int               FSLIBCALL FSLib_Initialize(void)
 {
   int rc;
 
@@ -1029,7 +1026,7 @@ DECLSPEC int               FSLIBCALL FSLib_Initialize()
   return 1;
 }
 
-DECLSPEC void              FSLIBCALL FSLib_Uninitialize()
+DECLSPEC void              FSLIBCALL FSLib_Uninitialize(void)
 {
   if (bFSLib_Initialized)
   {
@@ -1068,7 +1065,7 @@ DECLSPEC void              FSLIBCALL FSLib_Uninitialize()
   }
 }
 
-static void FSLib_EmergencyUninitialize()
+static void FSLib_EmergencyUninitialize(void)
 {
   if (bFSLib_Initialized)
   {
@@ -1466,12 +1463,12 @@ static MRESULT EXPENTRY FSLib_WndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM m
 	  if (!prectlVisibleArea)
 	  {
             iMaxNumOfVisibleAreaRectangles = 50;
-	    prectlVisibleArea = malloc(iMaxNumOfVisibleAreaRectangles*sizeof(RECTL));
+	    prectlVisibleArea = (PRECTL) malloc(iMaxNumOfVisibleAreaRectangles * sizeof(RECTL));
           }
 
 	  // Get the all ORed rectangles
           if (prectlVisibleArea)
-	  do {
+	   do {
 	    rgnctl.ircStart = 1;
 	    rgnctl.crc = iMaxNumOfVisibleAreaRectangles;
 	    rgnctl.crcReturned = 0;
@@ -1728,8 +1725,7 @@ static MRESULT EXPENTRY FSLib_WndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM m
 }
 
 
-
-static int FSLib_RegisterWindowClass()
+static int FSLib_RegisterWindowClass(void)
 {
   HAB hab;
 
@@ -1868,8 +1864,14 @@ static void FSLib_FindBestFSMode(FSLib_VideoMode_p pSrcBufferDesc,
 #endif
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 // -- Definition of DosGetInfoSeg() API to be called from 32bits code: --
 USHORT APIENTRY16 DOS16GETINFOSEG(PUSHORT pselGlobal, PUSHORT pselLocal);
+#ifdef __cplusplus
+}
+#endif
 #define DosGetInfoSeg DOS16GETINFOSEG
 
 /* Global Information Segment */
@@ -1910,7 +1912,7 @@ typedef struct _GINFOSEG {	/* gis */
 } GINFOSEG;
 typedef GINFOSEG FAR *PGINFOSEG;
 
-static int FSLib_IsPMTheForegroundFSSession()
+static int FSLib_IsPMTheForegroundFSSession(void)
 {
   APIRET         rc;
   USHORT         globalSeg, localSeg;
@@ -1938,7 +1940,7 @@ static int FSLib_IsPMTheForegroundFSSession()
 
 
 // Get all available fullscreen video modes
-DECLSPEC FSLib_VideoMode_p FSLIBCALL FSLib_GetVideoModeList()
+DECLSPEC FSLib_VideoMode_p FSLIBCALL FSLib_GetVideoModeList(void)
 {
   FSLib_VideoMode_p pResult, pLast, pNewEntry;
   GA_modeInfo modeInfo;
@@ -1999,7 +2001,7 @@ DECLSPEC int               FSLIBCALL FSLib_FreeVideoModeList(FSLib_VideoMode_p p
   return 1;
 }
 // Get pointer to desktop video mode (Don't free it, it's static!)
-DECLSPEC FSLib_VideoMode_p FSLIBCALL FSLib_GetDesktopVideoMode()
+DECLSPEC FSLib_VideoMode_p FSLIBCALL FSLib_GetDesktopVideoMode(void)
 {
   return &desktopVideoModeInfo;
 }
@@ -2625,8 +2627,8 @@ DECLSPEC int               FSLIBCALL FSLib_BitBlt(HWND hwndClient,
                   printf("[FSLib_BitBlt] : End of Blitting\n");
                   fflush(stdout);
 #endif
-
                 }
+
 #ifdef SWCURSOR_HACK
                 // Resore mouse cursor if have to
                 if ((cursorFuncs.BeginAccess) && (cursorFuncs.EndAccess) && (bMouseHidden))
@@ -2644,7 +2646,6 @@ DECLSPEC int               FSLIBCALL FSLib_BitBlt(HWND hwndClient,
 
                 DosReleaseMutexSem(hmtxUseSNAP);
               }
-              
             }
 #ifdef DEBUG_BUILD
             else
@@ -2660,7 +2661,6 @@ DECLSPEC int               FSLIBCALL FSLib_BitBlt(HWND hwndClient,
             printf("[FSLib_BitBlt] : Not enough memory for modified visible area!\n");
           }
 #endif
-
         }
       }
     }
