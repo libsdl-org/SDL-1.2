@@ -643,6 +643,7 @@ static MRESULT EXPENTRY WndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     dbgprintf("WM_ACTIVATE done\n");
     break;
 
+  case WM_BUTTON1DBLCLK:
   case WM_BUTTON1DOWN:
     dbgprintf("WM_BUTTON1DOWN\n");
     pVideo = FSLib_GetUserParm(hwnd);
@@ -674,6 +675,7 @@ static MRESULT EXPENTRY WndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     SDL_PrivateMouseButton(SDL_RELEASED, SDL_BUTTON_LEFT, 0, 0); /* Don't report mouse movement */
     break;
 
+  case WM_BUTTON2DBLCLK:
   case WM_BUTTON2DOWN:
     dbgprintf("WM_BUTTON2DOWN\n");
     pVideo = FSLib_GetUserParm(hwnd);
@@ -705,6 +707,7 @@ static MRESULT EXPENTRY WndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     SDL_PrivateMouseButton(SDL_RELEASED, SDL_BUTTON_RIGHT, 0, 0); /* Don't report mouse movement */
     break;
 
+  case WM_BUTTON3DBLCLK:
   case WM_BUTTON3DOWN:
     dbgprintf("WM_BUTTON3DOWN\n");
     pVideo = FSLib_GetUserParm(hwnd);
