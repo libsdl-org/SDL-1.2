@@ -26,6 +26,9 @@
 
 #include "SDL_endian.h"
 
+extern SDL_bool SDLCALL SDL_HasARMSIMD(void);		/* whether CPU has ARM SIMD (ARMv6) features */
+extern SDL_bool SDLCALL SDL_HasNEON(void);		/* whether CPU has ARM NEON features.        */
+
 /* The structure passed to the low level blit functions */
 typedef struct {
 	Uint8 *s_pixels;
