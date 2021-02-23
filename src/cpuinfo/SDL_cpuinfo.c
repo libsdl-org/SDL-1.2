@@ -424,18 +424,21 @@ static __inline__ int CPU_haveAltiVec(void)
 	return altivec; 
 }
 
-#if (defined(__ARM_ARCH) && (__ARM_ARCH >= 6)) || defined(__aarch64__)
-static int
-CPU_haveARMSIMD(void)
-{
-	return 1;
-}
-
-#elif !defined(__arm__)
+/* ARM SIMD / NEON detection
+ * Not public - for internal ARM 32 bit blitters' use only
+ */
+#if !defined(__arm__)  /* not an ARM CPU at all. */
 static int
 CPU_haveARMSIMD(void)
 {
 	return 0;
+}
+
+#elif defined(__ARM_ARCH) && (__ARM_ARCH >= 6)
+static int
+CPU_haveARMSIMD(void)
+{
+	return 1;
 }
 
 #elif defined(__LINUX__)
@@ -484,7 +487,6 @@ static __inline__ int CPU_haveARMSIMD(void)
 }
 
 #else
-
 static __inline__ int CPU_haveARMSIMD(void)
 {
 #warning SDL_HasARMSIMD is not implemented for this ARM platform. Write me.
@@ -517,17 +519,17 @@ static __inline__  int readProcAuxvForNeon(void)
 
 static __inline__ int CPU_haveNEON(void)
 {
+#if !defined(__arm__)  /* not an ARM CPU at all. */
+	return 0;
 /* The way you detect NEON is a privileged instruction on ARM, so you have
    query the OS kernel in a platform-specific way. :/ */
-#if (defined(__ARM_ARCH) && (__ARM_ARCH >= 8)) || defined(__aarch64__)
+#elif defined(__ARM_ARCH) && (__ARM_ARCH >= 8)
 	return 1;  /* ARMv8 always has non-optional NEON support. */
 #elif defined(__APPLE__) && defined(__ARM_ARCH) && (__ARM_ARCH >= 7)
 	/* (note that sysctlbyname("hw.optional.neon") doesn't work!) */
 	return 1;  /* all Apple ARMv7 chips and later have NEON. */
 #elif defined(__APPLE__)
 	return 0;  /* assume anything else from Apple doesn't have NEON. */
-#elif !defined(__arm__)
-	return 0;  /* not an ARM CPU at all. */
 #elif defined(__OpenBSD__)
 	return 1;  /* OpenBSD only supports ARMv7 CPUs that have NEON. */
 #elif defined(HAVE_ELF_AUX_INFO)
