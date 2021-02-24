@@ -35,7 +35,6 @@
 */
 
 #if ((defined(_MSC_VER) && defined(_M_IX86)) || \
-     (defined(__WATCOMC__) && defined(__386__)) || \
      (defined(__GNUC__) && defined(__i386__))) && SDL_ASSEMBLY_ROUTINES
 /* There's a bug with gcc 4.4.1 and -O2 where srcp doesn't get the correct
  * value after the first scanline.  FIXME? */
@@ -54,7 +53,7 @@
 #define PAGE_ALIGNED
 #endif
 
-#if defined(_M_IX86) || defined(__i386__) || defined(__386__)
+#if defined(_M_IX86) || defined(__i386__)
 #define PREFIX16	0x66
 #define STORE_BYTE	0xAA
 #define STORE_WORD	0xAB
@@ -308,7 +307,7 @@ int SDL_SoftStretch(SDL_Surface *src, SDL_Rect *srcrect,
 			: "=&D" (u1), "=&S" (u2)
 			: "0" (dstp), "1" (srcp), "r" (copy_row)
 			: "memory" );
-#elif defined(_MSC_VER) || defined(__WATCOMC__)
+#elif defined(_MSC_VER)
 		{ void *code = copy_row;
 			__asm {
 				push edi
