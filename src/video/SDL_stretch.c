@@ -43,28 +43,33 @@
 
 #ifdef USE_ASM_STRETCH
 
-#ifdef HAVE_MPROTECT
+#ifdef __WIN32__
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#elif defined(HAVE_MPROTECT)
 #include <sys/types.h>
 #include <sys/mman.h>
+#else
+#undef USE_ASM_STRETCH
 #endif
 #ifdef __GNUC__
 #define PAGE_ALIGNED __attribute__((__aligned__(4096)))
+#elif defined(_MSC_VER)
+#define PAGE_ALIGNED __declspec(align(4096))
 #else
-#define PAGE_ALIGNED
+#undef USE_ASM_STRETCH
 #endif
+#endif /**/
 
-#if defined(_M_IX86) || defined(__i386__)
+#ifdef USE_ASM_STRETCH
 #define PREFIX16	0x66
 #define STORE_BYTE	0xAA
 #define STORE_WORD	0xAB
 #define LOAD_BYTE	0xAC
 #define LOAD_WORD	0xAD
 #define RETURN		0xC3
-#else
-#error Need assembly opcodes for this architecture
-#endif
 
-static unsigned char copy_row[4096] PAGE_ALIGNED;
+static PAGE_ALIGNED unsigned char copy_row[4096];
 
 static int generate_rowbytes(int src_w, int dst_w, int bpp)
 {
@@ -79,6 +84,9 @@ static int generate_rowbytes(int src_w, int dst_w, int bpp)
 	int pos, inc;
 	unsigned char *eip, *fence;
 	unsigned char load, store;
+#ifdef  __WIN32__
+	DWORD oldprot;
+#endif
 
 	/* See if we need to regenerate the copy buffer */
 	if ( (src_w == last.src_w) &&
@@ -104,8 +112,13 @@ static int generate_rowbytes(int src_w, int dst_w, int bpp)
 		SDL_SetError("ASM stretch of %d bytes isn't supported\n", bpp);
 		return(-1);
 	}
-#ifdef HAVE_MPROTECT
 	/* Make the code writeable */
+#ifdef __WIN32__
+	if (!VirtualProtect(copy_row, sizeof(copy_row), PAGE_READWRITE, &oldprot)) {
+		SDL_SetError("Couldn't make copy buffer writeable");
+		return(-1);
+	}
+#elif defined(HAVE_MPROTECT)
 	if ( mprotect(copy_row, sizeof(copy_row), PROT_READ|PROT_WRITE) < 0 ) {
 		SDL_SetError("Couldn't make copy buffer writeable");
 		return(-1);
@@ -137,8 +150,13 @@ static int generate_rowbytes(int src_w, int dst_w, int bpp)
 	}
 	*eip++ = RETURN;
 
-#ifdef HAVE_MPROTECT
 	/* Make the code executable but not writeable */
+#ifdef __WIN32__
+	if (!VirtualProtect(copy_row, sizeof(copy_row), PAGE_EXECUTE_READ, &oldprot)) {
+		SDL_SetError("Couldn't make copy buffer executable");
+		return(-1);
+	}
+#elif defined(HAVE_MPROTECT)
 	if ( mprotect(copy_row, sizeof(copy_row), PROT_READ|PROT_EXEC) < 0 ) {
 		SDL_SetError("Couldn't make copy buffer executable");
 		return(-1);
