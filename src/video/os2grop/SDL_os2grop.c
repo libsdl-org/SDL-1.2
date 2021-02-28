@@ -388,21 +388,9 @@ static int os2_VideoInit(SDL_VideoDevice *pDevice,
   ULONG         cModes;
   PBPPSIZELIST  pBPPSizeList;
   ULONG         ulRC;
-  char         *driver;
-
-  /* Select output video system. */
-  ulIdx = GROP_VS_DIVE;
-  driver = SDL_getenv("SDL_VIDEODRIVER");
-
-  if (driver != NULL) {
-    if (SDL_strcasecmp(driver, "VMAN") == 0)
-      ulIdx = GROP_VS_VMAN_COMPATIBLE;
-    else if (SDL_strcasecmp(driver, "VMANFS") == 0)
-      ulIdx = GROP_VS_VMAN;
-  }
 
   /* Create a new GrOp object. */
-  pGrop = gropNew(ulIdx, &stGropCallback, (PVOID)pPVData);
+  pGrop = gropNew(pPVData->ulVideoSys, &stGropCallback, (PVOID)pPVData);
 
   if (pGrop == NULL) {
     dbgprintf("gropNew() failed\n");
@@ -1092,7 +1080,7 @@ static void os2_DeleteDevice(SDL_VideoDevice *pDevice)
   SDL_free(pDevice);
 }
 
-static SDL_VideoDevice *os2_CreateDevice(int devindex)
+static SDL_VideoDevice *os2_CreateDevice(int devindex, ULONG ulVideoSys)
 {
   SDL_VideoDevice      *pDevice;
   SDL_PrivateVideoData *pPVData;
@@ -1139,6 +1127,7 @@ static SDL_VideoDevice *os2_CreateDevice(int devindex)
     SDL_free(pDevice);
     return NULL;
   }
+  pPVData->ulVideoSys = ulVideoSys;
   pDevice->hidden = pPVData;
 
   if (!gropInit()) {
@@ -1151,14 +1140,37 @@ static SDL_VideoDevice *os2_CreateDevice(int devindex)
   return pDevice;
 }
 
+static SDL_VideoDevice *DIVE_CreateDevice(int devindex)
+{
+  return os2_CreateDevice(devindex, GROP_VS_DIVE);
+}
+
+static SDL_VideoDevice *VMAN_CreateDevice(int devindex)
+{
+  return os2_CreateDevice(devindex, GROP_VS_VMAN_COMPATIBLE);
+}
+
+static SDL_VideoDevice *VMANFS_CreateDevice(int devindex)
+{
+  return os2_CreateDevice(devindex, GROP_VS_VMAN);
+}
+
 static int os2_Available(void)
 {
   return 1;
 }
 
-VideoBootStrap OS2GROP_bootstrap = {
- "OS2", "OS/2 GrOp",
- os2_Available, os2_CreateDevice
+VideoBootStrap OS2DIVE_bootstrap = {
+ "DIVE", "OS/2 GrOp (DIVE)",
+ os2_Available, DIVE_CreateDevice
+};
+VideoBootStrap OS2VMAN_bootstrap = {
+ "VMAN", "OS/2 GrOp (VMAN)",
+ os2_Available, VMAN_CreateDevice
+};
+VideoBootStrap OS2VMANFS_bootstrap = {
+ "VMANFS", "OS/2 GrOp (VMANFS)",
+ os2_Available, VMANFS_CreateDevice
 };
 
 #endif /* SDL_VIDEO_DRIVER_OS2GROP */

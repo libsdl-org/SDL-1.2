@@ -402,7 +402,9 @@ extern VideoBootStrap NDS_bootstrap;
 extern VideoBootStrap RISCOS_bootstrap;
 #endif
 #if SDL_VIDEO_DRIVER_OS2GROP
-extern VideoBootStrap OS2GROP_bootstrap;
+extern VideoBootStrap OS2DIVE_bootstrap;
+extern VideoBootStrap OS2VMAN_bootstrap;
+extern VideoBootStrap OS2VMANFS_bootstrap;
 #endif
 #if SDL_VIDEO_DRIVER_OS2FS
 extern VideoBootStrap OS2FSLib_bootstrap;

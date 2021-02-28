@@ -59,6 +59,8 @@ struct SDL_PrivateVideoData {
   ULONG                 ulWinHeight;
   BOOL                  fWinResized;
   ULONG                 ulResizedReportTime;
+
+  ULONG                 ulVideoSys;
 };
 
 

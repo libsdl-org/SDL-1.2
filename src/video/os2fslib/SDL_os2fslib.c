@@ -2515,7 +2515,7 @@ static SDL_VideoDevice *os2fslib_CreateDevice(int devindex)
 }
 
 VideoBootStrap OS2FSLib_bootstrap = {
-    "os2fslib", "OS/2 Video Output using FSLib",
+    "FSLIB", "OS/2 Video Output using FSLib",
     os2fslib_Available, os2fslib_CreateDevice
 };
 #endif /* SDL_VIDEO_DRIVER_OS2FS */
