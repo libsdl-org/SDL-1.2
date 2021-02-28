@@ -30,6 +30,7 @@
 #define INCL_DOSMISC
 #define INCL_DOSERRORS
 
+#define INCL_DOSPROCESS
 #define INCL_OS2MM
 #define INCL_MMIOOS2
 #define INCL_MCIOS2

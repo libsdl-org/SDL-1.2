@@ -28,12 +28,6 @@
 #include "SDL_audiomem.h"
 #include "SDL_sysaudio.h"
 
-#ifdef __OS2__
-/* We'll need the DosSetPriority() API! */
-#define INCL_DOSPROCESS
-#include <os2.h>
-#endif
-
 /* Available audio drivers */
 static AudioBootStrap *bootstrap[] = {
 #if SDL_AUDIO_DRIVER_PULSE
@@ -156,27 +150,6 @@ int SDLCALL SDL_RunAudio(void *audiop)
 		stream_len = audio->spec.size;
 	}
 
-#ifdef __OS2__
-        /* Increase the priority of this thread to make sure that
-           the audio will be continuous all the time! */
-#ifdef USE_DOSSETPRIORITY
-        if (SDL_getenv("SDL_USE_TIMECRITICAL_AUDIO"))
-        {
-#ifdef DEBUG_BUILD
-          printf("[SDL_RunAudio] : Setting priority to TimeCritical+0! (TID%d)\n", SDL_ThreadID());
-#endif
-          DosSetPriority(PRTYS_THREAD, PRTYC_TIMECRITICAL, 0, 0);
-        }
-        else
-        {
-#ifdef DEBUG_BUILD
-          printf("[SDL_RunAudio] : Setting priority to ForegroundServer+0! (TID%d)\n", SDL_ThreadID());
-#endif
-          DosSetPriority(PRTYS_THREAD, PRTYC_FOREGROUNDSERVER, 0, 0);
-        }
-#endif
-#endif
-
 	/* Loop, filling the audio buffers */
 	while ( audio->enabled ) {
 
@@ -231,11 +204,6 @@ int SDLCALL SDL_RunAudio(void *audiop)
 		audio->WaitDone(audio);
 	}
 
-#ifdef __OS2__
-#ifdef DEBUG_BUILD
-        printf("[SDL_RunAudio] : Task exiting. (TID%d)\n", SDL_ThreadID());
-#endif
-#endif
 	return(0);
 }
 
@@ -530,8 +498,8 @@ int SDL_OpenAudio(SDL_AudioSpec *desired, SDL_AudioSpec *obtained)
 	if ( obtained != NULL ) {
 		SDL_memcpy(obtained, &audio->spec, sizeof(audio->spec));
 	} else if ( desired->freq != audio->spec.freq ||
-                    desired->format != audio->spec.format ||
-	            desired->channels != audio->spec.channels ) {
+		    desired->format != audio->spec.format ||
+		    desired->channels != audio->spec.channels ) {
 		/* Build an audio conversion block */
 		if ( SDL_BuildAudioCVT(&audio->convert,
 			desired->format, desired->channels,
