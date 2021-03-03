@@ -1645,104 +1645,99 @@ Optional Features:
   --enable-fast-install[=PKGS]
                           optimize for fast installation [default=yes]
   --disable-libtool-lock  avoid locking (might break parallel builds)
-  --enable-libc           Use the system C library [[default=yes]]
-  --enable-audio          Enable the audio subsystem [[default=yes]]
-  --enable-video          Enable the video subsystem [[default=yes]]
-  --enable-events         Enable the events subsystem [[default=yes]]
-  --enable-joystick       Enable the joystick subsystem [[default=yes]]
-  --enable-cdrom          Enable the cdrom subsystem [[default=yes]]
-  --enable-threads        Enable the threading subsystem [[default=yes]]
-  --enable-timers         Enable the timer subsystem [[default=yes]]
-  --enable-file           Enable the file subsystem [[default=yes]]
+  --enable-libc           Use the system C library [default=yes]
+  --enable-audio          Enable the audio subsystem [default=yes]
+  --enable-video          Enable the video subsystem [default=yes]
+  --enable-events         Enable the events subsystem [default=yes]
+  --enable-joystick       Enable the joystick subsystem [default=yes]
+  --enable-cdrom          Enable the cdrom subsystem [default=yes]
+  --enable-threads        Enable the threading subsystem [default=yes]
+  --enable-timers         Enable the timer subsystem [default=yes]
+  --enable-file           Enable the file subsystem [default=yes]
   --enable-loadso         Enable the shared object loading subsystem
-                          [[default=yes]]
-  --enable-cpuinfo        Enable the cpuinfo subsystem [[default=yes]]
-  --enable-assembly       Enable assembly routines [[default=yes]]
-  --enable-oss            support the OSS audio API [[default=yes]]
-  --enable-alsa           support the ALSA audio API [[default=yes]]
+                          [default=yes]
+  --enable-cpuinfo        Enable the cpuinfo subsystem [default=yes]
+  --enable-assembly       Enable assembly routines [default=yes]
+  --enable-oss            support the OSS audio API [default=yes]
+  --enable-alsa           support the ALSA audio API [default=yes]
   --disable-alsatest      Do not try to compile and run a test Alsa program
-  --enable-alsa-shared    dynamically load ALSA audio support [[default=yes]]
-  --enable-esd            support the Enlightened Sound Daemon [[default=yes]]
+  --enable-alsa-shared    dynamically load ALSA audio support [default=yes]
+  --enable-esd            support the Enlightened Sound Daemon [default=yes]
   --disable-esdtest       Do not try to compile and run a test ESD program
-  --enable-esd-shared     dynamically load ESD audio support [[default=yes]]
-  --enable-sndio          support the sndio audio API [[default=yes]]
-  --enable-pulseaudio     use PulseAudio [[default=yes]]
+  --enable-esd-shared     dynamically load ESD audio support [default=yes]
+  --enable-sndio          support the sndio audio API [default=yes]
+  --enable-pulseaudio     use PulseAudio [default=yes]
   --enable-pulseaudio-shared
-                          dynamically load PulseAudio support [[default=yes]]
+                          dynamically load PulseAudio support [default=yes]
   --enable-arts           support the Analog Real Time Synthesizer
-                          [[default=yes]]
-  --enable-arts-shared    dynamically load aRts audio support [[default=yes]]
-  --enable-nas            support the NAS audio API [[default=yes]]
-  --enable-nas-shared     dynamically load NAS audio support [[default=yes]]
-  --enable-diskaudio      support the disk writer audio driver [[default=yes]]
-  --enable-dummyaudio     support the dummy audio driver [[default=yes]]
-  --enable-mintaudio      support Atari audio driver [[default=yes]]
-  --enable-nasm           use nasm assembly blitters on x86 [[default=yes]]
-  --enable-altivec        use altivec assembly blitters on PPC [[default=yes]]
-  --enable-arm-simd       use SIMD assembly blitters on ARM [[default=no]]
-  --enable-arm-neon       use NEON assembly blitters on ARM [[default=no]]
-  --enable-ipod           configure SDL to work with iPodLinux [[default=no]]
-  --enable-video-nanox    use nanox video driver [[default=no]]
-  --enable-nanox-debug    print debug messages [[default=no]]
+                          [default=yes]
+  --enable-arts-shared    dynamically load aRts audio support [default=yes]
+  --enable-nas            support the NAS audio API [default=yes]
+  --enable-nas-shared     dynamically load NAS audio support [default=yes]
+  --enable-diskaudio      support the disk writer audio driver [default=yes]
+  --enable-dummyaudio     support the dummy audio driver [default=yes]
+  --enable-mintaudio      support Atari audio driver [default=yes]
+  --enable-nasm           use nasm assembly blitters on x86 [default=yes]
+  --enable-altivec        use altivec assembly blitters on PPC [default=yes]
+  --enable-arm-simd       use SIMD assembly blitters on ARM [default=no]
+  --enable-arm-neon       use NEON assembly blitters on ARM [default=no]
+  --enable-ipod           configure SDL to work with iPodLinux [default=no]
+  --enable-video-nanox    use nanox video driver [default=no]
+  --enable-nanox-debug    print debug messages [default=no]
   --enable-nanox-share-memory
-                          use share memory [[default=no]]
+                          use share memory [default=no]
   --enable-nanox-direct-fb
-                          use direct framebuffer access [[default=no]]
-  --enable-video-x11      use X11 video driver [[default=yes]]
-  --enable-x11-shared     dynamically load X11 support [[default=maybe]]
-  --enable-dga            allow use of X11 DGA code [[default=yes]]
-  --enable-video-dga      use DGA 2.0 video driver [[default=yes]]
+                          use direct framebuffer access [default=no]
+  --enable-video-x11      use X11 video driver [default=yes]
+  --enable-x11-shared     dynamically load X11 support [default=maybe]
+  --enable-dga            allow use of X11 DGA code [default=yes]
+  --enable-video-dga      use DGA 2.0 video driver [default=yes]
   --enable-video-x11-dgamouse
-                          use X11 DGA for mouse events [[default=yes]]
-  --enable-video-x11-vm   use X11 VM extension for fullscreen [[default=yes]]
-  --enable-video-x11-xv   use X11 XvImage extension for video [[default=yes]]
+                          use X11 DGA for mouse events [default=yes]
+  --enable-video-x11-vm   use X11 VM extension for fullscreen [default=yes]
+  --enable-video-x11-xv   use X11 XvImage extension for video [default=yes]
   --enable-video-x11-xinerama
-                          enable X11 Xinerama support [[default=yes]]
-  --enable-video-x11-xme  enable Xi Graphics XME for fullscreen
-                          [[default=yes]]
+                          enable X11 Xinerama support [default=yes]
+  --enable-video-x11-xme  enable Xi Graphics XME for fullscreen [default=yes]
   --enable-video-x11-xrandr
                           enable X11 Xrandr extension for fullscreen
-                          [[default=yes]]
-  --enable-video-photon   use QNX Photon video driver [[default=yes]]
-  --enable-video-carbon   use Carbon/QuickDraw video driver [[default=no]]
-  --enable-video-cocoa    use Cocoa/Quartz video driver [[default=yes]]
-  --enable-video-fbcon    use framebuffer console video driver [[default=yes]]
-  --enable-video-directfb use DirectFB video driver [[default=yes]]
-  --enable-video-ps2gs    use PlayStation 2 GS video driver [[default=yes]]
-  --enable-video-ps3      use PlayStation 3 Cell driver [[default=yes]]
-  --enable-video-ggi      use GGI video driver [[default=no]]
-  --enable-video-svga     use SVGAlib video driver [[default=yes]]
-  --enable-video-vgl      use VGL video driver [[default=yes]]
-  --enable-video-wscons   use wscons video driver [[default=yes]]
-  --enable-video-aalib    use AAlib video driver [[default=no]]
-  --enable-video-caca     use libcaca video driver [[default=no]]
-  --enable-video-qtopia   use Qtopia video driver [[default=no]]
-  --enable-video-picogui  use PicoGUI video driver [[default=no]]
-  --enable-video-xbios    use Atari Xbios video driver [[default=yes]]
-  --enable-video-gem      use Atari Gem video driver [[default=yes]]
-  --enable-video-dummy    use dummy video driver [[default=yes]]
-  --enable-video-opengl   include OpenGL context creation [[default=yes]]
-  --enable-osmesa-shared  dynamically load OSMesa OpenGL support
-                          [[default=yes]]
+                          [default=yes]
+  --enable-video-photon   use QNX Photon video driver [default=yes]
+  --enable-video-carbon   use Carbon/QuickDraw video driver [default=no]
+  --enable-video-cocoa    use Cocoa/Quartz video driver [default=yes]
+  --enable-video-fbcon    use framebuffer console video driver [default=yes]
+  --enable-video-directfb use DirectFB video driver [default=yes]
+  --enable-video-ps2gs    use PlayStation 2 GS video driver [default=yes]
+  --enable-video-ps3      use PlayStation 3 Cell driver [default=yes]
+  --enable-video-ggi      use GGI video driver [default=no]
+  --enable-video-svga     use SVGAlib video driver [default=yes]
+  --enable-video-vgl      use VGL video driver [default=yes]
+  --enable-video-wscons   use wscons video driver [default=yes]
+  --enable-video-aalib    use AAlib video driver [default=no]
+  --enable-video-caca     use libcaca video driver [default=no]
+  --enable-video-qtopia   use Qtopia video driver [default=no]
+  --enable-video-picogui  use PicoGUI video driver [default=no]
+  --enable-video-xbios    use Atari Xbios video driver [default=yes]
+  --enable-video-gem      use Atari Gem video driver [default=yes]
+  --enable-video-dummy    use dummy video driver [default=yes]
+  --enable-video-opengl   include OpenGL context creation [default=yes]
+  --enable-osmesa-shared  dynamically load OSMesa OpenGL support [default=yes]
   --enable-screensaver    enable screensaver by default while any SDL
-                          application is running [[default=no]]
-  --enable-input-events   use Linux 2.4 unified input interface
-                          [[default=yes]]
-  --enable-input-tslib    use the Touchscreen library for input
-                          [[default=yes]]
+                          application is running [default=no]
+  --enable-input-events   use Linux 2.4 unified input interface [default=yes]
+  --enable-input-tslib    use the Touchscreen library for input [default=yes]
   --enable-pth            use GNU pth library for multi-threading
-                          [[default=yes]]
-  --enable-pthreads       use POSIX threads for multi-threading
-                          [[default=yes]]
-  --enable-pthread-sem    use pthread semaphores [[default=yes]]
-  --enable-stdio-redirect Redirect STDIO to files on Win32 [[default=yes]]
-  --enable-directx        use DirectX for Win32 audio/video [[default=yes]]
-  --enable-sdl-dlopen     use dlopen for shared object loading [[default=yes]]
+                          [default=yes]
+  --enable-pthreads       use POSIX threads for multi-threading [default=yes]
+  --enable-pthread-sem    use pthread semaphores [default=yes]
+  --enable-stdio-redirect Redirect STDIO to files on Win32 [default=yes]
+  --enable-directx        use DirectX for Win32 audio/video [default=yes]
+  --enable-sdl-dlopen     use dlopen for shared object loading [default=yes]
   --enable-atari-ldg      use Atari LDG for shared object loading
-                          [[default=yes]]
+                          [default=yes]
   --enable-clock_gettime  use clock_gettime() instead of gettimeofday() on
-                          UNIX [[default=no]]
-  --enable-rpath          use an rpath when linking SDL [[default=yes]]
+                          UNIX [default=no]
+  --enable-rpath          use an rpath when linking SDL [default=yes]
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -4833,13 +4828,13 @@ if ${lt_cv_nm_interface+:} false; then :
 else
   lt_cv_nm_interface="BSD nm"
   echo "int some_variable = 0;" > conftest.$ac_ext
-  (eval echo "\"\$as_me:4836: $ac_compile\"" >&5)
+  (eval echo "\"\$as_me:4831: $ac_compile\"" >&5)
   (eval "$ac_compile" 2>conftest.err)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:4839: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
+  (eval echo "\"\$as_me:4834: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
   (eval "$NM \"conftest.$ac_objext\"" 2>conftest.err > conftest.out)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:4842: output\"" >&5)
+  (eval echo "\"\$as_me:4837: output\"" >&5)
   cat conftest.out >&5
   if $GREP 'External.*some_variable' conftest.out > /dev/null; then
     lt_cv_nm_interface="MS dumpbin"
@@ -6049,7 +6044,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 6052 "configure"' > conftest.$ac_ext
+  echo '#line 6047 "configure"' > conftest.$ac_ext
   if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -7612,11 +7607,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7615: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7610: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:7619: \$? = $ac_status" >&5
+   echo "$as_me:7614: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -7951,11 +7946,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7954: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7949: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:7958: \$? = $ac_status" >&5
+   echo "$as_me:7953: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -8056,11 +8051,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8059: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8054: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:8063: \$? = $ac_status" >&5
+   echo "$as_me:8058: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -8111,11 +8106,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8114: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8109: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:8118: \$? = $ac_status" >&5
+   echo "$as_me:8113: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -10481,7 +10476,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10484 "configure"
+#line 10479 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10577,7 +10572,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10580 "configure"
+#line 10575 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13992,11 +13987,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:13995: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:13990: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:13999: \$? = $ac_status" >&5
+   echo "$as_me:13994: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -14091,11 +14086,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:14094: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:14089: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:14098: \$? = $ac_status" >&5
+   echo "$as_me:14093: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -14143,11 +14138,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:14146: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:14141: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:14150: \$? = $ac_status" >&5
+   echo "$as_me:14145: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
