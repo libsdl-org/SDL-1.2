@@ -1637,7 +1637,7 @@ int os2fslib_IconifyWindow(_THIS)
   ERRORID hmqerror;
 
   /* If there is no more window, nothing we can do */
-  if (_this->hidden->iPMThreadStatus!=1) return 0;
+  if (_this->hidden->iPMThreadStatus != 1) return 0;
 
   /* Cannot do anything in fullscreen mode */
   if (FSLib_QueryFSMode(_this->hidden->hwndClient))
@@ -1934,8 +1934,13 @@ static SDL_Surface *os2fslib_SetVideoMode(_THIS, SDL_Surface *current,
   RECTL rectl;
   SDL_Surface *pResult;
 
+  if (flags & SDL_OPENGL) {
+    SDL_SetError("OS2 driver not configured with OpenGL");
+    return NULL;
+  }
+
   /* If there is no more window, nothing we can do */
-  if (_this->hidden->iPMThreadStatus!=1) return NULL;
+  if (_this->hidden->iPMThreadStatus != 1) return NULL;
 
   dbgprintf("[os2fslib_SetVideoMode] : Request for %dx%d @ %dBPP, flags=0x%x\n", width, height, bpp, flags);
 
