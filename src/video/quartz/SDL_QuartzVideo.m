@@ -1078,6 +1078,18 @@ static SDL_Surface* QZ_SetVideoWindowed (_THIS, SDL_Surface *current, int width,
 
         window_view = [ [ NSView alloc ] initWithFrame:contentRect ];
         [ window_view setAutoresizingMask: NSViewWidthSizable | NSViewHeightSizable ];
+
+        NSRect contentRectOrig = NSMakeRect (0, 0, width, height);
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 101500
+        /* OpenGL in Catalina apparently wants to match pixels on Retina displays. Without this the OpenGL
+           display will only use 1/4th the display in the lower left corner. This seems to be an API issue
+           with XCode as binaries previously compiled on Mojave don't have this issue on Catalina. */
+        contentRectOrig = [ window_view convertRectFromBacking:contentRectOrig ];
+#endif
+
+        [ window_view setBoundsSize: contentRectOrig.size ];
+
         [ [ qz_window contentView ] addSubview:window_view ];
         [ gl_context setView: window_view ];
         [ window_view release ];
