@@ -1132,11 +1132,11 @@ static void GAPI_UpdateRectsColor(_THIS, int numrects, SDL_Rect *rects)
 			switch(bytesPerPixel)
 			{
 			case 1:
-				linesProcessed = updateLine8to8(this, srcPointer, (unsigned char *) destPointer, rects[i].w, rects[i].h, height);
+				linesProcessed = updateLine8to8(this, srcPointer, destPointer, rects[i].w, rects[i].h, height);
 				break;
 			case 2:
 #pragma warning(disable: 4133)
-				linesProcessed = updateLine16to16(this, (PIXEL*) srcPointer, destPointer, rects[i].w, rects[i].h, height);
+				linesProcessed = updateLine16to16(this, (PIXEL*) srcPointer, (PIXEL*) destPointer, rects[i].w, rects[i].h, height);
 				break;
 			}
 			height -= linesProcessed;
@@ -1175,7 +1175,7 @@ void GAPI_VideoQuit(_THIS)
 	/* Destroy the window and everything associated with it */
 	if ( SDL_Window ) 
 	{
-	    if ((g_hGapiLib != 0) && this && gapi && gapi->gxFunc.GXCloseDisplay && !gapi->useVga)
+		if ((g_hGapiLib != 0) && this && gapi && gapi->gxFunc.GXCloseDisplay && !gapi->useVga)
 			gapi->gxFunc.GXCloseDisplay(); 
 
 		if (this->screen->pixels != NULL)
@@ -1192,8 +1192,8 @@ void GAPI_VideoQuit(_THIS)
 		SDL_UnregisterApp();
 
 		SDL_Window = NULL;
-#if defined(_WIN32_WCE)
 
+#if defined(_WIN32_WCE)
 // Unload wince aygshell library to prevent leak
 		if( aygshell ) 
 		{
@@ -1202,18 +1202,16 @@ void GAPI_VideoQuit(_THIS)
 		}
 #endif
 
-	/* Free video mode lists */
-	for ( i=0; i<NUM_MODELISTS; ++i ) {
-		if ( gapi->SDL_modelist[i] != NULL ) {
-			for ( j=0; gapi->SDL_modelist[i][j]; ++j )
-				SDL_free(gapi->SDL_modelist[i][j]);
-			SDL_free(gapi->SDL_modelist[i]);
-			gapi->SDL_modelist[i] = NULL;
+		/* Free video mode lists */
+		for ( i=0; i<NUM_MODELISTS; ++i ) {
+			if ( gapi->SDL_modelist[i] != NULL ) {
+				for ( j=0; gapi->SDL_modelist[i][j]; ++j )
+					SDL_free(gapi->SDL_modelist[i][j]);
+				SDL_free(gapi->SDL_modelist[i]);
+				gapi->SDL_modelist[i] = NULL;
+			}
 		}
 	}
-
-	}
-
 }
 
 static void GAPI_Activate(_THIS, BOOL active, BOOL minimized)

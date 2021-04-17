@@ -338,6 +338,9 @@ int SDL_KeyboardInit(void)
 #ifdef _WIN32
 extern void WIN_ResetDeadKeys(void);
 #endif
+#ifdef _WIN32_WCE
+#define WIN_ResetDeadKeys() do {} while(0)
+#endif
 
 void SDL_KeyboardQuit(void)
 {

@@ -144,15 +144,15 @@ void WIN_SetWMIcon(_THIS, SDL_Surface *icon, Uint8 *mask)
 	/* Convert icon to a standard surface format.  This may not always
 	   be necessary, as Windows supports a variety of BMP formats, but
 	   it greatly simplifies our code.
-	*/ 
-    bounds.x = 0;
-    bounds.y = 0;
-    bounds.w = icon->w;
-    bounds.h = icon->h;
-    if ( SDL_LowerBlit(icon, &bounds, icon_256, &bounds) < 0 ) {
-	    SDL_stack_free(icon_win32);
+	*/
+	bounds.x = 0;
+	bounds.y = 0;
+	bounds.w = icon->w;
+	bounds.h = icon->h;
+	if ( SDL_LowerBlit(icon, &bounds, icon_256, &bounds) < 0 ) {
+		SDL_stack_free(icon_win32);
 		SDL_FreeSurface(icon_256);
-        return;
+		return;
 	}
 
 	/* Copy pixels upside-down to icon BMP, masked with the icon mask */
@@ -233,6 +233,9 @@ int WIN_IconifyWindow(_THIS)
 	return(1);
 }
 
+#if defined(_WIN32_WCE) && defined(__GNUC__)
+BOOL WINAPI AllKeys(BOOL bAllKeys); /* missing in mingw32ce headers */
+#endif
 SDL_GrabMode WIN_GrabInput(_THIS, SDL_GrabMode mode)
 {
 	if ( mode == SDL_GRAB_OFF ) {

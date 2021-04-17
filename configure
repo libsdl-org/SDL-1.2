@@ -22118,6 +22118,56 @@ case "$host" in
             have_timers=yes
         fi
         ;;
+    *-wince*|*mingw32ce*)
+        ARCH=win32
+        CheckDummyVideo
+        CheckDiskAudio
+        CheckDummyAudio
+        CheckWIN32
+        CheckNASM
+        SOURCES="$SOURCES $srcdir/src/video/gapi/*.c"
+        $as_echo "#define SDL_VIDEO_DRIVER_GAPI 1" >>confdefs.h
+
+        EXTRA_CFLAGS="$EXTRA_CFLAGS -D_WIN32_WCE=0x420"
+        if test x$enable_audio = xyes; then
+            $as_echo "#define SDL_AUDIO_DRIVER_WAVEOUT 1" >>confdefs.h
+
+            SOURCES="$SOURCES $srcdir/src/audio/windib/*.c"
+            have_audio=yes
+        fi
+        # Set up files for the thread library
+        if test x$enable_threads = xyes; then
+            $as_echo "#define SDL_THREAD_WIN32 1" >>confdefs.h
+
+            SOURCES="$SOURCES $srcdir/src/thread/win32/SDL_sysmutex.c"
+            SOURCES="$SOURCES $srcdir/src/thread/win32/SDL_syssem.c"
+            SOURCES="$SOURCES $srcdir/src/thread/win32/SDL_systhread.c"
+            SOURCES="$SOURCES $srcdir/src/thread/generic/SDL_syscond.c"
+            have_threads=yes
+        fi
+        # Set up files for the timer library
+        if test x$enable_timers = xyes; then
+            $as_echo "#define SDL_TIMER_WINCE 1" >>confdefs.h
+
+            SOURCES="$SOURCES $srcdir/src/timer/wince/*.c"
+            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lcoredll -lmmtimer"
+            have_timers=yes
+        fi
+        # Set up files for the shared object loading library
+        if test x$enable_loadso = xyes; then
+            $as_echo "#define SDL_LOADSO_WIN32 1" >>confdefs.h
+
+            SOURCES="$SOURCES $srcdir/src/loadso/win32/*.c"
+            have_loadso=yes
+        fi
+        # Set up the system libraries we need
+        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lcoredll -lcommctrl"
+        # The Win32 platform requires special setup
+        SDLMAIN_SOURCES="$srcdir/src/main/win32/*.c"
+        SDLMAIN_LDFLAGS="-static"
+        SDL_CFLAGS="$SDL_CFLAGS -Dmain=SDL_main -D_WIN32_WCE=0x420"
+        SDL_LIBS="-lSDLmain $SDL_LIBS"
+        ;;
     *-*-cygwin* | *-*-mingw*)
         ARCH=win32
         if test "$build" != "$host"; then # cross-compiling
@@ -22197,54 +22247,6 @@ case "$host" in
         SDLMAIN_LDFLAGS="-static"
         SDL_CFLAGS="$SDL_CFLAGS -Dmain=SDL_main"
         SDL_LIBS="-lmingw32 -lSDLmain $SDL_LIBS -mwindows"
-        ;;
-    *-wince*)
-        ARCH=win32
-        CheckDummyVideo
-        CheckDiskAudio
-        CheckDummyAudio
-        CheckWIN32
-        CheckNASM
-        SOURCES="$SOURCES $srcdir/src/video/gapi/*.c"
-        EXTRA_CFLAGS="$EXTRA_CFLAGS -D_WIN32_WCE=0x420"
-        if test x$enable_audio = xyes; then
-            $as_echo "#define SDL_AUDIO_DRIVER_WAVEOUT 1" >>confdefs.h
-
-            SOURCES="$SOURCES $srcdir/src/audio/windib/*.c"
-            have_audio=yes
-        fi
-        # Set up files for the thread library
-        if test x$enable_threads = xyes; then
-            $as_echo "#define SDL_THREAD_WIN32 1" >>confdefs.h
-
-            SOURCES="$SOURCES $srcdir/src/thread/win32/SDL_sysmutex.c"
-            SOURCES="$SOURCES $srcdir/src/thread/win32/SDL_syssem.c"
-            SOURCES="$SOURCES $srcdir/src/thread/win32/SDL_systhread.c"
-            SOURCES="$SOURCES $srcdir/src/thread/generic/SDL_syscond.c"
-            have_threads=yes
-        fi
-        # Set up files for the timer library
-        if test x$enable_timers = xyes; then
-            $as_echo "#define SDL_TIMER_WINCE 1" >>confdefs.h
-
-            SOURCES="$SOURCES $srcdir/src/timer/wince/*.c"
-            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lcoredll -lmmtimer"
-            have_timers=yes
-        fi
-        # Set up files for the shared object loading library
-        if test x$enable_loadso = xyes; then
-            $as_echo "#define SDL_LOADSO_WIN32 1" >>confdefs.h
-
-            SOURCES="$SOURCES $srcdir/src/loadso/win32/*.c"
-            have_loadso=yes
-        fi
-        # Set up the system libraries we need
-        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lcoredll -lcommctrl"
-        # The Win32 platform requires special setup
-        SDLMAIN_SOURCES="$srcdir/src/main/win32/*.c"
-        SDLMAIN_LDFLAGS="-static"
-        SDL_CFLAGS="$SDL_CFLAGS -Dmain=SDL_main -D_WIN32_WCE=0x420"
-        SDL_LIBS="-lSDLmain $SDL_LIBS"
         ;;
     *-*-beos* | *-*-haiku*)
         ARCH=beos

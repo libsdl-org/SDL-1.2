@@ -62,6 +62,7 @@
 #if _WIN32_WCE < 420
 #define NO_CHANGEDISPLAYSETTINGS
 #endif
+#undef WM_MOUSELEAVE
 #endif
 
 /* The window we use for everything... */
@@ -376,7 +377,7 @@ LRESULT CALLBACK WinMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			if ( SDL_VideoSurface && ! DINPUT() ) {
 				WORD xbuttonval = 0;
 				Uint8 button, state;
-                int x, y;
+				LONG x, y;
 
 				/* DJM:
 				   We want the SDL window to take focus so that
@@ -445,9 +446,9 @@ LRESULT CALLBACK WinMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 					x = (Sint16)LOWORD(lParam);
 					y = (Sint16)HIWORD(lParam);
 #ifdef _WIN32_WCE
-					if (SDL_VideoSurface)
-						GapiTransform(this->hidden->userOrientation,
-this->hidden->hiresFix, &x, &y);
+					extern void GapiTransform(GapiInfo*, LONG*, LONG*);
+					if (SDL_VideoSurface && this->hidden->gapiInfo)
+						GapiTransform(this->hidden->gapiInfo, &x, &y);
 #endif
 				}
 				posted = SDL_PrivateMouseButton(
@@ -532,12 +533,15 @@ this->hidden->hiresFix, &x, &y);
 			   return value is undefined if hwnd is a child window.
 			   Aparently it's too difficult for MS to check
 			   inside their function, so I have to do it here.
-          		 */
-         		style = GetWindowLong(hwnd, GWL_STYLE);
-         		AdjustWindowRect(
+			 */
+			style = GetWindowLong(hwnd, GWL_STYLE);
+			#ifdef _WIN32_WCE
+			#define GetMenu(x) NULL
+			#endif
+			AdjustWindowRect(
 				&size,
 				style,
-            			style & WS_CHILDWINDOW ? FALSE
+				style & WS_CHILDWINDOW ? FALSE
 						       : GetMenu(hwnd) != NULL);
 
 			width = size.right - size.left;

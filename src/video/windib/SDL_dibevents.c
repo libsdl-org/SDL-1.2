@@ -88,7 +88,7 @@ WPARAM rotateKey(WPARAM key,int direction)
 	return key;
 }
 
-static void GapiTransform(GapiInfo *gapiInfo, LONG *x, LONG *y)
+void GapiTransform(GapiInfo *gapiInfo, LONG *x, LONG *y)
 {
     if(gapiInfo->hiresFix)
     {
@@ -111,7 +111,7 @@ static void GapiTransform(GapiInfo *gapiInfo, LONG *x, LONG *y)
     // 0 0 0
     if((!gapiInfo->userOrientation && !gapiInfo->systemOrientation && !gapiInfo->gapiOrientation) ||
     // 0 0 3
-      (!gapiInfo->userOrientation && !gapiInfo->systemOrientation && gapiInfo->gapiOrientation))
+       (!gapiInfo->userOrientation && !gapiInfo->systemOrientation && gapiInfo->gapiOrientation))
     {
 	// without changes
 	// *x = *x;
@@ -309,6 +309,9 @@ LRESULT DIB_HandleMessage(_THIS, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 }
 
 #ifdef _WIN32_WCE
+#ifdef __GNUC__
+BOOL WINAPI GetMouseMovePoints(PPOINT pptBuf, UINT nBufPoints, UINT *pnPointsRetrieved); /* missing in mingw32ce headers */
+#endif
 static BOOL GetLastStylusPos(POINT* ptLast)
 {
     BOOL bResult = FALSE;
@@ -350,7 +353,7 @@ static void DIB_GenerateMouseMotionEvent(_THIS)
 	} else {
 		ScreenToClient(SDL_Window, &mouse);
 #ifdef SDL_VIDEO_DRIVER_GAPI
-       if (SDL_VideoSurface && this->hidden->gapiInfo)
+		if (SDL_VideoSurface && this->hidden->gapiInfo)
 			GapiTransform(this->hidden->gapiInfo, &mouse.x, &mouse.y);
 #endif
 		posted = SDL_PrivateMouseMotion(0, 0, (Sint16)mouse.x, (Sint16)mouse.y);
@@ -583,6 +586,7 @@ static int SDL_MapVirtualKey(int scancode, int vkey)
 	return mvke?mvke:vkey;
 }
 
+#ifndef _WIN32_WCE
 #ifndef MAPVK_VK_TO_VSC
 #define MAPVK_VK_TO_VSC 0
 #endif
@@ -613,6 +617,7 @@ WIN_ResetDeadKeys(void)
         }
     }
 }
+#endif
 
 static SDL_keysym *TranslateKey(WPARAM vkey, UINT scancode, SDL_keysym *keysym, int pressed)
 {
