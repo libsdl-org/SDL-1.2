@@ -31,7 +31,6 @@
 
 #if SDL_VIDEO_OPENGL
 #define DEFAULT_GL_DRIVER_PATH "OPENGL32.DLL"
-#endif
 
 /* If setting the HDC fails, we may need to recreate the window (MSDN) */
 static int WIN_GL_ResetWindow(_THIS)
@@ -75,8 +74,6 @@ static int WIN_GL_ResetWindow(_THIS)
 	return(status);
 }
 
-#if SDL_VIDEO_OPENGL
-
 static int ExtensionSupported(const char *extension, const char *extensions)
 {
 	const char *start;
@@ -91,9 +88,8 @@ static int ExtensionSupported(const char *extension, const char *extensions)
 		return 0;
 
 	/* It takes a bit of care to be fool-proof about parsing the
-	 *      OpenGL extensions string. Don't be fooled by sub-strings,
-	 *           etc. */
-	
+	 * OpenGL extensions string. Don't be fooled by sub-strings,
+	 * etc. */
 	start = extensions;
 	
 	for (;;)
