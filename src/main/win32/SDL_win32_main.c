@@ -256,6 +256,8 @@ static void redirect_output(void)
 		}
 #endif
 	}
+#else
+	(void) newfp;
 #endif /* _WIN32_WCE */
 
 	setvbuf(stdout, NULL, _IOLBF, BUFSIZ);	/* Line buffered */

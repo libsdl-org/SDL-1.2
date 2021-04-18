@@ -2213,6 +2213,14 @@ CheckDIRECTX()
     fi
 }
 
+dnl Setup for WinCE GAPI video
+CheckGAPI()
+{
+    AC_ARG_ENABLE(gapi,
+[AS_HELP_STRING([--enable-gapi], [use GAPI for WinCE video [default=no]])],
+                  , enable_gapi=no)
+}
+
 dnl Check for the dlfcn.h interface for dynamically loading objects
 CheckDLOPEN()
 {
@@ -2622,9 +2630,12 @@ case "$host" in
         CheckDiskAudio
         CheckDummyAudio
         CheckWIN32
+        CheckGAPI
         CheckNASM
         SOURCES="$SOURCES $srcdir/src/video/gapi/*.c"
-        AC_DEFINE(SDL_VIDEO_DRIVER_GAPI)
+        if test x$enable_gapi = xyes; then
+            AC_DEFINE(SDL_VIDEO_DRIVER_GAPI)
+        fi
         EXTRA_CFLAGS="$EXTRA_CFLAGS -D_WIN32_WCE=0x420"
         if test x$enable_audio = xyes; then
             AC_DEFINE(SDL_AUDIO_DRIVER_WAVEOUT)

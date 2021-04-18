@@ -445,7 +445,7 @@ LRESULT CALLBACK WinMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				} else {
 					x = (Sint16)LOWORD(lParam);
 					y = (Sint16)HIWORD(lParam);
-#ifdef _WIN32_WCE
+#ifdef SDL_VIDEO_DRIVER_GAPI
 					extern void GapiTransform(GapiInfo*, LONG*, LONG*);
 					if (SDL_VideoSurface && this->hidden->gapiInfo)
 						GapiTransform(this->hidden->gapiInfo, &x, &y);

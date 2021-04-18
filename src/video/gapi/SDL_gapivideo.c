@@ -382,7 +382,7 @@ VideoBootStrap GAPI_bootstrap = {
 
 static void FillStructs(_THIS, BOOL useVga)
 {
-#ifdef _ARM_
+#if defined(_ARM_) || defined(__arm__)
 	WCHAR oemstr[100];
 #endif
 	/* fill a device properties */
@@ -395,7 +395,7 @@ static void FillStructs(_THIS, BOOL useVga)
 		gapi->useVga = 0;
 		gapi->useGXOpenDisplay = 1;
 
-#ifdef _ARM_
+#if defined(_ARM_) || defined(__arm__)
 		/* check some devices and extract addition info */
 		SystemParametersInfo( SPI_GETOEMINFO, sizeof( oemstr ), oemstr, 0 );
 
@@ -409,7 +409,7 @@ static void FillStructs(_THIS, BOOL useVga)
 		}
 #if (EMULATE_AXIM_X30 == 0)
 		// buggy Dell Axim X30
-		if( _tcsncmp(oemstr, L"Dell Axim X30", 13) == 0 )
+		if( wcsncmp(oemstr, L"Dell Axim X30", 13) == 0 )
 #endif
 		{
 			GXDeviceInfo gxInfo = {0};
@@ -727,7 +727,11 @@ SDL_Surface *GAPI_SetVideoMode(_THIS, SDL_Surface *current,
 			gapi->dstLineStep = gapi->gxProperties.cbxPitch;
 			gapi->dstPixelStep = -gapi->gxProperties.cbyPitch;
 			break;
+		default:/* silence gcc -Wswitch */
+			break;
 		}
+	default:	/* silence gcc -Wswitch */
+		break;
 	}
 
 	video->w = gapi->w = width;
@@ -1135,7 +1139,6 @@ static void GAPI_UpdateRectsColor(_THIS, int numrects, SDL_Rect *rects)
 				linesProcessed = updateLine8to8(this, srcPointer, destPointer, rects[i].w, rects[i].h, height);
 				break;
 			case 2:
-#pragma warning(disable: 4133)
 				linesProcessed = updateLine16to16(this, (PIXEL*) srcPointer, (PIXEL*) destPointer, rects[i].w, rects[i].h, height);
 				break;
 			}
@@ -1235,7 +1238,7 @@ static void GAPI_WinPAINT(_THIS, HDC hdc)
 
 	int bpp = 16; // we always use either 8 or 16 bpp internally
 	HGDIOBJ prevObject;
-	unsigned short *bitmapData;
+	void* bitmapData; /* unsigned short* */
 	HBITMAP hb;
 	HDC srcDC;
 
@@ -1266,7 +1269,7 @@ static void GAPI_WinPAINT(_THIS, HDC hdc)
 		pHeader->biCompression = BI_BITFIELDS;
 	}
     // Create the DIB
-    hb =  CreateDIBSection( 0, pBMI, DIB_RGB_COLORS, (void**)&bitmapData, 0, 0 );
+    hb =  CreateDIBSection( 0, pBMI, DIB_RGB_COLORS, &bitmapData, 0, 0 );
 
 	// copy data
 	// FIXME: prevent misalignment, but I've never seen non aligned width of screen

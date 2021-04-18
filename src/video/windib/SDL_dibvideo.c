@@ -67,6 +67,7 @@
   #if _WIN32_WCE < 420
     #define NO_CHANGEDISPLAYSETTINGS
   #else
+    #undef ChangeDisplaySettings
     #define ChangeDisplaySettings(lpDevMode, dwFlags) ChangeDisplaySettingsEx(NULL, (lpDevMode), 0, (dwFlags), 0)
   #endif
 #endif
@@ -966,6 +967,7 @@ static void DIB_NormalUpdate(_THIS, int numrects, SDL_Rect *rects)
 	ReleaseDC(SDL_Window, hdc);
 }
 
+#if defined(SYSPAL_NOSTATIC) && !defined(_WIN32_WCE)
 static int FindPaletteIndex(LOGPALETTE *pal, BYTE r, BYTE g, BYTE b)
 {
 	PALETTEENTRY *entry;
@@ -1001,6 +1003,7 @@ static BOOL CheckPaletteEntry(LOGPALETTE *pal, int index, BYTE r, BYTE g, BYTE b
 
 	return moved;
 }
+#endif
 
 int DIB_SetColors(_THIS, int firstcolor, int ncolors, SDL_Color *colors)
 {
