@@ -1,28 +1,25 @@
 /*
-    SDL - Simple DirectMedia Layer
-    Copyright (C) 1997-2012 Sam Lantinga
+  Simple DirectMedia Layer
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
-    This library is free software; you can redistribute it and/or
-    modify it under the terms of the GNU Lesser General Public
-    License as published by the Free Software Foundation; either
-    version 2.1 of the License, or (at your option) any later version.
+  This software is provided 'as-is', without any express or implied
+  warranty.  In no event will the authors be held liable for any damages
+  arising from the use of this software.
 
-    This library is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Lesser General Public License for more details.
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely, subject to the following restrictions:
 
-    You should have received a copy of the GNU Lesser General Public
-    License along with this library; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-
-    Sam Lantinga
-    slouken@libsdl.org
+  1. The origin of this software must not be misrepresented; you must not
+     claim that you wrote the original software. If you use this software
+     in a product, an acknowledgment in the product documentation would be
+     appreciated but is not required.
+  2. Altered source versions must be plainly marked as such, and must not be
+     misrepresented as being the original software.
+  3. This notice may not be removed or altered from any source distribution.
 */
 
-/** @file SDL_opengl.h
- *  This is a simple file to encapsulate the OpenGL API headers
- */
+/* This is a simple file to encapsulate the OpenGL API headers */
 
 #include "SDL_config.h"
 
@@ -31,34 +28,33 @@
 #define WIN32_LEAN_AND_MEAN
 #endif
 #ifndef NOMINMAX
-#define NOMINMAX	/* Don't defined min() and max() */
+#define NOMINMAX        /* Don't define min() and max() */
 #endif
 #include <windows.h>
 #endif
 #ifndef NO_SDL_GLEXT
-#define __glext_h_  /* Don't let gl.h include glext.h */
-#define __gl_glext_h_  /* Don't let gl.h include glext.h */
+#define __glext_h_      /* Don't let gl.h include glext.h */
+#define __gl_glext_h_   /* Don't let gl.h include glext.h */
 #endif
 #if defined(__MACOSX__)
-#include <OpenGL/gl.h>	/* Header File For The OpenGL Library */
-#include <OpenGL/glu.h>	/* Header File For The GLU Library */
+#include <OpenGL/gl.h>  /* Header File For The OpenGL Library */
+#include <OpenGL/glu.h> /* Header File For The GLU Library */
 #elif defined(__MACOS__)
-#include <gl.h>		/* Header File For The OpenGL Library */
-#include <glu.h>	/* Header File For The GLU Library */
+#include <gl.h>         /* Header File For The OpenGL Library */
+#include <glu.h>        /* Header File For The GLU Library */
 #else
-#include <GL/gl.h>	/* Header File For The OpenGL Library */
-#include <GL/glu.h>	/* Header File For The GLU Library */
+#include <GL/gl.h>      /* Header File For The OpenGL Library */
+#include <GL/glu.h>     /* Header File For The GLU Library */
 #endif
 #ifndef NO_SDL_GLEXT
 #undef __glext_h_
 #undef __gl_glext_h_
 #endif
 
-/** @name glext.h
+/** glext.h
  *  This is included here because glext.h is not available on some systems.
  *  If you don't want this version included, simply define "NO_SDL_GLEXT"
  */
-/*@{*/
 #ifndef NO_SDL_GLEXT
 #if !(defined(__glext_h_) || defined(__gl_glext_h_)) && !defined(GL_GLEXT_LEGACY)
 #define __glext_h_
@@ -109,9 +105,9 @@ extern "C" {
 /*************************************************************/
 
 /* Header file version number, required by OpenGL ABI for Linux */
-/* glext.h last updated 2007/02/12 */
+/* glext.h last updated 2008/03/24 */
 /* Current version at http://www.opengl.org/registry/ */
-#define GL_GLEXT_VERSION 39
+#define GL_GLEXT_VERSION 40
 
 #ifndef GL_VERSION_1_2
 #define GL_UNSIGNED_BYTE_3_3_2            0x8032
@@ -3154,8 +3150,8 @@ extern "C" {
 #ifndef GL_EXT_framebuffer_blit
 #define GL_READ_FRAMEBUFFER_EXT           0x8CA8
 #define GL_DRAW_FRAMEBUFFER_EXT           0x8CA9
-#define GL_READ_FRAMEBUFFER_BINDING_EXT   0x8CAA
 #define GL_DRAW_FRAMEBUFFER_BINDING_EXT   GL_FRAMEBUFFER_BINDING_EXT
+#define GL_READ_FRAMEBUFFER_BINDING_EXT   0x8CAA
 #endif
 
 #ifndef GL_EXT_framebuffer_multisample
@@ -3442,6 +3438,9 @@ extern "C" {
 #define GL_RGBA_INTEGER_MODE_EXT          0x8D9E
 #endif
 
+#ifndef GL_GREMEDY_frame_terminator
+#endif
+
 
 /*************************************************************/
 
@@ -3493,16 +3492,16 @@ typedef unsigned short GLhalfNV;
 #endif
 
 #ifndef GLEXT_64_TYPES_DEFINED
-/* This code block is duplicated in glext.h, so must be protected */
+/* This code block is duplicated in glxext.h, so must be protected */
 #define GLEXT_64_TYPES_DEFINED
 /* Define int32_t, int64_t, and uint64_t types for UST/MSC */
 /* (as used in the GL_EXT_timer_query extension). */
 #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
 #include <inttypes.h>
-#elif defined(__sun__)
+#elif defined(__sun__) || defined(__digital__)
 #include <inttypes.h>
 #if defined(__STDC__)
-#if defined(__arch64__)
+#if defined(__arch64__) || defined(_LP64)
 typedef long int int64_t;
 typedef unsigned long int uint64_t;
 #else
@@ -3510,7 +3509,7 @@ typedef long long int int64_t;
 typedef unsigned long long int uint64_t;
 #endif /* __arch64__ */
 #endif /* __STDC__ */
-#elif defined( __VMS )
+#elif defined( __VMS ) || defined(__sgi)
 #include <inttypes.h>
 #elif defined(__SCO__) || defined(__USLC__)
 #include <stdint.h>
@@ -7332,6 +7331,14 @@ typedef void (APIENTRYP PFNGLCLEARCOLORIIEXTPROC) (GLint red, GLint green, GLint
 typedef void (APIENTRYP PFNGLCLEARCOLORIUIEXTPROC) (GLuint red, GLuint green, GLuint blue, GLuint alpha);
 #endif
 
+#ifndef GL_GREMEDY_frame_terminator
+#define GL_GREMEDY_frame_terminator 1
+#ifdef GL_GLEXT_PROTOTYPES
+GLAPI void APIENTRY glFrameTerminatorGREMEDY (void);
+#endif /* GL_GLEXT_PROTOTYPES */
+typedef void (APIENTRYP PFNGLFRAMETERMINATORGREMEDYPROC) (void);
+#endif
+
 
 #ifdef __cplusplus
 }
@@ -7339,4 +7346,3 @@ typedef void (APIENTRYP PFNGLCLEARCOLORIUIEXTPROC) (GLuint red, GLuint green, GL
 
 #endif /* GL_GLEXT_LEGACY */
 #endif /* NO_SDL_GLEXT */
-/*@}*/
