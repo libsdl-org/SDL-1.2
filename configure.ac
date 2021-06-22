@@ -2734,7 +2734,7 @@ case "$host" in
             have_loadso=yes
         fi
         # Set up the system libraries we need
-        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -luser32 -lgdi32 -lwinmm"
+        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -luser32 -lgdi32 -lwinmm -Wc,-static-libgcc"
         if test x$have_directx = xyes; then
             EXTRA_LDFLAGS="$EXTRA_LDFLAGS -ldxguid"
         fi
