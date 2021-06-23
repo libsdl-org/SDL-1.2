@@ -17016,7 +17016,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_dmedia" >&5
 $as_echo "$have_dmedia" >&6; }
-        # Set up files for the audio library
+
         if test x$have_dmedia = xyes; then
             $as_echo "#define SDL_AUDIO_DRIVER_DMEDIA 1" >>confdefs.h
 
@@ -17068,7 +17068,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         CFLAGS="$save_CFLAGS"
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_mme" >&5
 $as_echo "$have_mme" >&6; }
-        # Set up files for the audio library
+
         if test x$have_mme = xyes; then
             $as_echo "#define SDL_AUDIO_DRIVER_MMEAUDIO 1" >>confdefs.h
 
@@ -22253,7 +22253,7 @@ case "$host" in
             have_loadso=yes
         fi
         # Set up the system libraries we need
-        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -luser32 -lgdi32 -lwinmm -Wc,-static-libgcc"
+        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -luser32 -lgdi32 -lwinmm -static-libgcc"
         if test x$have_directx = xyes; then
             EXTRA_LDFLAGS="$EXTRA_LDFLAGS -ldxguid"
         fi
