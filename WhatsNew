@@ -21,7 +21,7 @@ Changes include:
 - Video, blit: fix RGBA<->RGBA blit broken with the optimization from
   bug 11 (bug 2976.)
 - Video, blit, Linux: ARM assembly to address performance of blit and
-  fill routines, thanks to Ben Avison (disabled by default) (bug 4365.)
+  fill routines - thanks to Ben Avison. (bug 4365.)
 - Video: fix integer overflow in SDL_CalculatePitch (CVE-2019-7637,
   bug 4497.)
 - Video, Linux, fbcon: fix double buffering with non-fullscreen

@@ -884,8 +884,8 @@ dnl Check for ARM instruction support using gas syntax
 CheckARM()
 {
     AC_ARG_ENABLE(arm-simd,
-[AS_HELP_STRING([--enable-arm-simd], [use SIMD assembly blitters on ARM [default=no]])],
-                  enable_arm_simd=$enableval, enable_arm_simd=no)
+[AS_HELP_STRING([--enable-arm-simd], [use SIMD assembly blitters on ARM [default=yes]])],
+                  enable_arm_simd=$enableval, enable_arm_simd=yes)
     if test x$enable_video = xyes -a x$enable_assembly = xyes -a x$enable_arm_simd = xyes; then
         save_CFLAGS="$CFLAGS"
         have_arm_simd=no
@@ -919,8 +919,8 @@ dnl Check for ARM NEON instruction support using gas syntax
 CheckNEON()
 {
     AC_ARG_ENABLE(arm-neon,
-[AS_HELP_STRING([--enable-arm-neon], [use NEON assembly blitters on ARM [default=no]])],
-                  enable_arm_neon=$enableval, enable_arm_neon=no)
+[AS_HELP_STRING([--enable-arm-neon], [use NEON assembly blitters on ARM [default=yes]])],
+                  enable_arm_neon=$enableval, enable_arm_neon=yes)
     if test x$enable_video = xyes -a x$enable_assembly = xyes -a x$enable_arm_neon = xyes; then
         save_CFLAGS="$CFLAGS"
         have_arm_neon=no
