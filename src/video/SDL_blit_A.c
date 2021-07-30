@@ -676,7 +676,7 @@ static void BlitRGBtoRGBPixelAlphaMMX(SDL_BlitInfo *info)
         (vector unsigned short) { a,b,c,d,e,f,g,h }
 #endif
 
-#define UNALIGNED_PTR(x) (((size_t) x) & 0x0000000F)
+#define UNALIGNED_PTR(x)    (((uintptr_t) x) & 0x0000000F)
 #define VECPRINT(msg, v) do { \
     vector unsigned int tmpvec = (vector unsigned int)(v); \
     unsigned int *vp = (unsigned int *)&tmpvec; \

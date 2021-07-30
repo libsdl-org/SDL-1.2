@@ -123,7 +123,7 @@ int SDL_SYS_CreateThread(SDL_Thread *thread, void *args)
 	if (pfnBeginThread) {
 		unsigned threadid = 0;
 		thread->handle = (SYS_ThreadHandle)
-				((size_t) pfnBeginThread(NULL, 0, RunThreadViaBeginThreadEx,
+				((uintptr_t) pfnBeginThread(NULL, 0, RunThreadViaBeginThreadEx,
 										 pThreadParms, 0, &threadid));
 	} else {
 		DWORD threadid = 0;

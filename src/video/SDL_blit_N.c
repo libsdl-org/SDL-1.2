@@ -86,7 +86,7 @@ static size_t GetL3CacheSize( void )
         (vector unsigned short) { a,b,c,d,e,f,g,h }
 #endif
 
-#define UNALIGNED_PTR(x) (((size_t) x) & 0x0000000F)
+#define UNALIGNED_PTR(x)    (((uintptr_t) x) & 0x0000000F)
 #define VSWIZZLE32(a,b,c,d) (vector unsigned char) \
                                ( 0x00+a, 0x00+b, 0x00+c, 0x00+d, \
                                  0x04+a, 0x04+b, 0x04+c, 0x04+d, \

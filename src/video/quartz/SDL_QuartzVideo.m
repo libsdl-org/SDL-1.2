@@ -315,11 +315,11 @@ static int QZ_VideoInit (_THIS, SDL_PixelFormat *video_format)
     env = getenv("SDL_VIDEO_FULLSCREEN_DISPLAY");
     if ( env ) {
         int monitor = SDL_atoi(env);
-    	CGDirectDisplayID activeDspys [3];
-    	CGDisplayCount dspyCnt;
-    	CGGetActiveDisplayList (3, activeDspys, &dspyCnt);
+        CGDirectDisplayID activeDspys [3];
+        CGDisplayCount dspyCnt;
+        CGGetActiveDisplayList (3, activeDspys, &dspyCnt);
         if ( monitor >= 0 && monitor < dspyCnt ) {
-    	    display_id = activeDspys[monitor];
+            display_id = activeDspys[monitor];
         }
     }
 #endif
@@ -384,7 +384,7 @@ static int QZ_VideoInit (_THIS, SDL_PixelFormat *video_format)
 
     /* register for sleep notifications so wake from sleep generates SDL_VIDEOEXPOSE */
     QZ_RegisterForSleepNotifications (this);
-    
+
     /* Fill in some window manager capabilities */
     this->info.wm_available = 1;
 
@@ -552,7 +552,7 @@ static void QZ_UnsetVideoMode (_THIS, BOOL to_desktop, BOOL save_gl)
         CGContextRelease (cg_context);
         cg_context = nil;
     }
-    
+
     /* Release fullscreen resources */
     if ( mode_flags & SDL_FULLSCREEN ) {
 
@@ -699,7 +699,7 @@ static SDL_Surface* QZ_SetVideoFullScreen (_THIS, SDL_Surface *current, int widt
     if ( CGAcquireDisplayFadeReservation (5, &fade_token) == kCGErrorSuccess ) {
         CGDisplayFade (fade_token, 0.3, kCGDisplayBlendNormal, kCGDisplayBlendSolidColor, 0.0, 0.0, 0.0, TRUE);
     }
-    
+
     /* Destroy any previous mode */
     if (video_set == SDL_TRUE)
         QZ_UnsetVideoMode (this, FALSE, save_gl);
@@ -726,7 +726,7 @@ static SDL_Surface* QZ_SetVideoFullScreen (_THIS, SDL_Surface *current, int widt
         error = CGDisplayCapture (display_id);
     else
         error = CGCaptureAllDisplays ();
-        
+
     if ( CGDisplayNoErr != error ) {
         SDL_SetError ("Failed capturing display");
         goto ERR_NO_CAPTURE;
@@ -753,19 +753,18 @@ static SDL_Surface* QZ_SetVideoFullScreen (_THIS, SDL_Surface *current, int widt
 
         /* Setup double-buffer emulation */
         if ( flags & SDL_DOUBLEBUF ) {
-        
             /*
             Setup a software backing store for reasonable results when
             double buffering is requested (since a single-buffered hardware
             surface looks hideous).
-            
+
             The actual screen blit occurs in a separate thread to allow 
             other blitting while waiting on the VBL (and hence results in higher framerates).
             */
             this->LockHWSurface = NULL;
             this->UnlockHWSurface = NULL;
             this->UpdateRects = NULL;
-        
+
             current->flags |= (SDL_HWSURFACE|SDL_DOUBLEBUF);
             this->UpdateRects = QZ_DoubleBufferUpdate;
             this->LockHWSurface = QZ_LockDoubleBuffer;
@@ -777,10 +776,10 @@ static SDL_Surface* QZ_SetVideoFullScreen (_THIS, SDL_Surface *current, int widt
                 SDL_OutOfMemory ();
                 goto ERR_DOUBLEBUF;
             }
-        
+
             sw_buffers[0] = current->pixels;
             sw_buffers[1] = (Uint8*)current->pixels + current->pitch * current->h;
-        
+
             quit_thread = NO;
             sem1 = SDL_CreateSemaphore (0);
             sem2 = SDL_CreateSemaphore (1);
@@ -852,7 +851,7 @@ static SDL_Surface* QZ_SetVideoFullScreen (_THIS, SDL_Surface *current, int widt
             [ qz_window setLevel:NSNormalWindowLevel ];
             ctx = QZ_GetCGLContextObj (gl_context);
             err = CGLSetFullScreen (ctx);
-    
+
             if (err) {
                 SDL_SetError ("Error setting OpenGL fullscreen: %s", CGLErrorString(err));
                 goto ERR_NO_GL;
@@ -882,12 +881,12 @@ static SDL_Surface* QZ_SetVideoFullScreen (_THIS, SDL_Surface *current, int widt
         cgColorspace = CGColorSpaceCreateDeviceRGB();
         current->pitch = 4 * current->w;
         current->pixels = SDL_malloc (current->h * current->pitch);
-        
+
         cg_context = CGBitmapContextCreate (current->pixels, current->w, current->h,
                         8, current->pitch, cgColorspace,
                         kCGImageAlphaNoneSkipFirst);
         CGColorSpaceRelease (cgColorspace);
-        
+
         current->flags |= SDL_SWSURFACE;
         current->flags |= SDL_ASYNCBLIT;
         current->hwdata = (void *) cg_context;
@@ -971,7 +970,7 @@ static SDL_Surface* QZ_SetVideoWindowed (_THIS, SDL_Surface *current, int width,
     current->flags = 0;
     current->w = width;
     current->h = height;
-    
+
     contentRect = NSMakeRect (0, 0, width, height);
 
     /*
@@ -996,7 +995,7 @@ static SDL_Surface* QZ_SetVideoWindowed (_THIS, SDL_Surface *current, int width,
             QZ_UnsetVideoMode (this, TRUE, save_gl);
         }
     }
-    
+
     /* Sorry, QuickDraw was ripped out. */
     if (getenv("SDL_NSWindowPointer") || getenv("SDL_NSQuickDrawViewPointer")) {
         SDL_SetError ("Embedded QuickDraw windows are no longer supported");
@@ -1009,7 +1008,6 @@ static SDL_Surface* QZ_SetVideoWindowed (_THIS, SDL_Surface *current, int width,
 
     /* Check if we should recreate the window */
     if (qz_window == nil) {
-    
         /* Set the window style based on input flags */
         if ( flags & SDL_NOFRAME ) {
             style = NSBorderlessWindowMask;
@@ -1029,7 +1027,7 @@ static SDL_Surface* QZ_SetVideoWindowed (_THIS, SDL_Surface *current, int width,
                 styleMask:style 
                     backing:NSBackingStoreBuffered
                         defer:NO ];
-                          
+
         if (qz_window == nil) {
             SDL_SetError ("Could not create the Cocoa window");
             if (fade_token != kCGDisplayFadeReservationInvalidToken) {
@@ -1103,23 +1101,22 @@ static SDL_Surface* QZ_SetVideoWindowed (_THIS, SDL_Surface *current, int width,
 
         /* Only recreate the view if it doesn't already exist */
         if (window_view == nil) {
-        
             window_view = [ [ NSView alloc ] initWithFrame:contentRect ];
             [ window_view setAutoresizingMask: NSViewWidthSizable | NSViewHeightSizable ];
             [ [ qz_window contentView ] addSubview:window_view ];
             [ window_view release ];
             [ qz_window makeKeyAndOrderFront:nil ];
         }
-        
+
         cgColorspace = CGColorSpaceCreateDeviceRGB();
         current->pitch = 4 * current->w;
         current->pixels = SDL_malloc (current->h * current->pitch);
-        
+
         cg_context = CGBitmapContextCreate (current->pixels, current->w, current->h,
                         8, current->pitch, cgColorspace,
                         kCGImageAlphaNoneSkipFirst);
         CGColorSpaceRelease (cgColorspace);
-        
+
         current->flags |= SDL_SWSURFACE;
         current->flags |= SDL_ASYNCBLIT;
         current->hwdata = (void *) cg_context;
@@ -1313,9 +1310,9 @@ static AbsoluteTime QZ_SecondsToAbsolute ( double seconds )
         UInt64 i;
         Nanoseconds ns;
     } temp;
-        
+
     temp.i = seconds * 1000000000.0;
-    
+
     return NanosecondsToAbsolute ( temp.ns );
 }
 
@@ -1323,7 +1320,7 @@ static int QZ_ThreadFlip (_THIS)
 {
     Uint8 *src, *dst;
     int skip, len, h;
-    
+
     /*
         Give this thread the highest scheduling priority possible,
         in the hopes that it will immediately run after the VBL delay
@@ -1332,114 +1329,109 @@ static int QZ_ThreadFlip (_THIS)
         pthread_t current_thread;
         int policy;
         struct sched_param param;
-        
+
         current_thread = pthread_self ();
         pthread_getschedparam (current_thread, &policy, &param);
         policy = SCHED_RR;
         param.sched_priority = sched_get_priority_max (policy);
         pthread_setschedparam (current_thread, policy, &param);
     }
-    
+
     while (1) {
-    
         SDL_SemWait (sem1);
         if (quit_thread)
             return 0;
-                
+
         /*
          * We have to add SDL_VideoSurface->offset here, since we might be a
          *  smaller surface in the center of the framebuffer (you asked for
          *  a fullscreen resolution smaller than the hardware could supply
          *  so SDL is centering it in a bigger resolution)...
          */
-        dst = ((Uint8 *)((size_t)CGDisplayBaseAddress (display_id))) + SDL_VideoSurface->offset;
+        dst = (unsigned char *)CGDisplayBaseAddress(display_id) + SDL_VideoSurface->offset;
         src = current_buffer + SDL_VideoSurface->offset;
         len = SDL_VideoSurface->w * SDL_VideoSurface->format->BytesPerPixel;
         h = SDL_VideoSurface->h;
         skip = SDL_VideoSurface->pitch;
-    
+
         /* Wait for the VBL to occur (estimated since we don't have a hardware interrupt) */
         {
-            
             /* The VBL delay is based on Ian Ollmann's RezLib <iano@cco.caltech.edu> */
             double refreshRate;
             double linesPerSecond;
             double target;
             double position;
             double adjustment;
-            AbsoluteTime nextTime;        
+            AbsoluteTime nextTime;
             CFNumberRef refreshRateCFNumber;
-            
+
             refreshRateCFNumber = CFDictionaryGetValue (mode, kCGDisplayRefreshRate);
             if ( NULL == refreshRateCFNumber ) {
                 SDL_SetError ("Mode has no refresh rate");
                 goto ERROR;
             }
-            
+
             if ( 0 == CFNumberGetValue (refreshRateCFNumber, kCFNumberDoubleType, &refreshRate) ) {
                 SDL_SetError ("Error getting refresh rate");
                 goto ERROR;
             }
-            
+
             if ( 0 == refreshRate ) {
-               
                SDL_SetError ("Display has no refresh rate, using 60hz");
-                
+
                 /* ok, for LCD's we'll emulate a 60hz refresh, which may or may not look right */
                 refreshRate = 60.0;
             }
-            
+
             linesPerSecond = refreshRate * h;
             target = h;
-        
+
             /* Figure out the first delay so we start off about right */
             position = CGDisplayBeamPosition (display_id);
             if (position > target)
                 position = 0;
-            
+
             adjustment = (target - position) / linesPerSecond; 
-            
+
             nextTime = AddAbsoluteToAbsolute (UpTime (), QZ_SecondsToAbsolute (adjustment));
-        
+
             MPDelayUntil (&nextTime);
         }
-        
-        
+
         /* On error, skip VBL delay */
         ERROR:
-        
+
         /* TODO: use CGContextDrawImage here too!  Create two CGContextRefs the same way we
            create two buffers, replace current_buffer with current_context and set it
            appropriately in QZ_FlipDoubleBuffer.  */
         while ( h-- ) {
-        
             SDL_memcpy (dst, src, len);
             src += skip;
             dst += skip;
         }
-        
+
         /* signal flip completion */
         SDL_SemPost (sem2);
     }
-    
+
     return 0;
 }
-        
+
 static int QZ_FlipDoubleBuffer (_THIS, SDL_Surface *surface)
 {
     /* wait for previous flip to complete */
     SDL_SemWait (sem2);
-    
+
     current_buffer = surface->pixels;
-        
+
     if (surface->pixels == sw_buffers[0])
         surface->pixels = sw_buffers[1];
     else
         surface->pixels = sw_buffers[0];
-    
+
     /* signal worker thread to do the flip */
     SDL_SemPost (sem1);
-    
+
     return 0;
 }
 
@@ -1499,29 +1491,27 @@ static void QZ_DrawResizeIcon (_THIS)
 {
     /* Check if we should draw the resize icon */
     if (SDL_VideoSurface->flags & SDL_RESIZABLE) {
-    
         SDL_Rect icon_rect;
-        
+
         /* Create the icon image */
         if (resize_icon == NULL) {
-        
             SDL_RWops *rw;
             SDL_Surface *tmp;
-            
+
             rw = SDL_RWFromConstMem (QZ_ResizeIcon, sizeof(QZ_ResizeIcon));
             tmp = SDL_LoadBMP_RW (rw, SDL_TRUE);
-                                                            
+
             resize_icon = SDL_ConvertSurface (tmp, SDL_VideoSurface->format, SDL_SRCCOLORKEY);
             SDL_SetColorKey (resize_icon, SDL_SRCCOLORKEY, 0xFFFFFF);
-            
+
             SDL_FreeSurface (tmp);
         }
-            
+
         icon_rect.x = SDL_VideoSurface->w - 13;
         icon_rect.y = SDL_VideoSurface->h - 13;
         icon_rect.w = 13;
         icon_rect.h = 13;
-            
+
         SDL_BlitSurface (resize_icon, NULL, SDL_VideoSurface, &icon_rect);
     }
 }
@@ -1540,10 +1530,8 @@ void QZ_UpdateRectsOnDrawRect (/*TODO: NSRect from drawRect*/)
         /* TODO? */
     }
     else if ( [ qz_window isMiniaturized ] ) {
-    
         /* Do nothing if miniaturized */
     }
-    
     else {
         NSGraphicsContext *ctx = [NSGraphicsContext currentContext];
         /* NTS: nsgfx_context == NULL will occur on Mojave, may be non-NULL on older versions of OS X */
@@ -1556,7 +1544,7 @@ void QZ_UpdateRectsOnDrawRect (/*TODO: NSRect from drawRect*/)
         CGContextFlush (cg_context);
         CGImageRef image = CGBitmapContextCreateImage (cg_context);
         CGRect rectangle = CGRectMake (0,0,[window_view frame].size.width,[window_view frame].size.height);
-        
+
         CGContextDrawImage (cgc, rectangle, image);
         CGImageRelease(image);
         CGContextFlush (cgc);
@@ -1591,7 +1579,7 @@ static void QZ_VideoQuit (_THIS)
     /* Ensure the cursor will be visible and working when we quit */
     CGDisplayShowCursor (display_id);
     CGAssociateMouseAndMouseCursorPosition (1);
-    
+
     if (mode_flags & SDL_FULLSCREEN) {
         /* Fade to black to hide resolution-switching flicker (and garbage
            that is displayed by a destroyed OpenGL context, if applicable) */
