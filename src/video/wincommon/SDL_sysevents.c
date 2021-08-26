@@ -446,9 +446,10 @@ LRESULT CALLBACK WinMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 					x = (Sint16)LOWORD(lParam);
 					y = (Sint16)HIWORD(lParam);
 #ifdef SDL_VIDEO_DRIVER_GAPI
-					extern void GapiTransform(GapiInfo*, LONG*, LONG*);
-					if (SDL_VideoSurface && this->hidden->gapiInfo)
+					if (SDL_VideoSurface && this->hidden->gapiInfo) {
+						extern void GapiTransform(GapiInfo*, LONG*, LONG*);
 						GapiTransform(this->hidden->gapiInfo, &x, &y);
+					}
 #endif
 				}
 				posted = SDL_PrivateMouseButton(
@@ -561,6 +562,7 @@ LRESULT CALLBACK WinMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		return(0);
 #endif /* WM_GETMINMAXINFO */
 
+#ifdef WM_WINDOWPOSCHANGING
 		case WM_WINDOWPOSCHANGING: {
 			WINDOWPOS *windowpos = (WINDOWPOS*)lParam;
 
@@ -576,6 +578,7 @@ LRESULT CALLBACK WinMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			}
 		}
 		return(0);
+#endif /* WM_WINDOWPOSCHANGING */
 
 		case WM_WINDOWPOSCHANGED: {
 			SDL_VideoDevice *this = current_video;
