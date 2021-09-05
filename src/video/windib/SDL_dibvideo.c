@@ -359,7 +359,8 @@ int DIB_VideoInit(_THIS, SDL_PixelFormat *vformat)
 	settings.dmDriverExtra = 0;
 #ifdef _WIN32_WCE
 	settings.dmFields = DM_DISPLAYQUERYORIENTATION;
-	this->hidden->supportRotation = ChangeDisplaySettingsEx(NULL, &settings, NULL, CDS_TEST, NULL) == DISP_CHANGE_SUCCESSFUL;
+	if (ChangeDisplaySettingsEx(NULL, &settings, NULL, CDS_TEST, NULL) == DISP_CHANGE_SUCCESSFUL)
+		this->hidden->supportRotation = (settings.dmDisplayOrientation != DMDO_0);
 #endif
 	/* Query for the desktop resolution */
 	SDL_desktop_mode.dmSize = sizeof(SDL_desktop_mode);
