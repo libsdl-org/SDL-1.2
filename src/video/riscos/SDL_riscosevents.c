@@ -84,7 +84,7 @@ static SDL_keysym *TranslateKey(int intkey, SDL_keysym *keysym, int pressed);
 static void RISCOS_PollMouse(_THIS);
 static void RISCOS_PollMouseHelper(_THIS, int fullscreen);
 
-#if !SDL_THREAD_DISABLED
+#if !SDL_THREADS_DISABLED
 extern int riscos_using_threads;
 #endif
 
