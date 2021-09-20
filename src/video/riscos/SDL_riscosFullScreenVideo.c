@@ -66,9 +66,11 @@ static void FULLSCREEN_SetWMCaption(_THIS, const char *title, const char *icon);
 /* UpdateRects variants */
 static void FULLSCREEN_UpdateRects(_THIS, int numrects, SDL_Rect *rects);
 static void FULLSCREEN_UpdateRectsMemCpy(_THIS, int numrects, SDL_Rect *rects);
+#ifdef SDL_ASSEMBLY_ROUTINES
 static void FULLSCREEN_UpdateRects8bpp(_THIS, int numrects, SDL_Rect *rects);
 static void FULLSCREEN_UpdateRects16bpp(_THIS, int numrects, SDL_Rect *rects);
 static void FULLSCREEN_UpdateRects32bpp(_THIS, int numrects, SDL_Rect *rects);
+#endif
 static void FULLSCREEN_UpdateRectsOS(_THIS, int numrects, SDL_Rect *rects);
 
 /* Local helper functions */
@@ -213,6 +215,7 @@ void FULLSCREEN_SetDeviceMode(_THIS)
             case 2: /* ARM code full word copy */
                switch(this->screen->format->BytesPerPixel)
                {
+#ifdef SDL_ASSEMBLY_ROUTINES
                   case 1: /* 8bpp modes */
                	   this->UpdateRects = FULLSCREEN_UpdateRects8bpp;
                      break;
@@ -222,7 +225,7 @@ void FULLSCREEN_SetDeviceMode(_THIS)
                   case 4: /* 32 bpp modes */
                	   this->UpdateRects = FULLSCREEN_UpdateRects32bpp;
                      break;
-
+#endif
                   default: /* Just default to the memcpy routine */
                	   this->UpdateRects = FULLSCREEN_UpdateRectsMemCpy;
                      break;
@@ -388,6 +391,8 @@ static void FULLSCREEN_UpdateRectsMemCpy(_THIS, int numrects, SDL_Rect *rects)
       }
 }
 
+#ifdef SDL_ASSEMBLY_ROUTINES
+
 /* Use optimized assembler memory copy. Deliberately copies extra columns if
    necessary to ensure the rectangle is word aligned. */
 static void FULLSCREEN_UpdateRects8bpp(_THIS, int numrects, SDL_Rect *rects)
@@ -465,6 +470,8 @@ static void FULLSCREEN_UpdateRects32bpp(_THIS, int numrects, SDL_Rect *rects)
       rects++;
    }
 }
+
+#endif
 
 /* Use operating system sprite plots. Currently this is much slower than the
    other variants however accelerated sprite plotting can be seen on the horizon
