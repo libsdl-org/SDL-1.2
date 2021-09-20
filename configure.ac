@@ -2890,7 +2890,9 @@ case "$host" in
         if test x$enable_video = xyes; then
             AC_DEFINE(SDL_VIDEO_DRIVER_RISCOS)
             SOURCES="$SOURCES $srcdir/src/video/riscos/*.c"
-            SOURCES="$SOURCES $srcdir/src/video/riscos/*.S"
+            if test x$enable_assembly = xyes; then
+                SOURCES="$SOURCES $srcdir/src/video/riscos/*.S"
+            fi
             have_video=yes
         fi
         # Set up files for the joystick library

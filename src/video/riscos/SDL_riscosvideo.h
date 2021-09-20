@@ -105,8 +105,10 @@ extern void FULLSCREEN_BuildModeList(_THIS);
 extern SDL_Surface *FULLSCREEN_SetVideoMode(_THIS, SDL_Surface *current, int width, int height, int bpp, Uint32 flags);
 extern int FULLSCREEN_ToggleFromWimp(_THIS);
 
+#ifdef SDL_ASSEMBLY_ROUTINES
 /* SDL_riscosASM.S */
 extern void RISCOS_Put32(void *to, int pixels, int pitch, int rows, void *from, int src_skip_bytes); /* Fast assembler copy */
+#endif
 
 /* SDL_wimppoll.c */
 extern int mouseInWindow; /* Mouse is in WIMP window */
