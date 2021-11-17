@@ -325,7 +325,7 @@ int main(int argc, char **argv)
 	int delay;
 	int desired_bpp;
 	Uint32 video_flags, overlay_format;
-	char *bmpfile;
+	const char *bmpfile;
 #ifdef BENCHMARK_SDL
 	Uint32 then, now;
 #endif
@@ -480,7 +480,7 @@ int main(int argc, char **argv)
 	SDL_WM_SetCaption("SDL test overlay", "testoverlay");
 
 	/* Load picture */
-	bmpfile=(argv[1]?argv[1]:"sample.bmp");
+	bmpfile = argv[1] ? argv[1]:"sample.bmp";
 	pic = SDL_LoadBMP(bmpfile);
 	if ( pic == NULL ) {
 		fprintf(stderr, "Couldn't load %s: %s\n", bmpfile,

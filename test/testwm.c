@@ -60,7 +60,7 @@ int SetVideoMode(int w, int h)
 	return(0);
 }
 
-SDL_Surface *LoadIconSurface(char *file, Uint8 **maskp)
+SDL_Surface *LoadIconSurface(const char *file, Uint8 **maskp)
 {
 	SDL_Surface *icon;
 	Uint8       *pixels;
@@ -330,6 +330,9 @@ int SDLCALL FilterEvents(const SDL_Event *event)
 	}
 }
 
+
+static char testtitle[] = "Testing  1.. 2.. 3...";
+
 int main(int argc, char *argv[])
 {
 	SDL_Event event;
@@ -396,7 +399,7 @@ int main(int argc, char *argv[])
 
 	/* Set the title bar */
 	if ( argv[1] == NULL )
-		title = "Testing  1.. 2.. 3...";
+		title = testtitle;
 	else
 		title = argv[1];
 	SDL_WM_SetCaption(title, "testwm");
