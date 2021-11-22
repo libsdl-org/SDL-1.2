@@ -1,4 +1,3 @@
-
 ===========
 SDL on OS/2
 ===========
@@ -11,7 +10,7 @@ Open Watcom 1.9 (http://www.openwatcom.org) or newer is tested.
 For the new Open Watcom V2 fork, see: https://github.com/open-watcom/ and
 https://open-watcom.github.io
 
-WATCOM ervironment variable must to be set to the Open Watcom install
+WATCOM environment variable must to be set to the Open Watcom install
 directory. To compile, run: wmake -f Makefile.os2
 
 Check the "Makefile.os2" file. There is a line in there which determines if the
@@ -106,14 +105,14 @@ or
 
 SET SDL_OS2_JOYSTICK="Gravis GamePad" 4 2 2 0
 
-   Notive However that Balls and Hats are not supported under OS/2, and the
-value will be ignored... but it is wise to define these correctly because 
+   Note however that Balls and Hats are not supported under OS/2, and the
+value will be ignored... but it is wise to define these correctly because
 in the future those can be supported.
+
    Also the number of buttons is limited to 2 when using two joysticks,
 4 when using one joystick with 4 axes, 6 when using a joystick with 3 axes
-and 8 when using a joystick with 2 axes. Notice however these are limitations 
+and 8 when using a joystick with 2 axes. Notice however these are limitations
 of the Joystick Port hardware, not OS/2.
-
 
 
 5. Proportional windows (FSLib driver only)
