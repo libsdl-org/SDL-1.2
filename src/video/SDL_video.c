@@ -177,7 +177,7 @@ int SDL_VideoInit (const char *driver_name, Uint32 flags)
 	}
 
 	/* Select the proper video driver */
-	index = 0;
+	i = index = 0;
 	video = NULL;
 	if ( driver_name != NULL ) {
 		const char *driver_attempt = driver_name;
