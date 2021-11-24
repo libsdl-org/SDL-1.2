@@ -11,7 +11,6 @@ OBJS = $(TARGETS:.exe=.obj)
 
 all: $(TARGETS)
 
-BINPATH = .
 INCPATH = -I$(%WATCOM)/h/os2 -I$(%WATCOM)/h -I../include
 CFLAGS_DEF = $(INCPATH) -bt=os2 -d0 -q -bm -5s -fp5 -fpi87 -sg -oteanbmier
 CFLAGS_EXE = $(CFLAGS_DEF)
@@ -27,7 +26,6 @@ LIBS = SDL12.lib
   wcc386 $(CFLAGS) -fo=$^@ $<
 
 clean: .SYMBOLIC
-  @echo * Clean tests in $(BINPATH)
   @if exist *.obj rm *.obj
   @if exist *.err rm *.err
 

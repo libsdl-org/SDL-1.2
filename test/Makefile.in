@@ -2,7 +2,7 @@
 
 srcdir  = @srcdir@
 
-CC      = @CC@
+CC	= @CC@
 EXE	= @EXE@
 CFLAGS  = @CFLAGS@
 LIBS	= @LIBS@
