@@ -96,6 +96,17 @@
 # endif
 #endif
 
+/**
+ * Check if the compiler supports a given builtin.
+ * Supported by virtually all clang versions and recent gcc. Use this
+ * instead of checking the clang version if possible.
+ */
+#ifdef __has_builtin
+#define _SDL_HAS_BUILTIN(x) __has_builtin(x)
+#else
+#define _SDL_HAS_BUILTIN(x) 0
+#endif
+
 /** The number of elements in an array */
 #define SDL_arraysize(array)	(sizeof(array)/sizeof(array[0]))
 #define SDL_TABLESIZE(table)	SDL_arraysize(table)

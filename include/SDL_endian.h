@@ -30,6 +30,10 @@
 
 #include "SDL_stdinc.h"
 
+#if defined(_MSC_VER) && (_MSC_VER >= 1400)
+#include <intrin.h>
+#endif
+
 /** @name SDL_ENDIANs
  *  The two types of endianness
  */
@@ -44,6 +48,9 @@
 #define SDL_BYTEORDER  __BYTE_ORDER
 #elif defined(__OpenBSD__)
 #include <endian.h>
+#define SDL_BYTEORDER  BYTE_ORDER
+#elif defined(__FreeBSD__) || defined(__NetBSD__)
+#include <sys/endian.h>
 #define SDL_BYTEORDER  BYTE_ORDER
 #else
 #if defined(__hppa__) || \
@@ -73,20 +80,43 @@ extern "C" {
  *  header should only be included in files that actually use them.
  */
 /*@{*/
-#if defined(__GNUC__) && defined(__i386__) && \
-   !(__GNUC__ == 2 && __GNUC_MINOR__ <= 95 /* broken gcc version */)
+
+/* various modern compilers may have builtin swap */
+#if defined(__GNUC__) || defined(__clang__)
+#   define HAS_BUILTIN_BSWAP16 (_SDL_HAS_BUILTIN(__builtin_bswap16)) || \
+        (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8))
+#   define HAS_BUILTIN_BSWAP32 (_SDL_HAS_BUILTIN(__builtin_bswap32)) || \
+        (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))
+#   define HAS_BUILTIN_BSWAP64 (_SDL_HAS_BUILTIN(__builtin_bswap64)) || \
+        (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))
+
+    /* this one is broken */
+#   define HAS_BROKEN_BSWAP (__GNUC__ == 2 && __GNUC_MINOR__ <= 95)
+#else
+#   define HAS_BUILTIN_BSWAP16 0
+#   define HAS_BUILTIN_BSWAP32 0
+#   define HAS_BUILTIN_BSWAP64 0
+#   define HAS_BROKEN_BSWAP 0
+#endif
+
+#if HAS_BUILTIN_BSWAP16
+#define SDL_Swap16(x) __builtin_bswap16(x)
+#elif defined(_MSC_VER) && (_MSC_VER >= 1400)
+#pragma intrinsic(_byteswap_ushort)
+#define SDL_Swap16(x) _byteswap_ushort(x)
+#elif defined(__i386__) && !HAS_BROKEN_BSWAP
 static __inline__ Uint16 SDL_Swap16(Uint16 x)
 {
 	__asm__("xchgb %b0,%h0" : "=q" (x) :  "0" (x));
 	return x;
 }
-#elif defined(__GNUC__) && defined(__x86_64__)
+#elif defined(__x86_64__)
 static __inline__ Uint16 SDL_Swap16(Uint16 x)
 {
 	__asm__("xchgb %b0,%h0" : "=Q" (x) :  "0" (x));
 	return x;
 }
-#elif defined(__GNUC__) && (defined(__powerpc__) || defined(__ppc__))
+#elif (defined(__powerpc__) || defined(__ppc__))
 static __inline__ Uint16 SDL_Swap16(Uint16 x)
 {
 	int result;
@@ -94,12 +124,7 @@ static __inline__ Uint16 SDL_Swap16(Uint16 x)
 	__asm__("rlwimi %0,%2,8,16,23" : "=&r" (result) : "0" (x >> 8), "r" (x));
 	return (Uint16)result;
 }
-#elif defined(__GNUC__) && defined(__aarch64__)
-static __inline__ Uint16 SDL_Swap16(Uint16 x)
-{
-	return __builtin_bswap16(x);
-}
-#elif defined(__GNUC__) && (defined(__m68k__) && !defined(__mcoldfire__))
+#elif (defined(__m68k__) && !defined(__mcoldfire__))
 static __inline__ Uint16 SDL_Swap16(Uint16 x)
 {
 	__asm__("rorw #8,%0" : "=d" (x) :  "0" (x) : "cc");
@@ -117,20 +142,24 @@ static __inline__ Uint16 SDL_Swap16(Uint16 x) {
 }
 #endif
 
-#if defined(__GNUC__) && defined(__i386__) && \
-   !(__GNUC__ == 2 && __GNUC_MINOR__ <= 95 /* broken gcc version */)
+#if HAS_BUILTIN_BSWAP32
+#define SDL_Swap32(x) __builtin_bswap32(x)
+#elif defined(_MSC_VER) && (_MSC_VER >= 1400)
+#pragma intrinsic(_byteswap_ulong)
+#define SDL_Swap32(x) _byteswap_ulong(x)
+#elif defined(__i386__) && !HAS_BROKEN_BSWAP
 static __inline__ Uint32 SDL_Swap32(Uint32 x)
 {
 	__asm__("bswap %0" : "=r" (x) : "0" (x));
 	return x;
 }
-#elif defined(__GNUC__) && defined(__x86_64__)
+#elif defined(__x86_64__)
 static __inline__ Uint32 SDL_Swap32(Uint32 x)
 {
 	__asm__("bswapl %0" : "=r" (x) : "0" (x));
 	return x;
 }
-#elif defined(__GNUC__) && (defined(__powerpc__) || defined(__ppc__))
+#elif (defined(__powerpc__) || defined(__ppc__))
 static __inline__ Uint32 SDL_Swap32(Uint32 x)
 {
 	Uint32 result;
@@ -140,12 +169,7 @@ static __inline__ Uint32 SDL_Swap32(Uint32 x)
 	__asm__("rlwimi %0,%2,24,0,7"   : "=&r" (result) : "0" (result), "r" (x));
 	return result;
 }
-#elif defined(__GNUC__) && defined(__aarch64__)
-static __inline__ Uint32 SDL_Swap32(Uint32 x)
-{
-	return __builtin_bswap32(x);
-}
-#elif defined(__GNUC__) && (defined(__m68k__) && !defined(__mcoldfire__))
+#elif (defined(__m68k__) && !defined(__mcoldfire__))
 static __inline__ Uint32 SDL_Swap32(Uint32 x)
 {
 	__asm__("rorw #8,%0\n\tswap %0\n\trorw #8,%0" : "=d" (x) :  "0" (x) : "cc");
@@ -164,8 +188,12 @@ static __inline__ Uint32 SDL_Swap32(Uint32 x) {
 #endif
 
 #ifdef SDL_HAS_64BIT_TYPE /**/
-#if defined(__GNUC__) && defined(__i386__) && \
-   !(__GNUC__ == 2 && __GNUC_MINOR__ <= 95 /* broken gcc version */)
+#if HAS_BUILTIN_BSWAP64
+#define SDL_Swap64(x) __builtin_bswap64(x)
+#elif defined(_MSC_VER) && (_MSC_VER >= 1400)
+#pragma intrinsic(_byteswap_uint64)
+#define SDL_Swap64(x) _byteswap_uint64(x)
+#elif defined(__i386__) && !HAS_BROKEN_BSWAP
 static __inline__ Uint64 SDL_Swap64(Uint64 x)
 {
 	union {
@@ -178,12 +206,7 @@ static __inline__ Uint64 SDL_Swap64(Uint64 x)
 	        : "0"  (v.s.a),  "1" (v.s.b));
 	return v.u;
 }
-#elif defined(__GNUC__) && defined(__aarch64__)
-static __inline__ Uint64 SDL_Swap64(Uint64 x)
-{
-	return __builtin_bswap64(x);
-}
-#elif defined(__GNUC__) && defined(__x86_64__)
+#elif defined(__x86_64__)
 static __inline__ Uint64 SDL_Swap64(Uint64 x)
 {
 	__asm__("bswapq %0" : "=r" (x) : "0" (x));
@@ -220,6 +243,12 @@ static __inline__ Uint64 SDL_Swap64(Uint64 x)
 #define SDL_Swap64(X)	(X)
 #endif /* SDL_HAS_64BIT_TYPE */
 /*@}*/
+
+/* remove extra macros */
+#undef HAS_BROKEN_BSWAP
+#undef HAS_BUILTIN_BSWAP16
+#undef HAS_BUILTIN_BSWAP32
+#undef HAS_BUILTIN_BSWAP64
 
 /**
  *  @name SDL_SwapLE and SDL_SwapBE Functions
