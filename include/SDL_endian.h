@@ -94,16 +94,10 @@ static __inline__ Uint16 SDL_Swap16(Uint16 x)
 	__asm__("rlwimi %0,%2,8,16,23" : "=&r" (result) : "0" (x >> 8), "r" (x));
 	return (Uint16)result;
 }
-#elif defined(__APPLE__) && defined(__aarch64__)
-static __inline__ Uint16 SDL_Swap16(Uint16 x)
-{
-	return __builtin_bswap16(x);
-}
 #elif defined(__GNUC__) && defined(__aarch64__)
 static __inline__ Uint16 SDL_Swap16(Uint16 x)
 {
-	__asm__("rev16 %w1, %w0" : "=r"(x) : "r"(x));
-	return x;
+	return __builtin_bswap16(x);
 }
 #elif defined(__GNUC__) && (defined(__m68k__) && !defined(__mcoldfire__))
 static __inline__ Uint16 SDL_Swap16(Uint16 x)
@@ -146,16 +140,10 @@ static __inline__ Uint32 SDL_Swap32(Uint32 x)
 	__asm__("rlwimi %0,%2,24,0,7"   : "=&r" (result) : "0" (result), "r" (x));
 	return result;
 }
-#elif defined(__APPLE__) && defined(__aarch64__)
-static __inline__ Uint32 SDL_Swap32(Uint32 x)
-{
-	return __builtin_bswap32(x);
-}
 #elif defined(__GNUC__) && defined(__aarch64__)
 static __inline__ Uint32 SDL_Swap32(Uint32 x)
 {
-	__asm__("rev %w1, %w0": "=r"(x):"r"(x));
-	return x;
+	return __builtin_bswap32(x);
 }
 #elif defined(__GNUC__) && (defined(__m68k__) && !defined(__mcoldfire__))
 static __inline__ Uint32 SDL_Swap32(Uint32 x)
@@ -175,7 +163,7 @@ static __inline__ Uint32 SDL_Swap32(Uint32 x) {
 }
 #endif
 
-#ifdef SDL_HAS_64BIT_TYPE
+#ifdef SDL_HAS_64BIT_TYPE /**/
 #if defined(__GNUC__) && defined(__i386__) && \
    !(__GNUC__ == 2 && __GNUC_MINOR__ <= 95 /* broken gcc version */)
 static __inline__ Uint64 SDL_Swap64(Uint64 x)
@@ -190,7 +178,7 @@ static __inline__ Uint64 SDL_Swap64(Uint64 x)
 	        : "0"  (v.s.a),  "1" (v.s.b));
 	return v.u;
 }
-#elif defined(__APPLE__) && defined(__aarch64__)
+#elif defined(__GNUC__) && defined(__aarch64__)
 static __inline__ Uint64 SDL_Swap64(Uint64 x)
 {
 	return __builtin_bswap64(x);
