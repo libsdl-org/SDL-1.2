@@ -47,7 +47,29 @@
 
 #ifdef _WIN32_WCE
 #define NO_GETKEYBOARDSTATE
+
+/* The following virtual keys were undefined for Windows Embedded CE,
+   but they exist as application keys in Windows Mobile. */
+#ifndef VK_APP1
+#define VK_APP1		0xC1
 #endif
+#ifndef VK_APP2
+#define VK_APP2		0xC2
+#endif
+#ifndef VK_APP3
+#define VK_APP3		0xC3
+#endif
+#ifndef VK_APP4
+#define VK_APP4		0xC4
+#endif
+#ifndef VK_APP5
+#define VK_APP5		0xC5
+#endif
+#ifndef VK_APP6
+#define VK_APP6		0xC6
+#endif
+
+#endif /* _WIN32_WCE */
 
 /* The translation table from a Microsoft VK keysym to a SDL keysym */
 static SDLKey VK_keymap[SDLK_LAST];
@@ -532,6 +554,14 @@ void DIB_InitOSKeymap(_THIS)
 	VK_keymap[VK_SNAPSHOT] = SDLK_PRINT;
 	VK_keymap[VK_CANCEL] = SDLK_BREAK;
 	VK_keymap[VK_APPS] = SDLK_MENU;
+#ifdef _WIN32_WCE
+	VK_keymap[VK_APP1] = SDLK_F1;
+	VK_keymap[VK_APP2] = SDLK_F2;
+	VK_keymap[VK_APP3] = SDLK_F3;
+	VK_keymap[VK_APP4] = SDLK_F4;
+	VK_keymap[VK_APP5] = SDLK_F5;
+	VK_keymap[VK_APP6] = SDLK_F6;
+#endif
 
 	Arrows_keymap[3] = 0x25;
 	Arrows_keymap[2] = 0x26;
@@ -567,6 +597,14 @@ static int SDL_MapVirtualKey(int scancode, int vkey)
 		case VK_RMENU:
 		case VK_SNAPSHOT:
 		case VK_PAUSE:
+#ifdef _WIN32_WCE
+		case VK_APP1:
+		case VK_APP2:
+		case VK_APP3:
+		case VK_APP4:
+		case VK_APP5:
+		case VK_APP6:
+#endif
 			return vkey;
 	}	
 	switch(mvke) {
