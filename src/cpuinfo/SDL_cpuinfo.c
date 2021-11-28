@@ -434,6 +434,13 @@ CPU_haveARMSIMD(void)
 	return 0;
 }
 
+#elif defined(_WIN32_WCE)
+static int
+CPU_haveARMSIMD(void)
+{
+	return 0;
+}
+
 #elif defined(__ARM_ARCH) && (__ARM_ARCH >= 6)
 static int
 CPU_haveARMSIMD(void)
@@ -520,6 +527,8 @@ static __inline__  int readProcAuxvForNeon(void)
 static __inline__ int CPU_haveNEON(void)
 {
 #if !defined(__arm__)  /* not an ARM CPU at all. */
+	return 0;
+#elif defined(_WIN32_WCE)
 	return 0;
 /* The way you detect NEON is a privileged instruction on ARM, so you have
    query the OS kernel in a platform-specific way. :/ */

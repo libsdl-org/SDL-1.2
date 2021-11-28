@@ -371,6 +371,7 @@ static SDL_VideoDevice *GAPI_CreateDevice(int devindex)
 		GAPI_DeleteDevice(device);
 		return 0;
 	}
+#undef gx
 
 	return device;
 }
@@ -1082,8 +1083,8 @@ static int updateLine16to4(_THIS, PIXEL *srcPointer, unsigned char *destPointer,
 
 static void GAPI_UpdateRectsMono(_THIS, int numrects, SDL_Rect *rects)
 {
+	int linesProcessed = 0;
 	int i, height;
-	int linesProcessed;
 	int xNibble, yNibble;
 
 	for (i=0; i<numrects; i++)
