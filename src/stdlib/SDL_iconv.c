@@ -855,6 +855,7 @@ char *SDL_iconv_string(const char *tocode, const char *fromcode, const char *inb
 				stringsize *= 2;
 				string = SDL_realloc(string, stringsize);
 				if ( !string ) {
+					SDL_free(oldstring);
 					SDL_iconv_close(cd);
 					return NULL;
 				}
