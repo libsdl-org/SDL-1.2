@@ -710,7 +710,7 @@ CheckAtariAudio()
 }
 
 dnl See if we can use x86 assembly blitters
-# NASM is available from: http://nasm.sourceforge.net
+dnl NASM is available from: http://nasm.us
 CheckNASM()
 {
     dnl Make sure we are running on an x86 platform
@@ -783,7 +783,7 @@ CheckNASM()
             AC_SUBST(NASMFLAGS)
 
             case "$host" in
-                # this line is needed for QNX, because it's not defined the __ELF__
+                # this is needed for QNX, because it does not define __ELF__
                 *-*-qnx*)
                      EXTRA_CFLAGS="$EXTRA_CFLAGS -D__ELF__";;
                 *-*-solaris*)
