@@ -30,19 +30,21 @@ AC_SUBST(SDL_INTERFACE_AGE)
 AC_SUBST(SDL_BINARY_AGE)
 AC_SUBST(SDL_VERSION)
 
-# libtool versioning
+dnl libtool versioning
 LT_INIT([win32-dll])
 
 LT_RELEASE=$SDL_MAJOR_VERSION.$SDL_MINOR_VERSION
 LT_CURRENT=`expr $SDL_MICRO_VERSION - $SDL_INTERFACE_AGE`
 LT_REVISION=$SDL_INTERFACE_AGE
 LT_AGE=`expr $SDL_BINARY_AGE - $SDL_INTERFACE_AGE`
+LT_EXTRA="" dnl for OS2 dll name
 m4_pattern_allow([^LT_])
 
 AC_SUBST(LT_RELEASE)
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_REVISION)
 AC_SUBST(LT_AGE)
+AC_SUBST(LT_EXTRA)
 
 dnl Detect the canonical build and host environments
 dnl AC_CANONICAL_HOST
@@ -76,6 +78,15 @@ case "$host" in
         # We build SDL on cygwin without the UNIX emulation layer
         BASE_CFLAGS="-I/usr/include/mingw -mno-cygwin"
         BASE_LDFLAGS="-mno-cygwin"
+        ;;
+    *-*-os2*)
+        # disable static builds on os/2
+        enable_static=no
+        # -DBUILD_SDL is needed for DECLSPEC
+        BASE_CFLAGS="-DBUILD_SDL"
+        BASE_LDFLAGS=""
+        # SDL-1.2 has been built as SDL12.dll
+        LT_EXTRA="-os2dllname SDL12"
         ;;
     *)
         BASE_CFLAGS="-D_GNU_SOURCE=1"
@@ -756,6 +767,9 @@ CheckNASM()
                   ;;
               macosx)
                   NASMFLAGS="-f macho"
+                  ;;
+              os2)
+                  NASMFLAGS="-f aout"
                   ;;
               *)
                   NASMFLAGS="-f elf32"
@@ -2191,6 +2205,25 @@ CheckWIN32()
     fi
 }
 
+dnl Determine whether the compiler can produce OS/2 executables
+CheckOS2()
+{
+    AC_MSG_CHECKING(OS/2 compiler)
+    have_os2_gcc=no
+    AC_TRY_COMPILE([#include <os2.h>],
+     [], [have_os2_gcc=yes])
+    AC_MSG_RESULT($have_os2_gcc)
+    if test x$have_os2_gcc != xyes; then
+       AC_MSG_ERROR([
+*** Your compiler ($CC) does not produce OS/2 executables!
+       ])
+    fi
+
+    AC_ARG_ENABLE(video-fslib,
+[AS_HELP_STRING([--enable-video-fslib], [use the old OS/2 FSLib video driver [default=no]])],
+                 , enable_video_fslib=no)
+}
+
 dnl Find the DirectX includes and libraries
 CheckDIRECTX()
 {
@@ -2961,6 +2994,72 @@ case "$host" in
             AC_DEFINE(SDL_TIMER_RISCOS)
             SOURCES="$SOURCES $srcdir/src/timer/riscos/*.c"
             have_timers=yes
+        fi
+        ;;
+    *-*-os2*)
+        ARCH=os2
+        if test "$build" != "$host"; then # cross-compiling
+            # Default cross-compile location
+            ac_default_prefix=/@unixroot/usr/local/cross-tools/$host
+        else
+            # Look for the location of the tools and install there
+            if test "$BUILD_PREFIX" != ""; then
+                ac_default_prefix=$BUILD_PREFIX
+            fi
+        fi
+        EXTRA_CFLAGS="$EXTRA_CFLAGS -DOS2EMX_PLAIN_CHAR -I$srcdir/os2/h"
+        CheckOS2
+        CheckNASM
+        CheckDummyVideo
+        CheckDiskAudio
+        CheckDummyAudio
+
+        # Set up files for the video library
+        if test x$enable_video = xyes; then
+            AC_DEFINE(SDL_VIDEO_DRIVER_OS2GROP)
+            SOURCES="$SOURCES $srcdir/src/video/os2grop/*.c"
+            have_video=yes
+            if test x$enable_video_fslib = xyes; then
+                AC_DEFINE(SDL_VIDEO_DRIVER_OS2FS)
+                SOURCES="$SOURCES $srcdir/src/video/os2fslib/*.c"
+            fi
+        fi
+        # Set up files for the audio library
+        if test x$enable_audio = xyes; then
+            AC_DEFINE(SDL_AUDIO_DRIVER_DART)
+            SOURCES="$SOURCES $srcdir/src/audio/dart/*.c"
+            have_audio=yes
+            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lmmpm2"
+        fi
+        # Set up files for the cdrom library
+        if test x$enable_cdrom = xyes; then
+            AC_DEFINE(SDL_CDROM_OS2)
+            SOURCES="$SOURCES $srcdir/src/cdrom/os2/*.c"
+            have_cdrom=yes
+        fi
+        # Set up files for the thread library
+        if test x$enable_threads = xyes; then
+            AC_DEFINE(SDL_THREAD_OS2)
+            SOURCES="$SOURCES $srcdir/src/thread/os2/*.c"
+            have_threads=yes
+        fi
+        # Set up files for the timer library
+        if test x$enable_timers = xyes; then
+            AC_DEFINE(SDL_TIMER_OS2)
+            SOURCES="$SOURCES $srcdir/src/timer/os2/*.c"
+            have_timers=yes
+        fi
+        # Set up files for the shared object loading library
+        if test x$enable_loadso = xyes; then
+            AC_DEFINE(SDL_LOADSO_OS2)
+            SOURCES="$SOURCES $srcdir/src/loadso/os2/*.c"
+            have_loadso=yes
+        fi
+        # Set up files for the joystick library
+        if test x$enable_joystick = xyes; then
+            AC_DEFINE(SDL_JOYSTICK_OS2)
+            SOURCES="$SOURCES $srcdir/src/joystick/os2/*.c"
+            have_joystick=yes
         fi
         ;;
     *)
