@@ -756,7 +756,7 @@ static void os2_SetIcon(SDL_VideoDevice *pDevice, SDL_Surface *pSDLSurfaceIcon,
   PULONG            pulBitmap;
   SDL_Rect          sSDLRect;
   ULONG             ulX, ulY;
-  CHAR              chMask;
+  UCHAR             chMask;
   PULONG            pulDst, pulSrc, pulDstMask;
 
   /* Remove previous window's icon */
