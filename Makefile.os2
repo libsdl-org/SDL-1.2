@@ -26,6 +26,8 @@ HERMES=1
 
 # Special flags for building SDL
 CFLAGS=$(CFLAGS_DLL) -otexan -wx -ei
+# newer OpenWatcom versions enable W303 by default
+CFLAGS+= -wcd=303
 CFLAGS+= -DBUILD_SDL
 #CFLAGS+= -DCHECK_LEAKS
 CFLAGS+= -DUSE_DOSSETPRIORITY

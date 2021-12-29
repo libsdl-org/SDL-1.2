@@ -76,7 +76,6 @@ void ConvertMMXp32_16RGB555();
 
 /* Make it work with Watcom */
 #ifdef __WATCOMC__
-#pragma warning 601 9
 
 #pragma aux ConvertMMX "_*" modify [EAX EBX ECX EDX ESI EDI]
 

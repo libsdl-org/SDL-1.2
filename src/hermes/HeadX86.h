@@ -131,7 +131,6 @@ extern int ConvertX86p16_32BGRA888_LUT_X86[512];
 
 /* Make it run with WATCOM C */
 #ifdef __WATCOMC__
-#pragma warning 601 9
 
 #pragma aux Hermes_X86_CPU "_*"
 
