@@ -67,4 +67,5 @@ get_EdDI_version:
 	.bss
 
 	.even
-	.comm	eddi_cookie, 4
+eddi_cookie:
+	.ds.l	1

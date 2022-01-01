@@ -185,7 +185,8 @@ no_restore_joystick:
 	.even
 	.ascii "XBRA"
 	.ascii "LSDL"
-	.comm	oldmousevector,4*1
+oldmousevector:
+	.dc.l	0
 newmousevector:
 #if defined(__mcoldfire__)
 	lea	sp@(-8),sp
@@ -244,20 +245,28 @@ no_mouse_lock:
 	rts
 
 	.data
+
 	.even
-	.comm	_SDL_AtariXbios_installmousevector,2*1
-	.comm	_SDL_AtariXbios_mouselock,2*1
-	.comm	_SDL_AtariXbios_mousex,2*1
-	.comm	_SDL_AtariXbios_mousey,2*1
-	.comm	_SDL_AtariXbios_mouseb,2*1
+_SDL_AtariXbios_installmousevector:
+	.dc.w	0
+_SDL_AtariXbios_mouselock:
+	.dc.w	0
+_SDL_AtariXbios_mousex:
+	.dc.w	0
+_SDL_AtariXbios_mousey:
+	.dc.w	0
+_SDL_AtariXbios_mouseb:
+	.dc.w	0
 
 /*--- Our joystick vector ---*/
 
 	.text
+
 	.even
 	.ascii "XBRA"
 	.ascii "LSDL"
-	.comm	oldjoystickvector,4*1
+oldjoystickvector:
+	.dc.l	0
 newjoystickvector:
 	movel	d0,sp@-
 
@@ -277,6 +286,9 @@ newjoystickvector:
 	rts
 
 	.data
+
 	.even
-	.comm	_SDL_AtariXbios_installjoystickvector,2*1
-	.comm	_SDL_AtariXbios_joystick,2*1
+_SDL_AtariXbios_installjoystickvector:
+	.dc.w	0
+_SDL_AtariXbios_joystick:
+	.dc.w	0

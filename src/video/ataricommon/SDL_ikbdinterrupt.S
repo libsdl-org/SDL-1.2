@@ -168,8 +168,10 @@ ikbd_finbuffer:
 	.bss
 
 	.even
-	.comm	ikbd_ierb,1
-	.comm	ikbd_imrb,1
+ikbd_ierb:
+	.ds.b	1
+ikbd_imrb:
+	.ds.b	1
 
 /*--- Our custom IKBD vector ---*/
 
@@ -177,7 +179,8 @@ ikbd_finbuffer:
 	.even
 	.ascii	"XBRA"
 	.ascii	"LSDL"
-	.comm	old_ikbd,4*1
+old_ikbd:
+	.dc.l	0
 ikbd:
 #if defined(__mcoldfire__)
 	lea	sp@(-12),sp
@@ -392,13 +395,18 @@ ikbd_joystick:
 
 	.even
 _SDL_AtariIkbd_enabled:
-	.word	0
+	.dc.w	0
 
 	.bss
 
 	.even
-	.comm	_SDL_AtariIkbd_keyboard,128
-	.comm	_SDL_AtariIkbd_mousex,2
-	.comm	_SDL_AtariIkbd_mousey,2
-	.comm	_SDL_AtariIkbd_mouseb,2
-	.comm	_SDL_AtariIkbd_joystick,2
+_SDL_AtariIkbd_keyboard:
+	.ds.b	128
+_SDL_AtariIkbd_mousex:
+	.ds.w	1
+_SDL_AtariIkbd_mousey:
+	.ds.w	1
+_SDL_AtariIkbd_mouseb:
+	.ds.w	1
+_SDL_AtariIkbd_joystick:
+	.ds.w	1

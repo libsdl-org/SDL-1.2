@@ -303,7 +303,7 @@ _SDL_Atari_C2pConvert4:
 
 	movel	c2p_source,a0
 	movel	c2p_dest,a1
-	lea	_SDL_Atari_table_c2p,a2
+	lea	c2p_table,a2
 	movel	#0x00070001,d3
 #if defined(__mc68020__)
 	moveq	#0,d0
@@ -408,7 +408,7 @@ _SDL_Atari_C2pConvert4_pal:
 
 	moveml	d2-d3,sp@-
 
-	lea		_SDL_Atari_table_c2p,a1
+	lea	c2p_table,a1
 	movew	#255,d3
 c2p_pal_initbcl:
 	movew	a0@+,d0
@@ -436,17 +436,30 @@ c2p_pal_initbyte:
 	.bss
 
 	.even
-	.comm	_SDL_Atari_C2pConvert,4
-	.comm	_SDL_Atari_table_c2p,1024
+_SDL_Atari_C2pConvert:
+	.ds.l	1
 
-	.comm	c2p_source,4	/* Source framebuffer */
-	.comm	c2p_dest,4		/* Destination framebuffer */
-	.comm	c2p_width,4		/* Width of zone to convert */
-	.comm	c2p_height,4	/* Height of zone to convert */
-	.comm	c2p_dblligne,4	/* Double the lines while converting ? */
-	.comm	c2p_srcpitch,4	/* Source pitch */
-	.comm	c2p_dstpitch,4	/* Destination pitch */
-	.comm	c2p_cursrc,4	/* Current source line */
-	.comm	c2p_curdst,4	/* Current destination line */
-	.comm	c2p_rowlen,2	/* Line length in bytes */
-	.comm	c2p_row,2		/* Current line number */
+c2p_table:
+	.ds.l	1024/4
+c2p_source:
+	.ds.l	1	/* Source framebuffer */
+c2p_dest:
+	.ds.l	1		/* Destination framebuffer */
+c2p_width:
+	.ds.l	1		/* Width of zone to convert */
+c2p_height:
+	.ds.l	1	/* Height of zone to convert */
+c2p_dblligne:
+	.ds.l	1	/* Double the lines while converting ? */
+c2p_srcpitch:
+	.ds.l	1	/* Source pitch */
+c2p_dstpitch:
+	.ds.l	1	/* Destination pitch */
+c2p_cursrc:
+	.ds.l	1	/* Current source line */
+c2p_curdst:
+	.ds.l	1	/* Current destination line */
+c2p_rowlen:
+	.ds.w	1	/* Line length in bytes */
+c2p_row:
+	.ds.w	1		/* Current line number */
