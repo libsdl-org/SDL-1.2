@@ -152,7 +152,7 @@ struct _joycfg
 /* OS/2 Implementation Function Prototypes */
 static int joyPortOpen(HFILE * hGame);
 static void joyPortClose(HFILE * hGame);
-static int joyGetData(char *joyenv, char *name, char stopchar, size_t maxchars);
+static int joyGetData(const char *joyenv, char *name, char stopchar, size_t maxchars);
 static int joyGetEnv(struct _joycfg * joydata);
 
 
@@ -394,14 +394,12 @@ int SDL_SYS_JoystickOpen(SDL_Joystick *joystick)
 	int i;			/* Generic Counter */
 
 	/* allocate memory for system specific hardware data */
-	joystick->hwdata = (struct joystick_hwdata *) SDL_malloc(sizeof(*joystick->hwdata));
-	if (joystick->hwdata == NULL)
+	joystick->hwdata = (struct joystick_hwdata *) SDL_calloc(1, sizeof(*joystick->hwdata));
+	if (!joystick->hwdata)
 	{
 		SDL_OutOfMemory();
 		return -1;
 	}
-	/* Reset Hardware Data */
-	SDL_memset(joystick->hwdata, 0, sizeof(*joystick->hwdata));
 
 	/* ShortCut Pointer */
 	index = joystick->index;
@@ -514,7 +512,7 @@ void SDL_SYS_JoystickUpdate(SDL_Joystick *joystick)
 	if (SYS_JoyData[index].id == 1) corr = 2;
 	else corr = 0;
 	normbut = 4;	/* Number of normal buttons */
-	if (joystick->nbuttons<normbut) normbut = joystick->nbuttons;
+	if (joystick->nbuttons < normbut) normbut = joystick->nbuttons;
 	for (i = corr; (i-corr) < normbut; ++i)
 	{
 		/*
@@ -578,11 +576,8 @@ void SDL_SYS_JoystickUpdate(SDL_Joystick *joystick)
 /******************************************/
 void SDL_SYS_JoystickClose(SDL_Joystick *joystick)
 {
-	if (joystick->hwdata != NULL)
-	{
-		/* free system specific hardware data */
-		SDL_free(joystick->hwdata);
-	}
+	/* free system specific hardware data */
+	SDL_free(joystick->hwdata);
 }
 
 /********************************************************************/
@@ -654,7 +649,7 @@ static void joyPortClose(HFILE * hGame)
 /***************************/
 static int joyGetEnv(struct _joycfg * joydata)
 {
-	char *joyenv;				/* Pointer to tested character */
+	const char *joyenv;		/* Pointer to tested character */
 	char tempnumber[5];		/* Temporary place to put numeric texts */
 
 	joyenv = SDL_getenv("SDL_OS2_JOYSTICK");
@@ -696,7 +691,7 @@ static int joyGetEnv(struct _joycfg * joydata)
 /* Get a text from in the string starting in joyenv until it finds		*/
 /* the stopchar or maxchars is reached. The result is placed in name.	*/
 /************************************************************************/
-static int joyGetData(char *joyenv, char *name, char stopchar, size_t maxchars)
+static int joyGetData(const char *joyenv, char *name, char stopchar, size_t maxchars)
 {
 	char *nameptr;			/* Pointer to the selected character */
 	int chcnt = 0;			/* Count how many characters where copied */
