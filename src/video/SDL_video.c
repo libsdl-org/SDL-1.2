@@ -481,6 +481,12 @@ static int SDL_GetVideoMode (int *w, int *h, int *BitsPerPixel, Uint32 flags)
 			/* No sizes supported at this bit-depth */
 			continue;
 		}
+		if ( sizes == (SDL_Rect **)NEGATIVE_ONE ) {
+			/* Any size supported at this bit-depth */
+			*BitsPerPixel = SDL_closest_depths[table][b];
+			supported = 1;
+			continue;
+		}
 		best=0;
 		for ( i=0; sizes[i]; ++i ) {
 			/* Mode with both dimensions bigger or equal than asked ? */
