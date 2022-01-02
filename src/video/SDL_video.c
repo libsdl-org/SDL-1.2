@@ -399,7 +399,7 @@ int SDL_VideoModeOK (int width, int height, int bpp, Uint32 flags)
 	supported = 0;
 	table = ((bpp+7)/8)-1;
 	SDL_closest_depths[table][0] = bpp;
-	SDL_closest_depths[table][7] = 0;
+	SDL_closest_depths[table][6] = 0;
 	for ( b = 0; !supported && SDL_closest_depths[table][b]; ++b ) {
 		format.BitsPerPixel = SDL_closest_depths[table][b];
 		sizes = SDL_ListModes(&format, flags);
@@ -471,7 +471,7 @@ static int SDL_GetVideoMode (int *w, int *h, int *BitsPerPixel, Uint32 flags)
 	supported = 0;
 	table = ((*BitsPerPixel+7)/8)-1;
 	SDL_closest_depths[table][0] = *BitsPerPixel;
-	SDL_closest_depths[table][7] = SDL_VideoSurface->format->BitsPerPixel;
+	SDL_closest_depths[table][6] = SDL_VideoSurface->format->BitsPerPixel;
 	for ( b = 0; !supported && SDL_closest_depths[table][b]; ++b ) {
 		int best;
 
