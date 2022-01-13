@@ -123,6 +123,8 @@ SDL_GetTicks
 SDL_Delay
    Modified to poll keyboard/mouse during the delay on the event thread.
 
+SDL_LoadObject/SDL_LoadFunction/SDL_UnloadObject
+   Not supported in statically linked applications.
 
 Notes on current implementation
 -------------------------------
