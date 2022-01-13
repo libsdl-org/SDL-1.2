@@ -2974,7 +2974,11 @@ case "$host" in
         ;;
     *-riscos)
         ARCH=riscos
+        CheckDummyVideo
+        CheckDiskAudio
+        CheckDummyAudio
         CheckOSS
+        CheckDLOPEN
         CheckPTHREAD
         # Set up files for the video library
         if test x$enable_video = xyes; then
