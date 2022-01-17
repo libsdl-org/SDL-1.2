@@ -15792,7 +15792,7 @@ if test x$enable_libc = xyes; then
     $as_echo "#define HAVE_LIBC 1" >>confdefs.h
 
 
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ANSI C header files" >&5
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ANSI C header files" >&5
 $as_echo_n "checking for ANSI C header files... " >&6; }
 if ${ac_cv_header_stdc+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -15918,7 +15918,7 @@ fi
 done
 
 
-        ac_fn_c_check_type "$LINENO" "size_t" "ac_cv_type_size_t" "$ac_includes_default"
+    ac_fn_c_check_type "$LINENO" "size_t" "ac_cv_type_size_t" "$ac_includes_default"
 if test "x$ac_cv_type_size_t" = xyes; then :
 
 else
@@ -15942,11 +15942,7 @@ fi
         have_inttypes=yes
     fi
 
-        case "$host" in
-    *-*-cygwin* | *-*-mingw*)
-        ;;
-    *)
-        # The Ultrix 4.2 mips builtin alloca declared by alloca.h only works
+    # The Ultrix 4.2 mips builtin alloca declared by alloca.h only works
 # for constant arguments.  Useless!
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for working alloca.h" >&5
 $as_echo_n "checking for working alloca.h... " >&6; }
@@ -16132,8 +16128,6 @@ _ACEOF
 
 fi
 
-        ;;
-    esac
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for working memcmp" >&5
 $as_echo_n "checking for working memcmp... " >&6; }
@@ -17180,7 +17174,7 @@ $as_echo "$have_dmedia" >&6; }
 
 CheckMME()
 {
-        case $ARCH in
+    case $ARCH in
         osf)
             ;;
         *)
@@ -17908,7 +17902,6 @@ $as_echo_n "checking for NAS audio support... " >&6; }
             NAS_CFLAGS="-I/usr/X11R6/include/"
             NAS_LIBS="-L/usr/X11R6/lib -laudio -lXt"
 
-
         elif test -r /usr/freeware/include/nas/audiolib.h; then
             have_nas=yes
             NAS_LIBS="-lnas -lXt"
@@ -18014,7 +18007,7 @@ fi
 
 CheckNASM()
 {
-        case $host in
+    case $host in
         i?86*)
             ;;
         *)
@@ -18023,7 +18016,7 @@ CheckNASM()
             ;;
     esac
 
-            # The cast to long int works around a bug in the HP C Compiler
+    # The cast to long int works around a bug in the HP C Compiler
 # version HP92453-01 B.11.11.23709.GP, which incorrectly rejects
 # declarations like `int a3[[(sizeof (unsigned char)) >= 0]];'.
 # This bug is HP SR number 8606223364.
@@ -18060,7 +18053,7 @@ _ACEOF
         return
     fi
 
-        # Check whether --enable-nasm was given.
+    # Check whether --enable-nasm was given.
 if test "${enable_nasm+set}" = set; then :
   enableval=$enable_nasm;
 else
@@ -18152,7 +18145,7 @@ fi
             SOURCES="$SOURCES $srcdir/src/hermes/*.asm"
             NASMFLAGS="$NASMFLAGS -I $srcdir/src/hermes/"
 
-                        echo "GLOBAL _bar:function hidden" > symbol-visibility
+            echo "GLOBAL _bar:function hidden" > symbol-visibility
             echo "_bar:" >> symbol-visibility
             CompileNASM symbol-visibility && NASMFLAGS="$NASMFLAGS -DHIDDEN_VISIBILITY"
 
@@ -18272,7 +18265,7 @@ fi
         altivec_CFLAGS="-faltivec"
         CFLAGS="$save_CFLAGS $altivec_CFLAGS"
 
-                        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Altivec with GCC -faltivec option" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Altivec with GCC -faltivec option" >&5
 $as_echo_n "checking for Altivec with GCC -faltivec option... " >&6; }
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -18306,7 +18299,7 @@ $as_echo "$have_gcc_altivec" >&6; }
 
             EXTRA_CFLAGS="$EXTRA_CFLAGS $altivec_CFLAGS"
         else
-                    CheckAltivec
+            CheckAltivec
         fi
     fi
 }
@@ -18484,7 +18477,7 @@ $as_echo "$have_gcc_Wall" >&6; }
     if test x$have_gcc_Wall = xyes; then
         EXTRA_CFLAGS="$EXTRA_CFLAGS -Wall"
 
-                { $as_echo "$as_me:${as_lineno-$LINENO}: checking for necessary GCC -Wno-multichar option" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for necessary GCC -Wno-multichar option" >&5
 $as_echo_n "checking for necessary GCC -Wno-multichar option... " >&6; }
         need_gcc_Wno_multichar=no
         case "$host" in
@@ -19747,7 +19740,7 @@ fi
 
     if test x$enable_video = xyes -a x$enable_video_cocoa = xyes; then
         save_CFLAGS="$CFLAGS"
-                CFLAGS="$CFLAGS -x objective-c"
+        CFLAGS="$CFLAGS -x objective-c"
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Cocoa framework" >&5
 $as_echo_n "checking for Cocoa framework... " >&6; }
         have_cocoa=no
@@ -20868,7 +20861,7 @@ fi
 
 CheckInputEvents()
 {
-        # Check whether --enable-input-events was given.
+    # Check whether --enable-input-events was given.
 if test "${enable_input_events+set}" = set; then :
   enableval=$enable_input_events;
 else
@@ -20956,7 +20949,7 @@ $as_echo "$enable_input_tslib" >&6; }
 
 CheckPTH()
 {
-        # Check whether --enable-pth was given.
+    # Check whether --enable-pth was given.
 if test "${enable_pth+set}" = set; then :
   enableval=$enable_pth;
 else
@@ -21028,14 +21021,14 @@ $as_echo "$use_pth" >&6; }
 
 CheckPTHREAD()
 {
-        # Check whether --enable-pthreads was given.
+    # Check whether --enable-pthreads was given.
 if test "${enable_pthreads+set}" = set; then :
   enableval=$enable_pthreads;
 else
   enable_pthreads=yes
 fi
 
-        # Check whether --enable-pthread-sem was given.
+    # Check whether --enable-pthread-sem was given.
 if test "${enable_pthread_sem+set}" = set; then :
   enableval=$enable_pthread_sem;
 else
@@ -21392,7 +21385,7 @@ rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
     CFLAGS="$save_CFLAGS"
 
-        # Check whether --enable-stdio-redirect was given.
+    # Check whether --enable-stdio-redirect was given.
 if test "${enable_stdio_redirect+set}" = set; then :
   enableval=$enable_stdio_redirect;
 else
