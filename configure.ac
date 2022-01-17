@@ -161,13 +161,7 @@ dnl Check for typedefs, structures, etc.
         have_inttypes=yes
     fi
 
-    case "$host" in
-    *-*-cygwin* | *-*-mingw*)
-        ;;
-    *)
-        AC_FUNC_ALLOCA
-        ;;
-    esac
+    AC_FUNC_ALLOCA
 
 dnl Checks for library functions.
     AC_FUNC_MEMCMP
