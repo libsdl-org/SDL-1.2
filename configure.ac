@@ -147,11 +147,11 @@ AC_ARG_ENABLE(libc,
 if test x$enable_libc = xyes; then
     AC_DEFINE(HAVE_LIBC)
 
-    dnl Check for C library headers
+dnl Check for C library headers
     AC_HEADER_STDC
     AC_CHECK_HEADERS(sys/types.h stdio.h stdlib.h stddef.h stdarg.h malloc.h memory.h string.h strings.h inttypes.h stdint.h ctype.h math.h iconv.h signal.h)
 
-    dnl Check for typedefs, structures, etc.
+dnl Check for typedefs, structures, etc.
     AC_TYPE_SIZE_T
     if test x$ac_cv_header_inttypes_h = xyes -o x$ac_cv_header_stdint_h = xyes; then
         AC_CHECK_TYPE(int64_t)
@@ -161,7 +161,6 @@ if test x$enable_libc = xyes; then
         have_inttypes=yes
     fi
 
-    dnl Checks for library functions.
     case "$host" in
     *-*-cygwin* | *-*-mingw*)
         ;;
@@ -170,6 +169,7 @@ if test x$enable_libc = xyes; then
         ;;
     esac
 
+dnl Checks for library functions.
     AC_FUNC_MEMCMP
     if test x$ac_cv_func_memcmp_working = xyes; then
         AC_DEFINE(HAVE_MEMCMP)
@@ -429,7 +429,7 @@ CheckDMEDIA()
 dnl Check whether we want to use Tru64 UNIX native audio or not
 CheckMME()
 {
-    dnl Make sure we are running on an Tru64 UNIX
+dnl Make sure we are running on an Tru64 UNIX
     case $ARCH in
         osf)
             ;;
@@ -641,9 +641,8 @@ CheckNAS()
             NAS_CFLAGS="-I/usr/X11R6/include/"
             NAS_LIBS="-L/usr/X11R6/lib -laudio -lXt"
 
-        dnl On IRIX, the NAS includes are in a different directory,
-        dnl and libnas must be explicitly linked in
-
+dnl On IRIX, the NAS includes are in a different directory,
+dnl and libnas must be explicitly linked in
         elif test -r /usr/freeware/include/nas/audiolib.h; then
             have_nas=yes
             NAS_LIBS="-lnas -lXt"
@@ -724,7 +723,7 @@ dnl See if we can use x86 assembly blitters
 dnl NASM is available from: http://nasm.us
 CheckNASM()
 {
-    dnl Make sure we are running on an x86 platform
+dnl Make sure we are running on an x86 platform
     case $host in
         i?86*)
             ;;
@@ -734,14 +733,14 @@ CheckNASM()
             ;;
     esac
 
-    dnl Mac OS X might report itself as "i386" but generate x86_64 code.
-    dnl  So see what size we think a pointer is, and bail if not 32-bit.
+dnl Mac OS X might report itself as "i386" but generate x86_64 code.
+dnl  So see what size we think a pointer is, and bail if not 32-bit.
     AC_CHECK_SIZEOF([void *], 4)
     if test x$ac_cv_sizeof_void_p != x4; then
         return
     fi
 
-    dnl Check for NASM (for assembly blit routines)
+dnl Check for NASM (for assembly blit routines)
     AC_ARG_ENABLE(nasm,
 [AS_HELP_STRING([--enable-nasm], [use nasm assembly blitters on x86 [default=yes]])],
                   , enable_nasm=yes)
@@ -788,7 +787,7 @@ CheckNASM()
             SOURCES="$SOURCES $srcdir/src/hermes/*.asm"
             NASMFLAGS="$NASMFLAGS -I $srcdir/src/hermes/"
 
-            dnl See if hidden visibility is supported
+dnl         See if hidden visibility is supported
             echo "GLOBAL _bar:function hidden" > symbol-visibility
             echo "_bar:" >> symbol-visibility
             CompileNASM symbol-visibility && NASMFLAGS="$NASMFLAGS -DHIDDEN_VISIBILITY"
@@ -869,8 +868,7 @@ CheckAltivecApple()
         altivec_CFLAGS="-faltivec"
         CFLAGS="$save_CFLAGS $altivec_CFLAGS"
 
-        dnl -faltivec doesn't need altivec.h and actually
-        dnl  emits a warning if included..
+dnl    -faltivec doesn't need altivec.h and actually emits a warning if included..
         AC_MSG_CHECKING(for Altivec with GCC -faltivec option)
         AC_TRY_COMPILE([
         vector unsigned int vzero() {
@@ -888,7 +886,7 @@ CheckAltivecApple()
             AC_DEFINE(SDL_ALTIVEC_BLITTERS)
             EXTRA_CFLAGS="$EXTRA_CFLAGS $altivec_CFLAGS"
         else
-        dnl Check standart gcc altivec options
+dnl         Check standart gcc altivec options
             CheckAltivec
         fi
     fi
@@ -1012,7 +1010,7 @@ CheckWarnAll()
     if test x$have_gcc_Wall = xyes; then
         EXTRA_CFLAGS="$EXTRA_CFLAGS -Wall"
 
-        dnl Haiku headers use multicharacter constants all over the place. Ignore these warnings when using -Wall.
+dnl Haiku headers use multicharacter constants all over the place. Ignore these warnings when using -Wall.
         AC_MSG_CHECKING(for necessary GCC -Wno-multichar option)
         need_gcc_Wno_multichar=no
         case "$host" in
@@ -1339,7 +1337,7 @@ CheckCOCOA()
                   , enable_video_cocoa=yes)
     if test x$enable_video = xyes -a x$enable_video_cocoa = xyes; then
         save_CFLAGS="$CFLAGS"
-        dnl work around that we don't have Objective-C support in autoconf
+dnl     work around that we don't have Objective-C support in autoconf
         CFLAGS="$CFLAGS -x objective-c"
         AC_MSG_CHECKING(for Cocoa framework)
         have_cocoa=no
@@ -1884,7 +1882,7 @@ fi
 dnl See if we can use the new unified event interface in Linux 2.4
 CheckInputEvents()
 {
-    dnl Check for Linux 2.4 unified input event interface support
+dnl Check for Linux 2.4 unified input event interface support
     AC_ARG_ENABLE(input-events,
 [AS_HELP_STRING([--enable-input-events], [use Linux 2.4 unified input interface [default=yes]])],
                   , enable_input_events=yes)
@@ -1933,7 +1931,7 @@ CheckTslib()
 dnl See if we can use GNU pth library for threads
 CheckPTH()
 {
-    dnl Check for pth support
+dnl Check for pth support
     AC_ARG_ENABLE(pth,
 [AS_HELP_STRING([--enable-pth], [use GNU pth library for multi-threading [default=yes]])],
                   , enable_pth=yes)
@@ -1960,11 +1958,11 @@ CheckPTH()
 dnl See what type of thread model to use on Linux and Solaris
 CheckPTHREAD()
 {
-    dnl Check for pthread support
+dnl Check for pthread support
     AC_ARG_ENABLE(pthreads,
 [AS_HELP_STRING([--enable-pthreads], [use POSIX threads for multi-threading [default=yes]])],
                   , enable_pthreads=yes)
-    dnl This is used on Linux for glibc binary compatibility (Doh!)
+dnl This is used on Linux for glibc binary compatibility (Doh!)
     AC_ARG_ENABLE(pthread-sem,
 [AS_HELP_STRING([--enable-pthread-sem], [use pthread semaphores [default=yes]])],
                   , enable_pthread_sem=yes)
@@ -2189,7 +2187,7 @@ CheckWIN32()
                 AC_DEFINE(HAVE__STRTOUI64))
     CFLAGS="$save_CFLAGS"
 
-    dnl See if the user wants to redirect standard output to files
+dnl See if the user wants to redirect standard output to files
     AC_ARG_ENABLE(stdio-redirect,
 [AS_HELP_STRING([--enable-stdio-redirect], [Redirect STDIO to files on Win32 [default=yes]])],
                   , enable_stdio_redirect=yes)
