@@ -17,26 +17,28 @@ DLLFILE = $(LIBHOME)/$(LIBNAME).dll
 LIBFILE = $(LIBHOME)/$(LIBNAME).lib
 LNKFILE=$(LIBNAME).lnk
 
-CFLAGS_DEF=-bt=os2 -d0 -zq -bm -5s -fp5 -fpi87 -sg -oteanbmier $(INCPATH)
-CFLAGS_DLL=$(CFLAGS_DEF) -bd
 # Create debug build or not?
 DEBUG=0
 # Enable Hermes MMX blitters?
 HERMES=1
 
-# Special flags for building SDL
-CFLAGS=$(CFLAGS_DLL) -otexan -wx -ei
+CFLAGS = -bt=os2 -d0 -zq -bm -5s -fp5 -fpi87 -sg -oeatxhn -ei
+# max warnings:
+CFLAGS+= -wx
 # newer OpenWatcom versions enable W303 by default
 CFLAGS+= -wcd=303
+# the include paths :
+CFLAGS+= $(INCPATH)
+# building dll:
+CFLAGS+= -bd
+# building SDL itself (for DECLSPEC):
 CFLAGS+= -DBUILD_SDL
+
 #CFLAGS+= -DCHECK_LEAKS
 CFLAGS+= -DUSE_DOSSETPRIORITY
-
 !ifeq HERMES 1
 CFLAGS+= -DSDL_HERMES_BLITTERS=1
 !endif
-# USE_ASM_MIXER_VC has no effect since SDL-1.2.10.
-#CFLAGS+= -DUSE_ASM_MIXER_VC
 
 DESCRIPTION = Simple DirectMedia Layer 1.2
 
@@ -104,7 +106,7 @@ $(LIBFILE): $(DLLFILE)
 	wlib -q -b -n -c -pa -s -t -zld -ii -io $* $(DLLFILE)
 
 SDL_RLEaccel.obj:
-	wcc386 $(cflags) -w1 -fo=$^@ src/video/SDL_RLEaccel.c
+	wcc386 $(CFLAGS) -w1 -fo=$^@ src/video/SDL_RLEaccel.c
 
 compiling_info : .symbolic
 	@echo * Compiling...
