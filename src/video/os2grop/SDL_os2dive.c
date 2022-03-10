@@ -82,11 +82,13 @@ typedef struct _DIVEData {
 static BOOL vsInit(PVIDEOMODESLIST pModes, PVOID *ppVSData)
 {
   PDIVEData   pDIVEData;
-  DIVE_CAPS   sDiveCaps = { 0 };
-  FOURCC      fccFormats[100] = { 0 };
+  DIVE_CAPS   sDiveCaps;
+  FOURCC      fccFormats[100];
   PVIDEOMODE  pMode;
   ULONG       ulIdx, cModes;
 
+  SDL_memset(fccFormats, 0, sizeof(fccFormats));
+  SDL_memset(&sDiveCaps, 0, sizeof(sDiveCaps));
   sDiveCaps.pFormatData    = fccFormats;
   sDiveCaps.ulFormatLength = 100;
   sDiveCaps.ulStructLen    = sizeof(DIVE_CAPS);

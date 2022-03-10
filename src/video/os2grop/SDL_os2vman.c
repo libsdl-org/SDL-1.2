@@ -111,9 +111,9 @@ VOID APIENTRY ExitVMan(VOID)
  */
 static VOID _clearScreen(PVIDEOMODE pMode)
 {
-  LINEINFO  sLineInfo = { 0 };
+  LINEINFO  sLineInfo;
   BMAPINFO  bmiDst;
-  LINEPACK  sLine = { 0 };
+  LINEPACK  sLine;
   RECTL     rclBounds;
   HWREQIN   sHWReqIn;
   ULONG     ulIdx;
@@ -140,6 +140,9 @@ static VOID _clearScreen(PVIDEOMODE pMode)
     dbgprintf("pfnVMIEntry: VMI_CMD_REQUESTHW failed\n");
     return;
   }
+
+  SDL_memset(&sLine, 0, sizeof(sLine));
+  SDL_memset(&sLineInfo, 0, sizeof(sLineInfo));
 
   sLine.ulFlags = LINE_DIR_Y_POSITIVE | LINE_DIR_X_POSITIVE |
                   LINE_HORIZONTAL | LINE_DO_FIRST_PEL | LINE_DO_LAST_PEL;
@@ -622,7 +625,7 @@ static BOOL vsUpdate(PVOID pVSData, PGROPDATA pGrop, ULONG cRect,
   POINTL      ptlSrcOrg;
   BLTRECT     brDst;
   HWREQIN     sHWReqIn;
-  BITBLTINFO  sBitbltInfo = { 0 };
+  BITBLTINFO  sBitbltInfo;
   ULONG       ulIdx;
   RECTL       rectlScreenUpdate;
 
@@ -787,6 +790,7 @@ static BOOL vsUpdate(PVOID pVSData, PGROPDATA pGrop, ULONG cRect,
     rclSrcBounds.yTop = bmiSrc.ulHeight;
     rclDstBounds = rectlScreenUpdate;
 
+    SDL_memset(&sBitbltInfo, 0, sizeof(sBitbltInfo));
     sBitbltInfo.ulLength = sizeof(BITBLTINFO);
     sBitbltInfo.ulBltFlags = BF_DEFAULT_STATE | BF_ROP_INCL_SRC | BF_PAT_HOLLOW;
     sBitbltInfo.cBlits = cRect;

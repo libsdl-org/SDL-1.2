@@ -104,7 +104,8 @@ static SCAN2SDLKEY aScan2SDLKey[] = {
   {0x38, SDLK_LALT}, {0x39, SDLK_SPACE},
   {0x5e, SDLK_RALT}, {0x7f, SDLK_RSUPER}, {0x7c, SDLK_MENU}, {0x5b, SDLK_RCTRL},
   {0x63, SDLK_LEFT}, {0x66, SDLK_DOWN}, {0x64, SDLK_RIGHT}, {0x52, SDLK_KP0},
-  {0x53, SDLK_KP_PERIOD} };
+  {0x53, SDLK_KP_PERIOD}
+};
 
 typedef struct _UNICODESHIFTKEY {
   SDLKey    enSDLKey;
@@ -750,8 +751,8 @@ static void os2_SetIcon(SDL_VideoDevice *pDevice, SDL_Surface *pSDLSurfaceIcon,
   SDL_PrivateVideoData *pPVData = pDevice->hidden;
   SDL_Surface       *SDLSurfIcon;
   HBITMAP           hbm;
-  BITMAPINFOHEADER2 bmih = { 0 };
-  BITMAPINFO        bmi = { 0 };
+  BITMAPINFOHEADER2 bmih;
+  BITMAPINFO        bmi;
   HPS               hps;
   PULONG            pulBitmap;
   SDL_Rect          sSDLRect;
@@ -836,6 +837,9 @@ static void os2_SetIcon(SDL_VideoDevice *pDevice, SDL_Surface *pSDLSurfaceIcon,
   SDL_FreeSurface(SDLSurfIcon);
 
   /* Create system bitmap object */
+  SDL_memset(&bmih, 0, sizeof(bmih));
+  SDL_memset(&bmi, 0, sizeof(bmi));
+
   bmih.cbFix          = sizeof(BITMAPINFOHEADER2);
   bmih.cx             = sSDLRect.w;
   bmih.cy             = 2 * sSDLRect.h;
@@ -900,7 +904,7 @@ static WMcursor *os2_CreateWMCursor(SDL_VideoDevice *pDevice,
                                     int iW, int iH, int iHotX, int iHotY)
 {
 /*SDL_PrivateVideoData *pPVData = pDevice->hidden;*/
-  BITMAPINFOHEADER  bmih = { 0 };
+  BITMAPINFOHEADER  bmih;
   BITMAPINFO        bmi;
   HPS               hps;
   PBYTE             pcImage;
@@ -965,6 +969,7 @@ static WMcursor *os2_CreateWMCursor(SDL_VideoDevice *pDevice,
   bmi.argbColor[1].bGreen = 0x00;
   bmi.argbColor[1].bRed   = 0xFF;
 
+  SDL_memset(&bmih, 0, sizeof(bmih));
   bmih.cbFix      = sizeof(BITMAPINFOHEADER);
   bmih.cx         = ulMaxX;
   bmih.cy         = ulMaxY * 2;

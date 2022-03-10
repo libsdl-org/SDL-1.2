@@ -19,6 +19,7 @@
     Sam Lantinga
     slouken@libsdl.org
 */
+
 #ifndef SDL_os2grop_h_
 #define SDL_os2grop_h_
 

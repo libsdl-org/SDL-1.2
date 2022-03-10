@@ -204,7 +204,7 @@ static VOID _calcViewRect(PGROPDATA pGrop, BOOL fSendSize)
   }
   else {
     SWP     swp;
-    POINTL  pointl = { 0 };
+    POINTL  pointl = { 0,0 };
 
     WinQueryWindowPos(pGrop->hwnd, &swp);
     lWinWidth = swp.cx;
