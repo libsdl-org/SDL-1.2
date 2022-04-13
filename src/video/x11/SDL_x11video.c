@@ -103,6 +103,7 @@ static SDL_VideoDevice *X11_CreateDevice(int devindex)
 	SDL_VideoDevice *device = NULL;
 
 	if ( SDL_X11_LoadSymbols() ) {
+		XInitThreads();
 		/* Initialize all variables that we clean on shutdown */
 		device = (SDL_VideoDevice *)SDL_malloc(sizeof(SDL_VideoDevice));
 		if ( device ) {
