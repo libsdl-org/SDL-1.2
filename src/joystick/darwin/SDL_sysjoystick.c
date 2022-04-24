@@ -111,6 +111,7 @@ static void HIDReportErrorNum (char * strError, long numError)
 }
 
 static void HIDGetCollectionElements (CFMutableDictionaryRef deviceProperties, recDevice *pDevice);
+static int GetIntValueFromDictionary(CFDictionaryRef dict, CFStringRef name, int defaultValue);
 
 /* returns current value for element, polling element
  * will return 0 on error conditions which should be accounted for by application
@@ -503,29 +504,17 @@ static void HIDGetDeviceInfo (io_object_t hidDevice, CFMutableDictionaryRef hidP
 }
 
 
-static recDevice *HIDBuildDevice (io_object_t hidDevice)
+static recDevice *HIDBuildDevice (io_object_t hidDevice, CFMutableDictionaryRef hidProperties)
 {
 	recDevice *pDevice = (recDevice *) NewPtrClear (sizeof (recDevice));
 	if (pDevice)
 	{
-		/* get dictionary for HID properties */
-		CFMutableDictionaryRef hidProperties = 0;
-		kern_return_t result = IORegistryEntryCreateCFProperties (hidDevice, &hidProperties, kCFAllocatorDefault, kNilOptions);
-		if ((result == KERN_SUCCESS) && hidProperties)
+		/* create device interface */
+		kern_return_t result = HIDCreateOpenDeviceInterface (hidDevice, pDevice);
+		if (kIOReturnSuccess == result)
 		{
-			/* create device interface */
-			result = HIDCreateOpenDeviceInterface (hidDevice, pDevice);
-			if (kIOReturnSuccess == result)
-			{
-				HIDGetDeviceInfo (hidDevice, hidProperties, pDevice); /* hidDevice used to find parents in registry tree */
-				HIDGetCollectionElements (hidProperties, pDevice);
-			}
-			else
-			{
-				DisposePtr((Ptr)pDevice);
-				pDevice = NULL;
-			}
-			CFRelease (hidProperties);
+			HIDGetDeviceInfo (hidDevice, hidProperties, pDevice); /* hidDevice used to find parents in registry tree */
+			HIDGetCollectionElements (hidProperties, pDevice);
 		}
 		else
 		{
@@ -592,6 +581,7 @@ int SDL_SYS_JoystickInit(void)
 	CFMutableDictionaryRef hidMatchDictionary = NULL;
 	recDevice *device, *lastDevice;
 	io_object_t ioHIDDeviceObject = 0;
+	CFMutableDictionaryRef hidProperties;
 
 	SDL_numjoysticks = 0;
 
@@ -651,31 +641,37 @@ int SDL_SYS_JoystickInit(void)
 
 	gpDeviceList = lastDevice = NULL;
 
-	while ((ioHIDDeviceObject = IOIteratorNext (hidObjectIterator)))
+	for (ioHIDDeviceObject = IOIteratorNext(hidObjectIterator);
+		 ioHIDDeviceObject != 0;
+		 IOObjectRelease(ioHIDDeviceObject), ioHIDDeviceObject = IOIteratorNext(hidObjectIterator))
 	{
+		/* get dictionary for HID properties */
+		result = IORegistryEntryCreateCFProperties(ioHIDDeviceObject, &hidProperties, kCFAllocatorDefault, kNilOptions);
+		if (result != KERN_SUCCESS || hidProperties == NULL)
+			continue;
+		/* Filter device list to non-keyboard/mouse stuff */
+		int page = GetIntValueFromDictionary(hidProperties, CFSTR(kIOHIDPrimaryUsagePageKey), kHIDPage_Undefined);
+		int usage = GetIntValueFromDictionary(hidProperties, CFSTR(kIOHIDPrimaryUsageKey), kHIDUsage_Undefined);
+		Boolean skip = true;
+		switch (page) {
+			case kHIDPage_GenericDesktop:
+				switch (usage) {
+					case kHIDUsage_GD_Joystick:
+					case kHIDUsage_GD_GamePad:
+					case kHIDUsage_GD_MultiAxisController:
+						skip = false;
+						break;
+				}
+				break;
+		}
+#if DEBUG
+		printf("<%s> skip = %s, device %i:%i\n", __func__, skip ? "true" : "false", page, usage);
+#endif
 		/* build a device record */
-		device = HIDBuildDevice (ioHIDDeviceObject);
+		device = skip ? NULL : HIDBuildDevice(ioHIDDeviceObject, hidProperties);
+		CFRelease(hidProperties);
 		if (!device)
 			continue;
-
-		/* dump device object, it is no longer needed */
-		result = IOObjectRelease (ioHIDDeviceObject);
-/*		if (KERN_SUCCESS != result)
-			HIDReportErrorNum ("IOObjectRelease error with ioHIDDeviceObject.", result);
-*/
-
-		/* Filter device list to non-keyboard/mouse stuff */ 
-		if ( (device->usagePage != kHIDPage_GenericDesktop) ||
-		     ((device->usage != kHIDUsage_GD_Joystick &&
-		      device->usage != kHIDUsage_GD_GamePad &&
-		      device->usage != kHIDUsage_GD_MultiAxisController)) ) {
-
-			/* release memory for the device */
-			HIDDisposeDevice (&device);
-			DisposePtr((Ptr)device);
-			continue;
-		}
-
 		/* Add device to the end of the list */
 		if (lastDevice)
 			lastDevice->pNext = device;
@@ -854,6 +850,22 @@ void SDL_SYS_JoystickQuit(void)
 {
 	while (NULL != gpDeviceList)
 		gpDeviceList = HIDDisposeDevice (&gpDeviceList);
+}
+
+/* Get integer value from CFDictionary */
+static int GetIntValueFromDictionary(CFDictionaryRef dict, CFStringRef name, int defaultValue)
+{
+	int result;
+	CFNumberRef number;
+	CFTypeID type_id;
+	if (CFDictionaryGetValueIfPresent(dict, name, (CFTypeRef*) &number)) {
+		type_id = CFGetTypeID(number);
+		if (type_id == CFNumberGetTypeID()) {
+			if (CFNumberGetValue(number, kCFNumberIntType, &result))
+				return result;
+		}
+	}
+	return defaultValue;
 }
 
 #endif /* SDL_JOYSTICK_IOKIT */
