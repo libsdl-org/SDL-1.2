@@ -29,6 +29,14 @@ Changes include:
   <a href="https://bugzilla.libsdl.org/show_bug.cgi?id=4495">4495</a>, <a href="https://bugzilla.libsdl.org/show_bug.cgi?id=4496">4496</a>, and <a href="https://bugzilla.libsdl.org/show_bug.cgi?id=4522">4522</a>.)
 </P>
 <P>
+  Video: fix dynamic bpp-target when checking for supported video modes
+  (github <a href="https://github.com/libsdl-org/SDL-1.2/pull/855">PR/855</a>.)
+</P>
+<P>
+  Video, X11: fix crashes with certain libGL implementations and thread
+  issues -- add XInitThreads to X11_CreateDevice (bug <a href="https://bugzilla.libsdl.org/show_bug.cgi?id=2843">2843</a>.)
+</P>
+<P>
   Video, bmp loader:  security fixes for CVE-2019-7635, CVE-2019-7636,
   CVE-2019-7638, CVE-2019-13616 (bugs <a href="https://bugzilla.libsdl.org/show_bug.cgi?id=4498">4498</a>, <a href="https://bugzilla.libsdl.org/show_bug.cgi?id=4499">4499</a>, <a href="https://bugzilla.libsdl.org/show_bug.cgi?id=4500">4500</a>,
   <a href="https://bugzilla.libsdl.org/show_bug.cgi?id=4517">4517</a> and <a href="https://bugzilla.libsdl.org/show_bug.cgi?id=4538">4538</a>.)
@@ -64,6 +72,16 @@ Changes include:
   Video, Linux, fbcon: fix double buffering with non-fullscreen
   resolution, implement triple-buffering and other improvements,
   thanks to Paul Cercueil.
+</P>
+<P>
+  Video, WINCE: fix build with Embedded Visual Studio (github bug <a href="https://github.com/libsdl-org/SDL-1.2/issues/846">846</a>.)
+</P>
+<P>
+  Video, WINCE: fix detection of screen rotation (github bug <a href="https://github.com/libsdl-org/SDL-1.2/issues/847">847</a>.)
+</P>
+<P>
+  Video, WINCE: added support for hardware application keys (github
+  bug <a href="https://github.com/libsdl-org/SDL-1.2/issues/850">850</a>.)
 </P>
 <P>
   Mouse: fix SDL_ResetMouse() using a bogus mouse button causing a
@@ -143,6 +161,9 @@ Changes include:
 </P>
 <P>
   Mac OS X, joystick: update to support Saitek p2500 gamepad (bug <a href="https://bugzilla.libsdl.org/show_bug.cgi?id=2025">2025</a>)
+</P>
+<P>
+  Mac OS X, joystick: fix keystroke receiving security popup (bug <a href="https://bugzilla.libsdl.org/show_bug.cgi?id=5248">5248</a>)
 </P>
 <P>
   Mac OS X: fixed audio on macOS 11.0 beta ("Big Sur")
