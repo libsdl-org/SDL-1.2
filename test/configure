@@ -1434,8 +1434,8 @@ fi
 
 # ac_fn_c_try_run LINENO
 # ----------------------
-# Try to link conftest.$ac_ext, and return whether this succeeded. Assumes
-# that executables *can* be run.
+# Try to run conftest.$ac_ext, and return whether this succeeded. Assumes that
+# executables *can* be run.
 ac_fn_c_try_run ()
 {
   as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
@@ -1667,6 +1667,8 @@ done
 # WARNING: Use '\'' to represent an apostrophe within the trap.
 # WARNING: Do not start the trap code with a newline, due to a FreeBSD 4.0 bug.
 trap 'exit_status=$?
+  # Sanitize IFS.
+  IFS=" ""	$as_nl"
   # Save into config.log some information that might help in debugging.
   {
     echo
@@ -2497,7 +2499,9 @@ ac_clean_files="$ac_clean_files conftest.out"
 # the compiler is broken, or we cross compile.
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether we are cross compiling" >&5
 $as_echo_n "checking whether we are cross compiling... " >&6; }
-if test "$cross_compiling" != yes; then
+if test "$cross_compiling" = maybe && test "x$build" != "x$host"; then
+  cross_compiling=yes
+elif test "$cross_compiling" != yes; then
   { { ac_try="$ac_link"
 case "(($ac_try" in
   *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
