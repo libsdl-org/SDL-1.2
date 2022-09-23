@@ -37,11 +37,11 @@ void RGBtoYUV(Uint8 *rgb, int *yuv, int monochrome, int luminance)
     if (monochrome)
     {
 #if 1 /* these are the two formulas that I found on the FourCC site... */
-        yuv[0] = 0.299*rgb[0] + 0.587*rgb[1] + 0.114*rgb[2];
+        yuv[0] = (int) (0.299*rgb[0] + 0.587*rgb[1] + 0.114*rgb[2]);
         yuv[1] = 128;
         yuv[2] = 128;
 #else
-        yuv[0] = (0.257 * rgb[0]) + (0.504 * rgb[1]) + (0.098 * rgb[2]) + 16;
+        yuv[0] = (int) ((0.257 * rgb[0]) + (0.504 * rgb[1]) + (0.098 * rgb[2]) + 16);
         yuv[1] = 128;
         yuv[2] = 128;
 #endif
@@ -49,13 +49,13 @@ void RGBtoYUV(Uint8 *rgb, int *yuv, int monochrome, int luminance)
     else
     {
 #if 1 /* these are the two formulas that I found on the FourCC site... */
-        yuv[0] = 0.299*rgb[0] + 0.587*rgb[1] + 0.114*rgb[2];
-        yuv[1] = (rgb[2]-yuv[0])*0.565 + 128;
-        yuv[2] = (rgb[0]-yuv[0])*0.713 + 128;
+        yuv[0] = (int) (0.299*rgb[0] + 0.587*rgb[1] + 0.114*rgb[2]);
+        yuv[1] = (int) ((rgb[2]-yuv[0])*0.565 + 128);
+        yuv[2] = (int) ((rgb[0]-yuv[0])*0.713 + 128);
 #else
-        yuv[0] = (0.257 * rgb[0]) + (0.504 * rgb[1]) + (0.098 * rgb[2]) + 16;
-        yuv[1] = 128 - (0.148 * rgb[0]) - (0.291 * rgb[1]) + (0.439 * rgb[2]);
-        yuv[2] = 128 + (0.439 * rgb[0]) - (0.368 * rgb[1]) - (0.071 * rgb[2]);
+        yuv[0] = (int) ((0.257 * rgb[0]) + (0.504 * rgb[1]) + (0.098 * rgb[2]) + 16);
+        yuv[1] = (int) (128 - (0.148 * rgb[0]) - (0.291 * rgb[1]) + (0.439 * rgb[2]));
+        yuv[2] = (int) (128 + (0.439 * rgb[0]) - (0.368 * rgb[1]) - (0.071 * rgb[2]));
 #endif
     }
 
@@ -321,18 +321,16 @@ static void PrintUsage(char *argv0)
 int main(int argc, char **argv)
 {
 	char *argv0 = argv[0];
-	int flip;
 	int delay;
 	int desired_bpp;
 	Uint32 video_flags, overlay_format;
-	char *bmpfile;
+	const char *bmpfile;
 #ifdef BENCHMARK_SDL
 	Uint32 then, now;
 #endif
 	int i;
 
 	/* Set default options and check command-line */
-	flip = 0;
 	scale=0;
         monochrome=0;
         luminance=100;
@@ -473,14 +471,13 @@ int main(int argc, char **argv)
 			(screen->flags&SDL_HWSURFACE) ? "video" : "system");
 	if ( screen->flags & SDL_DOUBLEBUF ) {
 		printf("Double-buffering enabled\n");
-		flip = 1;
 	}
 
 	/* Set the window manager title bar */
 	SDL_WM_SetCaption("SDL test overlay", "testoverlay");
 
 	/* Load picture */
-	bmpfile=(argv[1]?argv[1]:"sample.bmp");
+	bmpfile = argv[1] ? argv[1]:"sample.bmp";
 	pic = SDL_LoadBMP(bmpfile);
 	if ( pic == NULL ) {
 		fprintf(stderr, "Couldn't load %s: %s\n", bmpfile,
