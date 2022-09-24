@@ -11,7 +11,7 @@ OBJS = $(TARGETS:.exe=.obj)
 
 all: $(TARGETS)
 
-INCPATH = -I$(%WATCOM)/h/os2 -I$(%WATCOM)/h -I../include
+INCPATH = -I"$(%WATCOM)/h/os2" -I"$(%WATCOM)/h" -I"../include"
 CFLAGS_DEF = $(INCPATH) -bt=os2 -d0 -q -bm -5s -fp5 -fpi87 -sg -oteanbmier
 CFLAGS_EXE = $(CFLAGS_DEF)
 CFLAGS = $(CFLAGS_EXE) -ei -5s

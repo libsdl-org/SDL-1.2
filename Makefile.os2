@@ -8,7 +8,7 @@ DLLNAME = SDL12
 VERSION = 1.2.16
 LIBHOME = os2
 
-INCPATH = -I$(%WATCOM)/h/os2 -I$(%WATCOM)/h
+INCPATH = -I"$(%WATCOM)/h/os2" -I"$(%WATCOM)/h"
 INCPATH+= -Iinclude -I"os2/h"
 LIBPATH=$(LIBHOME)/lib
 LIBNAME=$(DLLNAME)
@@ -105,8 +105,8 @@ $(LIBFILE): $(DLLFILE)
 	@echo * Creating LIB file: $@
 	wlib -q -b -n -c -pa -s -t -zld -ii -io $* $(DLLFILE)
 
-SDL_RLEaccel.obj:
-	wcc386 $(CFLAGS) -w1 -fo=$^@ src/video/SDL_RLEaccel.c
+SDL_RLEaccel.obj: SDL_RLEaccel.c
+	wcc386 $(CFLAGS) -w1 -fo=$^@ $<
 
 compiling_info : .symbolic
 	@echo * Compiling...
