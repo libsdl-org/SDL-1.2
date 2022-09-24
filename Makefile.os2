@@ -71,8 +71,7 @@ videoobjs = SDL_blit.obj SDL_blit_0.obj SDL_blit_1.obj SDL_blit_A.obj &
             SDL_os2fslib.obj &
             SDL_nullevents.obj SDL_nullmouse.obj SDL_nullvideo.obj
 
-stdlibobjs = SDL_malloc.obj SDL_qsort.obj SDL_string.obj
-# SDL_iconv.obj
+stdlibobjs = SDL_iconv.obj SDL_malloc.obj SDL_qsort.obj SDL_string.obj
 
 !ifeq HERMES 1
 hermesobjs= mmx_main.obj mmxp2_32.obj x86_main.obj x86p_16.obj x86p_32.obj
