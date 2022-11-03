@@ -41,7 +41,7 @@
 #define NSOpenGLPFASamples ((NSOpenGLPixelFormatAttribute) 56)
 #endif
 
-#ifdef __powerpc__   /* we lost this in 10.6, which has no PPC support. */
+#ifdef __POWERPC__   /* we lost this in 10.7, which has no PPC support. */
 @implementation NSOpenGLContext (CGLContextAccess)
 - (CGLContextObj) cglContext;
 {
