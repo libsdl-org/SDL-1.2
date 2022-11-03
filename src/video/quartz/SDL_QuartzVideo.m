@@ -586,7 +586,7 @@ static void QZ_UnsetVideoMode (_THIS, BOOL to_desktop, BOOL save_gl)
                 QZ_TearDownOpenGL (this);
             }
 
-            #ifdef __powerpc__  /* we only use this for pre-10.3 compatibility. */
+            #ifdef __ppc__  /* we only use this for pre-10.3 compatibility. */
             CGLSetFullScreen (NULL);
             #endif
         }
