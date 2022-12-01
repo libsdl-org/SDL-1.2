@@ -26,7 +26,6 @@
 #include "SDL_stdinc.h"
 
 #ifndef HAVE_MALLOC
-
 #define LACKS_SYS_TYPES_H
 #define LACKS_STDIO_H
 #define LACKS_STRINGS_H
@@ -479,9 +478,10 @@ DEFAULT_MMAP_THRESHOLD       default: 256K
 #define WIN32 1
 #endif  /* _WIN32 */
 #endif  /* WIN32 */
-
 #ifdef WIN32
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
 #include <windows.h>
 #define HAVE_MMAP 1
 #define HAVE_MORECORE 0
@@ -618,12 +618,12 @@ DEFAULT_MMAP_THRESHOLD       default: 256K
 #define MALLINFO_FIELD_TYPE size_t
 #endif  /* MALLINFO_FIELD_TYPE */
 
-#define memset	SDL_memset
-#define memcpy	SDL_memcpy
-#define malloc	SDL_malloc
-#define calloc	SDL_calloc
-#define realloc	SDL_realloc
-#define free	SDL_free
+#define memset  SDL_memset
+#define memcpy  SDL_memcpy
+#define malloc  SDL_malloc
+#define calloc  SDL_calloc
+#define realloc SDL_realloc
+#define free    SDL_free
 
 /*
   mallopt tuning options.  SVID/XPG defines four standard parameter
@@ -725,7 +725,7 @@ extern "C" {
   maximum supported value of n differs across systems, but is in all
   cases less than the maximum representable value of a size_t.
 */
-void* dlmalloc(size_t);
+void* SDLCALL dlmalloc(size_t);
 
 /*
   free(void* p)
@@ -734,14 +734,14 @@ void* dlmalloc(size_t);
   It has no effect if p is null. If p was not malloced or already
   freed, free(p) will by default cause the current program to abort.
 */
-void  dlfree(void*);
+void SDLCALL dlfree(void*);
 
 /*
   calloc(size_t n_elements, size_t element_size);
   Returns a pointer to n_elements * element_size bytes, with all locations
   set to zero.
 */
-void* dlcalloc(size_t, size_t);
+void* SDLCALL dlcalloc(size_t, size_t);
 
 /*
   realloc(void* p, size_t n)
@@ -766,7 +766,7 @@ void* dlcalloc(size_t, size_t);
   to be used as an argument to realloc is not supported.
 */
 
-void* dlrealloc(void*, size_t);
+void* SDLCALL dlrealloc(void*, size_t);
 
 /*
   memalign(size_t alignment, size_t n);
@@ -1239,7 +1239,7 @@ int mspace_mallopt(int, int);
 #ifndef LACKS_UNISTD_H
 #include <unistd.h>     /* for sbrk */
 #else /* LACKS_UNISTD_H */
-#if !defined(__FreeBSD__) && !defined(__OpenBSD__) && !defined(__NetBSD__)
+#if !defined(__FreeBSD__) && !defined(__OpenBSD__) && !defined(__NetBSD__) && !defined(__DragonFly__)
 extern void*     sbrk(ptrdiff_t);
 #endif /* FreeBSD etc */
 #endif /* LACKS_UNISTD_H */
@@ -1343,7 +1343,7 @@ extern void*     sbrk(ptrdiff_t);
 #define IS_MMAPPED_BIT       (SIZE_T_ONE)
 #define USE_MMAP_BIT         (SIZE_T_ONE)
 
-#if !defined(WIN32) && !defined (__OS2__)
+#if !defined(WIN32) && !defined(__OS2__)
 #define CALL_MUNMAP(a, s)    munmap((a), (s))
 #define MMAP_PROT            (PROT_READ|PROT_WRITE)
 #if !defined(MAP_ANONYMOUS) && defined(MAP_ANON)
