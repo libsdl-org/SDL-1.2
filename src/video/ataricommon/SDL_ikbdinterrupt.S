@@ -208,9 +208,9 @@ ikbd:
 	| Mouse packet ?
 
 	cmpb	#0xf8,d0
-	bmis	ikbd_no_mouse
+	blos	ikbd_no_mouse
 	cmpb	#0xfc,d0
-	bpls	ikbd_no_mouse
+	bhss	ikbd_no_mouse
 
 	| Mouse packet, byte #1
 
