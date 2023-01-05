@@ -152,7 +152,9 @@ static SDL_VideoDevice *X11_CreateDevice(int devindex)
 		device->FreeHWSurface = X11_FreeHWSurface;
 		device->SetGamma = X11_SetVidModeGamma;
 		device->GetGamma = X11_GetVidModeGamma;
+#if 0 /* Disable SetGammaRamp on modern X servers */
 		device->SetGammaRamp = X11_SetGammaRamp;
+#endif
 		device->GetGammaRamp = NULL;
 #if SDL_VIDEO_OPENGL_GLX
 		device->GL_LoadLibrary = X11_GL_LoadLibrary;
