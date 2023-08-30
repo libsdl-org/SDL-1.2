@@ -2851,10 +2851,23 @@ __m128i MixRGBA_SSE41(__m128i src, __m128i dst) {
 	return _mm_add_epi8(reduced, dst);
 }
 
-int processPixels_AVX2(int width, Uint8** src, Uint8** dst) {
+__m128i convertPixelFormatsx4(__m128i colors, const SDL_PixelFormat* srcFormat) {
+	// Create shuffle masks based on the source SDL_PixelFormat to ARGB
+	__m128i srcShuffleMask = _mm_set_epi8(
+	    srcFormat->Ashift / 8 + 12, srcFormat->Rshift / 8 + 12, srcFormat->Gshift / 8 + 12, srcFormat->Bshift / 8 + 12,
+	    srcFormat->Ashift / 8 + 8, srcFormat->Rshift / 8 + 8, srcFormat->Gshift / 8 + 8, srcFormat->Bshift / 8 + 8,
+	    srcFormat->Ashift / 8 + 4, srcFormat->Rshift / 8 + 4, srcFormat->Gshift / 8 + 4, srcFormat->Bshift / 8 + 4,
+	    srcFormat->Ashift / 8, srcFormat->Rshift / 8, srcFormat->Gshift / 8, srcFormat->Bshift / 8
+	);
+
+	// Shuffle the colors
+	return _mm_shuffle_epi8(colors, srcShuffleMask);
+}
+
+int processPixels_AVX2(int width, Uint8** src, Uint8** dst, SDL_PixelFormat* srcFormat) {
 	int x = 0;
 	for (; x + 4 <= width; x += 4) {
-		__m128i c_src = _mm_loadu_si128((__m128i*) *src);
+		__m128i c_src = convertPixelFormatsx4(_mm_loadu_si128((__m128i*) *src), srcFormat);
 		__m128i c_dst = _mm_loadu_si128((__m128i*) *dst);
 
 		__m128i c_mix = MixRGBA_AVX2(c_src, c_dst);
@@ -2866,9 +2879,9 @@ int processPixels_AVX2(int width, Uint8** src, Uint8** dst) {
 	return x;
 }
 
-int processPixels_SSE41(int width, int x, Uint8** src, Uint8** dst) {
+int processPixels_SSE41(int width, int x, Uint8** src, Uint8** dst, SDL_PixelFormat* srcFormat) {
 	for (; x + 2 <= width; x += 2) {
-		__m128i c_src = _mm_loadu_si64(*src);
+		__m128i c_src = convertPixelFormatsx4(_mm_loadu_si64(*src), srcFormat);
 		__m128i c_dst = _mm_loadu_si64(*dst);
 
 		__m128i c_mix = MixRGBA_SSE41(c_src, c_dst);
@@ -2880,9 +2893,9 @@ int processPixels_SSE41(int width, int x, Uint8** src, Uint8** dst) {
 	return x;
 }
 
-void processRemainingPixels(int width, int x, Uint8** src, Uint8** dst) {
+void processRemainingPixels(int width, int x, Uint8** src, Uint8** dst, SDL_PixelFormat* srcFormat) {
 	for (; x < width; x++) {
-		__m128i c_src = _mm_loadu_si32(*src);
+		__m128i c_src = convertPixelFormatsx4(_mm_loadu_si32(*src), srcFormat);
 		__m128i c_dst = _mm_loadu_si32(*dst);
 
 		__m128i c_mix = MixRGBA_SSE41(c_src, c_dst);
@@ -2922,14 +2935,14 @@ void BlitNtoNPixelAlpha(SDL_BlitInfo *info) {
 
 			// Use AVX2 implementation for 4-wide blocks if available
 			if (hasAVX2) {
-				x = processPixels_AVX2(width, &src, &dst);
+				x = processPixels_AVX2(width, &src, &dst, srcfmt);
 			}
 
 			// Use SSE4.1 implementation for 2-wide blocks
-			x = processPixels_SSE41(width, x, &src, &dst);
+			x = processPixels_SSE41(width, x, &src, &dst, srcfmt);
 
 			// Process remaining pixels
-			processRemainingPixels(width, x, &src, &dst);
+			processRemainingPixels(width, x, &src, &dst, srcfmt);
 
 			src += srcskip;
 			dst += dstskip;
