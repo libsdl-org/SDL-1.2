@@ -43,13 +43,6 @@
 /* Use shadow buffer on Supervidel */
 /*#define ENABLE_SV_SHADOWBUF 1*/
 
-/* Supervidel 1 byte/pixel mode */
-#define BPS8c	0x07
-
-#ifndef C_SupV
-#define C_SupV 0x53757056L
-#endif
-
 static const xbiosmode_t rgb_modes[]={
 	{BPS16|COL80|OVERSCAN|VERTFLAG,768,480,16,0},
 	{BPS16|COL80|OVERSCAN,768,240,16,0},
@@ -79,42 +72,50 @@ static const xbiosmode_t vga_modes[]={
 };
 
 static const xbiosmode_t sv_modes[]={
-	{0x487D,2560,1440,32,0},  /* 32-bits */
-	{0x467D,1920,1200,32,0},
-	{0x447D,1920,1080,32,0},
-	{0x463D,1280,1024,32,0},
-	{0x443D,1024,768,32,0},
-	{0x423D,800,600,32,0},
+	{SVEXT|SVEXT_BASERES(4)|BPS32|COL80|OVERSCAN,2560,1440,32,0},	/* 32-bits */
+	{SVEXT|SVEXT_BASERES(3)|BPS32|COL80|OVERSCAN,1920,1200,32,0},
+	{SVEXT|SVEXT_BASERES(2)|BPS32|COL80|OVERSCAN,1920,1080,32,0},
+	{SVEXT|SVEXT_BASERES(1)|BPS32|COL80|OVERSCAN,1680,1050,32,0},
+	{SVEXT|SVEXT_BASERES(4)|BPS32|COL80,1600,1200,32,0},
+	{SVEXT|SVEXT_BASERES(3)|BPS32|COL80,1280,1024,32,0},
+	{SVEXT|SVEXT_BASERES(0)|BPS32|COL80|OVERSCAN,1280,720,32,0},
+	{SVEXT|SVEXT_BASERES(2)|BPS32|COL80,1024,768,32,0},
+	{SVEXT|SVEXT_BASERES(1)|BPS32|COL80,800,600,32,0},
 
-	{0x403D,640,480,32,0},
-	{0x413D,640,240,32,0},
-	{0x4035,320,480,32,0},
-	{0x4135,320,240,32,0},
+	{SVEXT|SVEXT_BASERES(0)|BPS32|COL80,640,480,32,0},
+	{SVEXT|SVEXT_BASERES(0)|BPS32|COL80|VERTFLAG,640,240,32,0},
+	{SVEXT|SVEXT_BASERES(0)|BPS32,320,480,32,0},
+	{SVEXT|SVEXT_BASERES(0)|BPS32|VERTFLAG,320,240,32,0},
 
-	{0x487C,2560,1440,16,0},    /* 16-bits */
-	{0x467C,1920,1200,16,0},
-	{0x447C,1920,1080,16,0},
-	{0x427C,1680,1050,16,0},
-	{0x463C,1280,1024,16,0},
-	{0x443C,1024,768,16,0},
-	{0x423C,800,600,16,0},
+	{SVEXT|SVEXT_BASERES(4)|BPS16|COL80|OVERSCAN,2560,1440,16,0},	/* 16-bits */
+	{SVEXT|SVEXT_BASERES(3)|BPS16|COL80|OVERSCAN,1920,1200,16,0},
+	{SVEXT|SVEXT_BASERES(2)|BPS16|COL80|OVERSCAN,1920,1080,16,0},
+	{SVEXT|SVEXT_BASERES(1)|BPS16|COL80|OVERSCAN,1680,1050,16,0},
+	{SVEXT|SVEXT_BASERES(4)|BPS16|COL80,1600,1200,16,0},
+	{SVEXT|SVEXT_BASERES(3)|BPS16|COL80,1280,1024,16,0},
+	{SVEXT|SVEXT_BASERES(0)|BPS16|COL80|OVERSCAN,1280,720,16,0},
+	{SVEXT|SVEXT_BASERES(2)|BPS16|COL80,1024,768,16,0},
+	{SVEXT|SVEXT_BASERES(1)|BPS16|COL80,800,600,16,0},
 
-	{0x403C,640,480,16,0},
-	{0x413C,640,240,16,0},
-	{0x4034,320,480,16,0},
-	{0x4134,320,240,16,0},
+	{BPS16|COL80,640,480,16,0},
+	{BPS16|COL80|VERTFLAG,640,240,16,0},
+	{BPS16,320,480,16,0},
+	{BPS16|VERTFLAG,320,240,16,0},
 
-	{0x487F,2560,1440,8,0},     /* 8-bits c2p */
-	{0x467F,1920,1200,8,0},
-	{0x447F,1920,1080,8,0},
-	{0x463f,1280,1024,8,0},
-	{0x443F,1024,768,8,0},
-	{0x423F,800,600,8,0},
+	{SVEXT|SVEXT_BASERES(4)|BPS8C|COL80|OVERSCAN,2560,1440,8,0},	/* 8-bits chunky */
+	{SVEXT|SVEXT_BASERES(3)|BPS8C|COL80|OVERSCAN,1920,1200,8,0},
+	{SVEXT|SVEXT_BASERES(2)|BPS8C|COL80|OVERSCAN,1920,1080,8,0},
+	{SVEXT|SVEXT_BASERES(1)|BPS8C|COL80|OVERSCAN,1680,1050,8,0},
+	{SVEXT|SVEXT_BASERES(4)|BPS8C|COL80,1600,1200,8,0},
+	{SVEXT|SVEXT_BASERES(3)|BPS8C|COL80,1280,1024,8,0},
+	{SVEXT|SVEXT_BASERES(0)|BPS8C|COL80|OVERSCAN,1280,720,8,0},
+	{SVEXT|SVEXT_BASERES(2)|BPS8C|COL80,1024,768,8,0},
+	{SVEXT|SVEXT_BASERES(1)|BPS8C|COL80,800,600,8,0},
 
-	{0x403F,640,480,8,0},
-	{0x411F,640,240,8,0},
-	{0x4017,320,480,8,0},
-	{0x4137,320,240,8,0}
+	{BPS8C|COL80,640,480,8,0},
+	{BPS8C|COL80|VERTFLAG,640,240,8,0},
+	{BPS8C,320,480,8,0},
+	{BPS8C|VERTFLAG,320,240,8,0}
 };
 
 static int has_supervidel;
@@ -180,43 +181,29 @@ static void listModes(_THIS, int actually_add)
 		/* SuperVidel specific modes */
 		max_modes = sizeof(sv_modes)/sizeof(xbiosmode_t);
 		f30_modes = sv_modes;
-
-		for (i=0; i<max_modes; i++) {
-			SDL_memcpy(&modeinfo, &sv_modes[i], sizeof(xbiosmode_t));
-			SDL_XBIOS_AddMode(this, actually_add, &modeinfo);
+	} else {
+		/* Standard Videl */
+		switch (VgetMonitor()) {
+			case MONITOR_RGB:
+			case MONITOR_TV:
+				max_modes = sizeof(rgb_modes)/sizeof(xbiosmode_t);
+				f30_modes = rgb_modes;
+				break;
+			case MONITOR_VGA:
+				max_modes = sizeof(vga_modes)/sizeof(xbiosmode_t);
+				f30_modes = vga_modes;
+				break;
 		}
-
-		return;
-	}
-
-	/* Standard Videl */
-	switch (VgetMonitor()) {
-		case MONITOR_RGB:
-		case MONITOR_TV:
-			max_modes = sizeof(rgb_modes)/sizeof(xbiosmode_t);
-			f30_modes = rgb_modes;
-			break;
-		case MONITOR_VGA:
-			max_modes = sizeof(vga_modes)/sizeof(xbiosmode_t);
-			f30_modes = vga_modes;
-			break;
 	}
 
 	for (i=0; i<max_modes; i++) {
 		SDL_memcpy(&modeinfo, &f30_modes[i], sizeof(xbiosmode_t));
 		modeinfo.number &= ~(VGA|PAL);
 		modeinfo.number |= XBIOS_oldvmode & (VGA|PAL);
-
-		if (has_supervidel && (modeinfo.depth==8)) {
-			modeinfo.number &= ~NUMCOLS;
-			modeinfo.number |= BPS8c;
-			modeinfo.flags &= ~XBIOSMODE_C2P;
-		}
-
 		SDL_XBIOS_AddMode(this, actually_add, &modeinfo);
 	}
 
-	if (Getcookie(C_BLOW, &cookie_blow) == C_FOUND) {
+	if (!has_supervidel && Getcookie(C_BLOW, &cookie_blow) == C_FOUND) {
 		SDL_XBIOS_ListBlowupModes(this, actually_add, (blow_cookie_t *)cookie_blow);
 	}
 }
