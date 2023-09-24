@@ -266,10 +266,10 @@ static void NOVA_SetMode(_THIS, int num_mode)
 	oldstack = (void *)Super(NULL);
 
 	__asm__ __volatile__ (
-			"moveql	#0,d0\n\t"
-			"movel	%0,a0\n\t"
-			"movel	%1,a1\n\t"
-			"jsr	a1@"
+			"moveql	#0,%%d0\n\t"
+			"movel	%0,%%a0\n\t"
+			"movel	%1,%%a1\n\t"
+			"jsr	%%a1@"
 		: /* no return value */
 		: /* input */
 			"g"(&NOVA_modes[num_mode]), "g"(NOVA_xcb->p_chres)
@@ -287,9 +287,9 @@ static void NOVA_SetScreen(_THIS, void *screen)
 	oldstack = (void *)Super(NULL);
 
 	__asm__ __volatile__ (
-			"movel	%0,a0\n\t"
-			"movel	%1,a1\n\t"
-			"jsr	a1@"
+			"movel	%0,%%a0\n\t"
+			"movel	%1,%%a1\n\t"
+			"jsr	%%a1@"
 		: /* no return value */
 		: /* input */
 			"g"(screen), "g"(NOVA_xcb->p_setscr)
@@ -312,10 +312,10 @@ static void NOVA_SetColor(_THIS, int index, int r, int g, int b)
 	oldstack = (void *)Super(NULL);
 
 	__asm__ __volatile__ (
-			"movel	%0,d0\n\t"
-			"movel	%1,a0\n\t"
-			"movel	%2,a1\n\t"
-			"jsr	a1@"
+			"movel	%0,%%d0\n\t"
+			"movel	%1,%%a0\n\t"
+			"movel	%2,%%a1\n\t"
+			"jsr	%%a1@"
 		: /* no return value */
 		: /* input */
 			"g"(index), "g"(color), "g"(NOVA_xcb->p_setcol)

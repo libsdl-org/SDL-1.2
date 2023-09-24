@@ -152,4 +152,7 @@ void SDL_XBIOS_VideoInit_Milan(_THIS);
 /* SDL_xbios_ctpci.c */
 void SDL_XBIOS_VideoInit_Ctpci(_THIS);
 
+/* SDL_xbios_nova.c */
+void SDL_XBIOS_VideoInit_Nova(_THIS, void *cookie_nova);
+
 #endif /* _SDL_xbios_h */

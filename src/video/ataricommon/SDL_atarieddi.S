@@ -20,6 +20,8 @@
     slouken@libsdl.org
 */
 
+#include "symbols.h"
+
 /*
  *	Read EdDI version
  *
@@ -28,11 +30,11 @@
 
 	.text
 
-	.globl	_Atari_get_EdDI_version
+	.globl	SYM(Atari_get_EdDI_version)
 
 /*--- Vector installer ---*/
 
-_Atari_get_EdDI_version:
+SYM(Atari_get_EdDI_version):
 #if defined(__mcoldfire__)
 	movel	sp@(4),a0
 	movel	a0,eddi_cookie

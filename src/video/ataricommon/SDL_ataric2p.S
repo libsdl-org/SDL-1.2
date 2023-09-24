@@ -20,6 +20,8 @@
     slouken@libsdl.org
 */
 
+#include "symbols.h"
+
 /*
 	Chunky to planar conversion routine
 	1 byte/pixel -> 4 or 8 bit planes
@@ -29,15 +31,15 @@
 	Mikael Kalms
 */
 
-	.globl	_SDL_Atari_C2pConvert
-	.globl	_SDL_Atari_C2pConvert8
-	.globl	_SDL_Atari_C2pConvert4
-	.globl	_SDL_Atari_C2pConvert4_pal
+	.globl	SYM(SDL_Atari_C2pConvert)
+	.globl	SYM(SDL_Atari_C2pConvert8)
+	.globl	SYM(SDL_Atari_C2pConvert4)
+	.globl	SYM(SDL_Atari_C2pConvert4_pal)
 
 /* ------------	Conversion C2P, 8 bits ------------ */
 
 	.text
-_SDL_Atari_C2pConvert8:
+SYM(SDL_Atari_C2pConvert8):
 #if !defined(__mcoldfire__)
 	movel	sp@(4),c2p_source
 	movel	sp@(8),c2p_dest
@@ -289,7 +291,7 @@ SDL_Atari_C2p8_nodblline:
 
 /* ------------	Conversion C2P, 4 bits ------------ */
 
-_SDL_Atari_C2pConvert4:
+SYM(SDL_Atari_C2pConvert4):
 #if !defined(__mcoldfire__)
 	movel	sp@(4),c2p_source
 	movel	sp@(8),c2p_dest
@@ -401,7 +403,7 @@ c2p4_nodblligne:
 
 /* ------------	Conversion of a light palette in 4 bits ------------ */
 
-_SDL_Atari_C2pConvert4_pal:
+SYM(SDL_Atari_C2pConvert4_pal):
 #if !defined(__mcoldfire__)
 	/* a0 is a 256-word light palette */
 	movel	sp@(4),a0
@@ -436,7 +438,7 @@ c2p_pal_initbyte:
 	.bss
 
 	.even
-_SDL_Atari_C2pConvert:
+SYM(SDL_Atari_C2pConvert):
 	.ds.l	1
 
 c2p_table:

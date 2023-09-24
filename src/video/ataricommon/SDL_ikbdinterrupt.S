@@ -20,6 +20,8 @@
     slouken@libsdl.org
 */
 
+#include "symbols.h"
+
 /*
  *	IKBD 6301 interrupt routine
  *
@@ -28,22 +30,22 @@
 
 	.text
 
-	.globl	_SDL_AtariIkbd_Install
-	.globl	_SDL_AtariIkbd_Restore
+	.globl	SYM(SDL_AtariIkbd_Install)
+	.globl	SYM(SDL_AtariIkbd_Restore)
 
-	.globl	_SDL_AtariIkbd_keyboard
-	.globl	_SDL_AtariIkbd_mouseb
-	.globl	_SDL_AtariIkbd_mousex
-	.globl	_SDL_AtariIkbd_mousey
-	.globl	_SDL_AtariIkbd_joystick
+	.globl	SYM(SDL_AtariIkbd_keyboard)
+	.globl	SYM(SDL_AtariIkbd_mouseb)
+	.globl	SYM(SDL_AtariIkbd_mousex)
+	.globl	SYM(SDL_AtariIkbd_mousey)
+	.globl	SYM(SDL_AtariIkbd_joystick)
 
-	.globl	_SDL_AtariIkbd_enabled
+	.globl	SYM(SDL_AtariIkbd_enabled)
 
-	.globl	_Atari_UnhookXbra
+	.globl	SYM(Atari_UnhookXbra)
 
 /*--- Install our IKBD vector ---*/
 
-_SDL_AtariIkbd_Install:
+SYM(SDL_AtariIkbd_Install):
 	| Disable interrupts
 
 	movew	sr,d1
@@ -101,16 +103,16 @@ _SDL_AtariIkbd_Install:
 
 #if defined(__mcoldfire__)
 	movel	#0xffff,d0
-	movew	d0,_SDL_AtariIkbd_enabled
+	movew	d0,SYM(SDL_AtariIkbd_enabled)
 #else
-	movew	#0xffff,_SDL_AtariIkbd_enabled
+	movew	#0xffff,SYM(SDL_AtariIkbd_enabled)
 #endif
 	rts
 
 /*--- Uninstall our IKBD vector ---*/
 
-_SDL_AtariIkbd_Restore:
-	tstw	_SDL_AtariIkbd_enabled
+SYM(SDL_AtariIkbd_Restore):
+	tstw	SYM(SDL_AtariIkbd_enabled)
 	bnes	ikbd_installed
 	rts
 
@@ -141,7 +143,7 @@ ikbd_restoreimrb:
 	pea	ikbd(pc)
 	movel	#0x4c53444c,sp@-	/* "LSDL" */
 	pea	0x118/4:w
-	jsr	_Atari_UnhookXbra
+	jsr	SYM(Atari_UnhookXbra)
 	lea	sp@(12),sp
 
 	movew	sp@+,d1
@@ -162,7 +164,7 @@ ikbd_finbuffer:
 
 	| Interrupts done
 
-	clrw	_SDL_AtariIkbd_enabled
+	clrw	SYM(SDL_AtariIkbd_enabled)
 	rts
 
 	.bss
@@ -220,7 +222,7 @@ ikbd_yes_mouse:
 #else
 	andw	#3,d0
 #endif
-	movew	d0,_SDL_AtariIkbd_mouseb
+	movew	d0,SYM(SDL_AtariIkbd_mouseb)
 
 #if defined(__mcoldfire__)
 	movel	#ikbd_mousex,d0
@@ -245,7 +247,7 @@ ikbd_yes_joystick:
 
 ikbd_no_mouse:
 	moveb	d0,d1
-	lea		_SDL_AtariIkbd_keyboard,a0
+	lea		SYM(SDL_AtariIkbd_keyboard),a0
 #if defined(__mcoldfire__)
 	andl	#0x7f,d1
 	btst	#7,d0
@@ -308,14 +310,14 @@ ikbd_mousex:
 	moveb	0xfffffc02:w,d0
 	extw	d0
 #if defined(__mcoldfire__)
-	movew	_SDL_AtariIkbd_mousex,d1
+	movew	SYM(SDL_AtariIkbd_mousex),d1
 	addl	d1,d0
-	movew	d0,_SDL_AtariIkbd_mousex
+	movew	d0,SYM(SDL_AtariIkbd_mousex)
 
 	movel	#ikbd_mousey,d0
 	movel	d0,0x118:w
 #else
-	addw	d0,_SDL_AtariIkbd_mousex
+	addw	d0,SYM(SDL_AtariIkbd_mousex)
 
 	movel	#ikbd_mousey,0x118:w
 #endif
@@ -343,14 +345,14 @@ ikbd_mousey:
 	moveb	0xfffffc02:w,d0
 	extw	d0
 #if defined(__mcoldfire__)
-	movew	_SDL_AtariIkbd_mousey,d1
+	movew	SYM(SDL_AtariIkbd_mousey),d1
 	addl	d1,d0
-	movew	d0,_SDL_AtariIkbd_mousey
+	movew	d0,SYM(SDL_AtariIkbd_mousey)
 
 	movel	#ikbd,d0
 	movel	d0,0x118:w
 #else
-	addw	d0,_SDL_AtariIkbd_mousey
+	addw	d0,SYM(SDL_AtariIkbd_mousey)
 
 	movel	#ikbd,0x118:w
 #endif
@@ -377,14 +379,14 @@ ikbd_joystick:
 
 #if defined(__mcoldfire__)
 	moveb	0xfffffc02:w,d0
-	moveb	d0,_SDL_AtariIkbd_joystick+1
+	moveb	d0,SYM(SDL_AtariIkbd_joystick)+1
 
 	movel	#ikbd,d0
 	movel	d0,0x118:w
 
 	bra	ikbd_endit_stack
 #else
-	moveb	0xfffffc02:w,_SDL_AtariIkbd_joystick+1
+	moveb	0xfffffc02:w,SYM(SDL_AtariIkbd_joystick)+1
 
 	movel	#ikbd,0x118:w
 
@@ -394,19 +396,19 @@ ikbd_joystick:
 	.data
 
 	.even
-_SDL_AtariIkbd_enabled:
+SYM(SDL_AtariIkbd_enabled):
 	.dc.w	0
 
 	.bss
 
 	.even
-_SDL_AtariIkbd_keyboard:
+SYM(SDL_AtariIkbd_keyboard):
 	.ds.b	128
-_SDL_AtariIkbd_mousex:
+SYM(SDL_AtariIkbd_mousex):
 	.ds.w	1
-_SDL_AtariIkbd_mousey:
+SYM(SDL_AtariIkbd_mousey):
 	.ds.w	1
-_SDL_AtariIkbd_mouseb:
+SYM(SDL_AtariIkbd_mouseb):
 	.ds.w	1
-_SDL_AtariIkbd_joystick:
+SYM(SDL_AtariIkbd_joystick):
 	.ds.w	1
