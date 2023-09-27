@@ -144,6 +144,8 @@ static void saveMode(_THIS, SDL_PixelFormat *vformat)
 	this->info.current_w = si.scrWidth;
 	this->info.current_h = si.scrHeight;
 
+	XBIOS_oldvbase = (void*)si.frameadr;
+
 	XBIOS_oldnumcol = 0;
 	if (si.scrFlags & SCRINFO_OK) {
 		if (si.scrPlanes <= 8) {
@@ -170,8 +172,8 @@ static void setMode(_THIS, xbiosmode_t *new_video_mode)
 
 static void restoreMode(_THIS)
 {
-	VsetScreen(-1, &XBIOS_oldvbase, MI_MAGIC, CMD_SETADR);
-	VsetScreen(-1, &XBIOS_oldvmode, MI_MAGIC, CMD_SETMODE);
+	VsetScreen(-1, XBIOS_oldvbase, MI_MAGIC, CMD_SETADR);
+	VsetScreen(-1, XBIOS_oldvmode, MI_MAGIC, CMD_SETMODE);
 	if (XBIOS_oldnumcol) {
 		VsetRGB(0, XBIOS_oldnumcol, XBIOS_oldpalette);
 	}
@@ -179,7 +181,8 @@ static void restoreMode(_THIS)
 
 static void swapVbuffers(_THIS)
 {
-	VsetScreen(-1, XBIOS_screens[XBIOS_fbnum], MI_MAGIC, CMD_SETADR);
+	/*VsetScreen(-1, XBIOS_screens[XBIOS_fbnum], MI_MAGIC, CMD_SETADR);*/
+	VsetScreen(-1, -1, MI_MAGIC, CMD_FLIPPAGE);
 }
 
 static int getLineWidth(_THIS, xbiosmode_t *new_video_mode, int width, int bpp)
@@ -208,7 +211,7 @@ static int allocVbuffers(_THIS, int num_buffers, int bufsize)
 			/* Buffer 0 is current screen */
 			XBIOS_screensmem[i] = XBIOS_oldvbase;
 		} else {
-			VsetScreen(-1, &XBIOS_screensmem[i], MI_MAGIC, CMD_ALLOCPAGE);
+			VsetScreen(&XBIOS_screensmem[i], XBIOS_current, MI_MAGIC, CMD_ALLOCPAGE);
 		}
 
 		if (!XBIOS_screensmem[i]) {
