@@ -187,7 +187,21 @@ static void restoreMode(_THIS)
 
 static void vsync_NOVA(_THIS)
 {
-	NOVA_xcb->p_vsync();
+	void *oldstack;
+
+	oldstack = (void *)Super(NULL);
+
+	__asm__ __volatile__ (
+		"movel	%0,%%a0\n\t"
+		"jsr	%%a0@"
+		: /* no return value */
+		: /* input */
+		  "g"(NOVA_xcb->p_vsync)
+		: /* clobbered registers */
+		  "d0", "d1", "d2", "a0", "a1", "cc", "memory"
+		);
+
+	SuperToUser(oldstack);
 }
 
 static void getScreenFormat(_THIS, int bpp, Uint32 *rmask, Uint32 *gmask, Uint32 *bmask, Uint32 *amask)
