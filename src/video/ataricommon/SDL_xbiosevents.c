@@ -40,15 +40,12 @@ SDL_bool SDL_AtariXbios_enabled=SDL_FALSE;
 
 /* Local variables */
 
-static _KBDVECS *kbdvecs;		/* Pointer to access system vectors */
 static Uint16 atari_prevmouseb;	/* buttons */
 
 /* Functions */
 
 void SDL_AtariXbios_InstallVectors(int vectors_mask)
 {
-	void *oldpile;
-
 	/* Clear variables */
 	SDL_AtariXbios_mouselock =
 		SDL_AtariXbios_mouseb =
@@ -62,44 +59,24 @@ void SDL_AtariXbios_InstallVectors(int vectors_mask)
 		return;
 	}
 
-	/* Read IKBD vectors base */
-	kbdvecs=Kbdvbase();
-
-	/* Go to supervisor mode */
-	oldpile=(void *)Super(0);
-
 	/* Install our vectors */
-	SDL_AtariXbios_Install(
-		kbdvecs,
-		(vectors_mask & ATARI_XBIOS_MOUSEEVENTS) ? SDL_AtariXbios_MouseVector : NULL,
-		(vectors_mask & ATARI_XBIOS_JOYSTICKEVENTS) ? SDL_AtariXbios_JoystickVector : NULL
-	);
-
-	/* Back to user mode */
-	SuperToUser(oldpile);
+	SDL_AtariXbios_installmousevector = (vectors_mask & ATARI_XBIOS_MOUSEEVENTS) != 0;
+	SDL_AtariXbios_installjoystickvector = (vectors_mask & ATARI_XBIOS_JOYSTICKEVENTS) != 0;
+	Supexec(SDL_AtariXbios_Install);
+	/* SDL_AtariXbios_Restore() doesn't need SDL_AtariXbios_enabled */
+	Setexc(VEC_PROCTERM, SDL_AtariXbios_Restore);
 
 	SDL_AtariXbios_enabled=SDL_TRUE;
 }
 
 void SDL_AtariXbios_RestoreVectors(void)
 {
-	void *oldpile;
-
 	if (!SDL_AtariXbios_enabled) {
 		return;
 	}
 
-	/* Read IKBD vectors base */
-	kbdvecs=Kbdvbase();
-
-	/* Go to supervisor mode */
-	oldpile=(void *)Super(NULL);
-
 	/* Reinstall system vector */
-	SDL_AtariXbios_Restore(kbdvecs);
-
-	/* Back to user mode */
-	SuperToUser(oldpile);
+	Supexec(SDL_AtariXbios_Restore);
 }
 
 static int atari_GetButton(int button)

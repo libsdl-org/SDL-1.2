@@ -30,19 +30,35 @@
 
 	.globl	_SDL_AtariXbios_Install
 	.globl	_SDL_AtariXbios_Restore
-	.globl	_SDL_AtariXbios_MouseVector
-	.globl	_SDL_AtariXbios_JoystickVector
 
+	.globl	_SDL_AtariXbios_installmousevector
 	.globl	_SDL_AtariXbios_mouselock
 	.globl	_SDL_AtariXbios_mouseb
 	.globl	_SDL_AtariXbios_mousex
 	.globl	_SDL_AtariXbios_mousey
+	.globl	_SDL_AtariXbios_installjoystickvector
 	.globl	_SDL_AtariXbios_joystick
 
 /*--- Vector installer ---*/
 
 _SDL_AtariXbios_Install:
-	movel	sp@(4),a0
+#if defined(__mcoldfire__)
+	lea	sp@(-8),sp
+	moveml	d2/a2,sp@
+#else
+	moveml	d2/a2,sp@-
+#endif
+	/* KBDVBASE *Kbdvbase(void); */
+	movew	#34,sp@-
+	trap	#14
+	addql	#2,sp
+#if defined(__mcoldfire__)
+	moveml	sp@,d2/a2
+	lea	sp@(8),sp
+#else
+	moveml	sp@+,d2/a2
+#endif
+	movel	d0,a0
 
 	/* Stop interrupts */
 
@@ -52,29 +68,33 @@ _SDL_AtariXbios_Install:
 	/* Save old mouse vector, set our routine */
 
 	clrl	oldmousevector
-	movel	sp@(8),d0
+	tstw	_SDL_AtariXbios_installmousevector
 	beqs	no_new_mouse_vector
 #if defined(__mcoldfire__)
 	movel	a0@(16),a1
 	movel	a1,oldmousevector
+	lea	newmousevector(pc),a1
+	movel	a1,a0@(16)
 #else
 	movel	a0@(16),oldmousevector
+	movel	#newmousevector,a0@(16)
 #endif
-	movel	d0,a0@(16)
 no_new_mouse_vector:
 
 	/* Save old joystick vector, set our routine */
 
 	clrl	oldjoystickvector
-	movel	sp@(12),d0
+	tstw	_SDL_AtariXbios_installjoystickvector
 	beqs	no_new_joystick_vector
 #if defined(__mcoldfire__)
 	movel	a0@(24),a1
 	movel	a1,oldjoystickvector
+	lea	newjoystickvector(pc),a1
+	movel	a1,a0@(24)
 #else
 	movel	a0@(24),oldjoystickvector
+	movel	#newjoystickvector,a0@(24)
 #endif
-	movel	d0,a0@(24)
 no_new_joystick_vector:
 
 	/* Restart interrupts */
@@ -86,7 +106,23 @@ no_new_joystick_vector:
 /*--- Vector restorer ---*/
 
 _SDL_AtariXbios_Restore:
-	movel	sp@(4),a0
+#if defined(__mcoldfire__)
+	lea	sp@(-8),sp
+	moveml	d2/a2,sp@
+#else
+	moveml	d2/a2,sp@-
+#endif
+	/* KBDVBASE *Kbdvbase(void); */
+	movew	#34,sp@-
+	trap	#14
+	addql	#2,sp
+#if defined(__mcoldfire__)
+	moveml	sp@,d2/a2
+	lea	sp@(8),sp
+#else
+	moveml	sp@+,d2/a2
+#endif
+	movel	d0,a0
 
 	/* Stop interrupts */
 
@@ -111,6 +147,12 @@ no_restore_joystick:
 
 	movew	d1,sr
 
+#if defined(__mcoldfire__)
+	moveml	sp@,d0-d2/a0-a2
+	lea	sp@(24),sp
+#else
+	moveml	sp@+,d0-d2/a0-a2
+#endif
 	rts
 
 /*--- Our mouse vector ---*/
@@ -120,7 +162,7 @@ no_restore_joystick:
 	.ascii "XBRA"
 	.ascii "LSDL"
 	.comm	oldmousevector,4*1
-_SDL_AtariXbios_MouseVector:
+newmousevector:
 #if defined(__mcoldfire__)
 	lea	sp@(-8),sp
 	moveml	d0-d1,sp@
@@ -179,6 +221,7 @@ no_mouse_lock:
 
 	.data
 	.even
+	.comm	_SDL_AtariXbios_installmousevector,2*1
 	.comm	_SDL_AtariXbios_mouselock,2*1
 	.comm	_SDL_AtariXbios_mousex,2*1
 	.comm	_SDL_AtariXbios_mousey,2*1
@@ -191,7 +234,7 @@ no_mouse_lock:
 	.ascii "XBRA"
 	.ascii "LSDL"
 	.comm	oldjoystickvector,4*1
-_SDL_AtariXbios_JoystickVector:
+newjoystickvector:
 	movel	d0,sp@-
 
 	/* New joystick state */
@@ -211,4 +254,5 @@ _SDL_AtariXbios_JoystickVector:
 
 	.data
 	.even
+	.comm	_SDL_AtariXbios_installjoystickvector,2*1
 	.comm	_SDL_AtariXbios_joystick,2*1
