@@ -20,7 +20,7 @@
     slouken@libsdl.org
 */
 
-#include "symbols.h"
+#include "../../video/ataricommon/symbols.h"
 
 /*
 	Audio interrupts
