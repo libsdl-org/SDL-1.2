@@ -49,6 +49,6 @@ extern void SDL_AtariMint_BackgroundTasks(void);
 /* Atari to Unicode charset translation table */
 extern Uint16 SDL_AtariToUnicodeTable[256];
 SDL_keysym *SDL_Atari_TranslateKey(int scancode, SDL_keysym *keysym,
-	SDL_bool pressed);
+	SDL_bool pressed, short kstate);
 
 #endif /* _SDL_ATARI_EVENTS_H_ */

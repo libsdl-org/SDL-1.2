@@ -58,7 +58,8 @@ enum {
 
 /* The translation tables from a console scancode to a SDL keysym */
 static SDLKey keymap[ATARIBIOS_MAXKEYS];
-static char *keytab_normal;
+static const char *keytab_normal;
+static const char *keytab_shift;
 
 void (*Atari_ShutdownEvents)(void);
 
@@ -134,6 +135,7 @@ void SDL_Atari_InitInternalKeymap(_THIS)
 	/* Read system tables for scancode -> ascii translation */
 	key_tables = (_KEYTAB *) Keytbl(KT_NOCHANGE, KT_NOCHANGE, KT_NOCHANGE);
 	keytab_normal = key_tables->unshift;
+	keytab_shift = key_tables->shift;
 
 	/* Initialize keymap */
 	for ( i=0; i<ATARIBIOS_MAXKEYS; i++ )
@@ -151,10 +153,13 @@ void SDL_Atari_InitInternalKeymap(_THIS)
 	keymap[SCANCODE_UNDO] = SDLK_UNDO;
 	keymap[SCANCODE_INSERT] = SDLK_INSERT;
 	keymap[SCANCODE_CLRHOME] = SDLK_HOME;
+	keymap[SCANCODE_CNTL_HOME] = SDLK_HOME;
 	keymap[SCANCODE_UP] = SDLK_UP;
 	keymap[SCANCODE_DOWN] = SDLK_DOWN;
 	keymap[SCANCODE_RIGHT] = SDLK_RIGHT;
+	keymap[SCANCODE_CNTL_RIGHT] = SDLK_RIGHT;
 	keymap[SCANCODE_LEFT] = SDLK_LEFT;
+	keymap[SCANCODE_CNTL_LEFT] = SDLK_LEFT;
 
 	/* Special keys */
 	keymap[SCANCODE_ESCAPE] = SDLK_ESCAPE;
@@ -221,18 +226,29 @@ Uint16 SDL_AtariToUnicodeTable[256]={
 };
 
 SDL_keysym *SDL_Atari_TranslateKey(int scancode, SDL_keysym *keysym,
-	SDL_bool pressed)
+	SDL_bool pressed, short kstate)
 {
 	int asciicode = 0;
 
 	/* Set the keysym information */
 	keysym->scancode = scancode;
 	keysym->mod = KMOD_NONE;
+	if (kstate & K_LSHIFT)
+		keysym->mod |= KMOD_LSHIFT;
+	if (kstate & K_RSHIFT)
+		keysym->mod |= KMOD_RSHIFT;
+	if (kstate & K_CTRL)
+		keysym->mod |= KMOD_LCTRL;
+	if (kstate & K_ALT)
+		keysym->mod |= KMOD_LALT;
 	keysym->sym = keymap[scancode];
 	keysym->unicode = 0;
 
 	if (keysym->sym == SDLK_UNKNOWN) {
-		keysym->sym = asciicode = keytab_normal[scancode];
+		if (kstate & (K_LSHIFT | K_RSHIFT))
+			keysym->sym = asciicode = keytab_shift[scancode];
+		else
+			keysym->sym = asciicode = keytab_normal[scancode];
 	}
 
 	if (SDL_TranslateUNICODE && pressed) {

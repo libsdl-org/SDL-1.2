@@ -70,6 +70,7 @@ void AtariBios_PumpEvents(_THIS)
 {
 	int i;
 	SDL_keysym keysym;
+	short kstate;
 
 	SDL_AtariMint_BackgroundTasks();
 
@@ -83,19 +84,20 @@ void AtariBios_PumpEvents(_THIS)
 	}
 
 	/* Read special keys */
-	UpdateSpecialKeys(Kbshift(-1));
+	kstate = Kbshift(-1);
+	UpdateSpecialKeys(kstate);
 
 	/* Now generate events */
 	for (i=0; i<ATARIBIOS_MAXKEYS; i++) {
 		/* Key pressed ? */
 		if (bios_currentkeyboard[i] && !bios_previouskeyboard[i])
 			SDL_PrivateKeyboard(SDL_PRESSED,
-				SDL_Atari_TranslateKey(i, &keysym, SDL_TRUE));
+				SDL_Atari_TranslateKey(i, &keysym, SDL_TRUE, kstate));
 			
 		/* Key unpressed ? */
 		if (bios_previouskeyboard[i] && !bios_currentkeyboard[i])
 			SDL_PrivateKeyboard(SDL_RELEASED,
-				SDL_Atari_TranslateKey(i, &keysym, SDL_FALSE));
+				SDL_Atari_TranslateKey(i, &keysym, SDL_FALSE, 0));
 	}
 
 	if (use_dev_mouse) {

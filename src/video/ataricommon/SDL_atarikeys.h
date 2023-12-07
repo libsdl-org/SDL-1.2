@@ -148,4 +148,10 @@
 #define SCANCODE_RIGHT		0x4d
 #define SCANCODE_LEFT		0x4b
 
+/* some keys give different scancode with CTRL */
+#define SCANCODE_CNTL_HOME	0x77
+#define SCANCODE_SHFT_HOME	0x4f
+#define SCANCODE_CNTL_LEFT	0x73
+#define SCANCODE_CNTL_RIGHT	0x74
+
 #endif /* _SDL_ATARIKEYS_H_ */
