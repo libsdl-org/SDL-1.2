@@ -165,7 +165,7 @@ void GEM_PumpEvents(_THIS)
 		/* Key unpressed ? */
 		if (gem_previouskeyboard[i] && !gem_currentkeyboard[i])
 			SDL_PrivateKeyboard(SDL_RELEASED,
-				SDL_Atari_TranslateKey(i, &keysym, SDL_FALSE, 0));
+				SDL_Atari_TranslateKey(i, &keysym, SDL_FALSE, kstate));
 	}
 
 	SDL_memcpy(gem_previouskeyboard,gem_currentkeyboard,sizeof(gem_previouskeyboard));

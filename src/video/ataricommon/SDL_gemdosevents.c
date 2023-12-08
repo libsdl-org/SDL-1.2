@@ -98,7 +98,7 @@ void AtariGemdos_PumpEvents(_THIS)
 		/* Key unpressed ? */
 		if (gemdos_previouskeyboard[i] && !gemdos_currentkeyboard[i])
 			SDL_PrivateKeyboard(SDL_RELEASED,
-				SDL_Atari_TranslateKey(i, &keysym, SDL_FALSE, 0));
+				SDL_Atari_TranslateKey(i, &keysym, SDL_FALSE, kstate));
 	}
 
 	if (use_dev_mouse) {
