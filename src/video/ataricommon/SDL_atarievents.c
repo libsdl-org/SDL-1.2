@@ -45,7 +45,9 @@
 /* from src/audio/mint/SDL_mintaudio.c */
 void SDL_AtariMint_UpdateAudio(void);
 /* from src/timer/mint/SDL_systimer.c */
+#ifdef SDL_TIMER_MINT
 void SDL_AtariMint_CheckTimer(void);
+#endif
 
 enum {
 	MCH_ST=0,
@@ -261,5 +263,9 @@ SDL_keysym *SDL_Atari_TranslateKey(int scancode, SDL_keysym *keysym,
 void SDL_AtariMint_BackgroundTasks(void)
 {
 	SDL_AtariMint_UpdateAudio();
+#ifdef SDL_TIMER_MINT
 	if (SDL_timer_running) SDL_AtariMint_CheckTimer();
+#else
+	if (SDL_timer_running) SDL_ThreadedTimerCheck();
+#endif
 }
