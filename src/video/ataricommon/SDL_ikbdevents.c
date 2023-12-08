@@ -104,7 +104,7 @@ void AtariIkbd_PumpEvents(_THIS)
 		/* Key released ? */
 		if (SDL_AtariIkbd_keyboard[i]==KEY_RELEASED) {
 			SDL_PrivateKeyboard(SDL_RELEASED,
-				SDL_Atari_TranslateKey(i, &keysym, SDL_FALSE, 0));
+				SDL_Atari_TranslateKey(i, &keysym, SDL_FALSE, AtariIkbd_Shiftstate()));
 			SDL_AtariIkbd_keyboard[i]=KEY_UNDEFINED;
 		}
 	}
