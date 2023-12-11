@@ -155,30 +155,34 @@ typedef struct screeninfo {
 	unsigned long	pagemem;	/* needed memory for one page */ 
 	unsigned long	max_x;		/* max. possible width */ 
 	unsigned long	max_y;		/* max. possible heigth */ 
+
+	/* CTPCI only? */
+	unsigned long refresh;		/* refresh in Hz */
+	unsigned long pixclock;		/* pixel clock in pS */
 } SCREENINFO; 
 
 typedef struct _scrfillblk {
-	long size;	/* size of structure           */
-	long blk_status;/* status bits of blk          */
-	long blk_op;	/* mode operation              */
-	long blk_color;	/* background fill color       */
-	long blk_x;	/* x pos in total screen       */
-	long blk_y;	/* y pos in total screen       */
-	long blk_w;	/* width                       */
-	long blk_h;	/* height                      */
+	long size;		/* size of structure           */
+	long blk_status;	/* status bits of blk          */
+	long blk_op;		/* mode operation              */
+	long blk_color;		/* background fill color       */
+	long blk_x;		/* x pos in total screen       */
+	long blk_y;		/* y pos in total screen       */
+	long blk_w;		/* width                       */
+	long blk_h;		/* height                      */
 	long blk_unused;
 } SCRFILLMEMBLK;
              
 typedef struct _scrcopyblk {
-	long size;	/* size of structure            */
-	long blk_status;/* status bits of blk           */
-	long blk_src_x;	/* x pos source in total screen */
-	long blk_src_y;	/* y pos source in total screen */
-	long blk_dst_x;	/* x pos dest in total screen   */
-	long blk_dst_y;	/* y pos dest in total screen   */
-	long blk_w;	/* width                        */
-	long blk_h;	/* height                       */
-	long blk_op;	/* block operation */
+	long size;		/* size of structure            */
+	long blk_status;	/* status bits of blk           */
+	long blk_src_x;		/* x pos source in total screen */
+	long blk_src_y;		/* y pos source in total screen */
+	long blk_dst_x;		/* x pos dest in total screen   */
+	long blk_dst_y;		/* y pos dest in total screen   */
+	long blk_w;		/* width                        */
+	long blk_h;		/* height                       */
+	long blk_op;		/* block operation		*/
 } SCRCOPYMEMBLK;
 
 typedef struct _scrtextureblk {
@@ -208,5 +212,15 @@ typedef struct _scrlineblk {
 	long blk_op;		/* mode operation               */
 	long blk_pattern;	/* pattern (-1: solid line)     */
 } SCRLINEMEMBLK;
+
+typedef struct _scrclipblk {
+	long size;		/* size of structure            */
+	long blk_status;	/* status bits of blk           */
+	long blk_clip_on;	/* clipping flag 1:on, 0:off    */
+	long blk_x;		/* x pos in total screen        */
+	long blk_y;		/* y pos in in total screen     */
+	long blk_w;		/* width                        */
+	long blk_h;		/* height                       */
+} SCRCLIPMEMBLK;
 
 #endif /* _SDL_xbios_milan_h */
