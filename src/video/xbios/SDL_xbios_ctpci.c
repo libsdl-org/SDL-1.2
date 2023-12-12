@@ -48,14 +48,12 @@ typedef struct {
 } predefined_mode_t;
 
 static const predefined_mode_t mode_list[]={
-	{0x4260,320,200},
-	{0x4270,320,240},
-	{0x4138,640,480},
-	{0x4160,800,600},
-	{0x4188,1024,768},
-	{0x42c8,1280,800},
-	{0x41e0,1280,1024},
-	{0x4210,1600,1200}
+	/*{VERTFLAG|PAL|VGA,320,240},*/	/* falls back to 640x480 */
+	{PAL|VGA|COL80,640,480},
+	{VESA_600|HORFLAG2|PAL|VGA|COL80,800,600},
+	{VESA_768|HORFLAG2|PAL|VGA|COL80,1024,768},
+	{VERTFLAG2|HORFLAG|PAL|VGA|COL80,1280,960},
+	{VERTFLAG2|VESA_600|HORFLAG2|HORFLAG|PAL|VGA|COL80,1600,1200}
 };
 
 static const Uint8 mode_bpp[]={
