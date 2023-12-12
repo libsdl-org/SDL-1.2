@@ -278,7 +278,7 @@ static int allocVbuffers_SV(_THIS, const xbiosmode_t *new_video_mode, int num_bu
 		SDL_memset(XBIOS_screensmem[i], 0, bufsize);
 
 		/* Align on 256byte boundary and map to Supervidel memory */
-		tmp = ( (Uint32) XBIOS_screensmem[i]+256) & 0xFFFFFF00UL;
+		tmp = ( (Uint32) XBIOS_screensmem[i]+255) & 0xFFFFFF00UL;
 		tmp |= 0xA0000000UL;	/* Map to SV memory */
 		XBIOS_screens[i] = (void *) tmp;
 	}
