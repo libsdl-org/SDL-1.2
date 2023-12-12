@@ -39,9 +39,11 @@
 #include "SDL_xbios.h"
 #include "SDL_xbios_milan.h"
 
-/* use predefined, hardcoded table if CTPCI_USE_TABLE == 1
-   else enumerate all non virtual video modes */
-#define CTPCI_USE_TABLE 1
+/*
+ * Use predefined, hardcoded table if CTPCI_USE_TABLE is defined
+ * else enumerate all non virtual video modes
+ */
+#define CTPCI_USE_TABLE
 
 typedef struct {
 	Uint16 modecode, width, height;
@@ -144,7 +146,7 @@ static void listModes(_THIS, int actually_add)
 
 static void saveMode(_THIS, SDL_PixelFormat *vformat)
 {
-	SCREENINFO si;
+	SCREENINFO si = { 0 };
 
 	/* Read infos about current mode */
 	VsetScreen(-1, &XBIOS_oldvmode, VN_MAGIC, CMD_GETMODE);

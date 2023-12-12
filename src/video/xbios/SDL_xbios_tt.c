@@ -36,8 +36,8 @@
 #include "SDL_xbios_nova.h"
 
 static const xbiosmode_t ttmodes[]={
-	{TT_LOW,320,480,8, XBIOSMODE_C2P},
-	{TT_LOW,320,240,8, XBIOSMODE_C2P|XBIOSMODE_DOUBLELINE}
+	{TT_LOW,320,480,8,XBIOSMODE_C2P},
+	{TT_LOW,320,240,8,XBIOSMODE_C2P|XBIOSMODE_DOUBLELINE}
 };
 
 static void listModes(_THIS, int actually_add);
