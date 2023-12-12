@@ -183,7 +183,7 @@ static int allocVbuffers(_THIS, const xbiosmode_t *new_video_mode, int num_buffe
 		}
 		SDL_memset(XBIOS_screensmem[i], 0, bufsize);
 
-		XBIOS_screens[i]=(void *) (( (long) XBIOS_screensmem[i]+256) & 0xFFFFFF00UL);
+		XBIOS_screens[i]=(void *) (( (long) XBIOS_screensmem[i]+255) & 0xFFFFFF00UL);
 	}
 
 	return (1);
@@ -196,8 +196,9 @@ static void freeVbuffers(_THIS)
 	for (i=0;i<2;i++) {
 		if (XBIOS_screensmem[i]) {
 			Mfree(XBIOS_screensmem[i]);
+			XBIOS_screensmem[i]=NULL;
 		}
-		XBIOS_screensmem[i]=NULL;
+		XBIOS_screens[i]=NULL;
 	}
 }
 

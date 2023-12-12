@@ -395,10 +395,11 @@ static void XBIOS_FreeBuffers(_THIS)
 {
 	(*XBIOS_freeVbuffers)(this);
 
-	if (XBIOS_shadowscreen) {
-		Mfree(XBIOS_shadowscreen);
-		XBIOS_shadowscreen=NULL;
+	if (XBIOS_shadowscreenmem) {
+		Mfree(XBIOS_shadowscreenmem);
+		XBIOS_shadowscreenmem=NULL;
 	}
+	XBIOS_shadowscreen=NULL;
 }
 
 static SDL_Surface *XBIOS_SetVideoMode(_THIS, SDL_Surface *current,
@@ -442,16 +443,18 @@ static SDL_Surface *XBIOS_SetVideoMode(_THIS, SDL_Surface *current,
 	lineWidth = (*XBIOS_getLineWidth)(this, new_video_mode, width, new_depth);
 
 	new_screen_size = lineWidth * height;
-	new_screen_size += 256; /* To align on a 256 byte adress */
+	new_screen_size += 255; /* To align on a 256 byte adress */
 
 	if (new_video_mode->flags & (XBIOSMODE_C2P | XBIOSMODE_SHADOWCOPY)) {
-		XBIOS_shadowscreen = Atari_SysMalloc(new_screen_size, MX_PREFTTRAM);
+		XBIOS_shadowscreenmem = Atari_SysMalloc(new_screen_size, MX_PREFTTRAM);
 
-		if (XBIOS_shadowscreen == NULL) {
+		if (XBIOS_shadowscreenmem == NULL) {
 			SDL_SetError("Can not allocate %d KB for shadow buffer", new_screen_size>>10);
 			return (NULL);
 		}
-		SDL_memset(XBIOS_shadowscreen, 0, new_screen_size);
+		SDL_memset(XBIOS_shadowscreenmem, 0, new_screen_size);
+
+		XBIOS_shadowscreen=(void *) (( (long) XBIOS_shadowscreenmem+255) & 0xFFFFFF00UL);
 	}
 
 	/* Output buffer needs to be twice in size for the software double-line mode */

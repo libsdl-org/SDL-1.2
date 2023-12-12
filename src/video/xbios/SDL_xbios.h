@@ -47,16 +47,17 @@ typedef struct
 #define NUM_MODELISTS	4		/* 8, 16, 24, and 32 bits-per-pixel */
 
 struct SDL_PrivateVideoData {
-	long old_video_mode;				/* Old video mode before entering SDL */
-	void *old_video_base;			/* Old pointer to screen buffer */
-	void *old_palette;				/* Old palette */
-	Uint32 old_num_colors;			/* Nb of colors in saved palette */
+	long old_video_mode;		/* Old video mode before entering SDL */
+	void *old_video_base;		/* Old pointer to screen buffer */
+	void *old_palette;		/* Old palette */
+	Uint32 old_num_colors;		/* Nb of colors in saved palette */
 
 	void *screens[2];		/* Pointers to aligned screen buffer */
-	void *screensmem[2];	/* Pointers to screen buffer */
-	void *shadowscreen;		/* Shadow screen for c2p conversion */
+	void *screensmem[2];		/* Pointers to screen buffer */
+	void *shadowscreen;		/* Pointer to aligned shadow screen buffer */
+	void *shadowscreenmem;		/* Pointers to shadow screen buffer */
 	int frame_number;		/* Number of frame for double buffer */
-	int pitch;				/* Destination line width for C2P */
+	int pitch;			/* Destination line width for C2P */
 
 	const xbiosmode_t *current;	/* Current set mode */
 	int SDL_nummodes[NUM_MODELISTS];
@@ -113,8 +114,9 @@ enum {
 #define XBIOS_screens		(this->hidden->screens)
 #define XBIOS_screensmem	(this->hidden->screensmem)
 #define XBIOS_shadowscreen	(this->hidden->shadowscreen)
-#define XBIOS_fbnum			(this->hidden->frame_number)
-#define XBIOS_pitch			(this->hidden->pitch)
+#define XBIOS_shadowscreenmem	(this->hidden->shadowscreenmem)
+#define XBIOS_fbnum		(this->hidden->frame_number)
+#define XBIOS_pitch		(this->hidden->pitch)
 #define XBIOS_current		(this->hidden->current)
 #define XBIOS_recoffset		(this->hidden->recalc_offset)
 
@@ -125,7 +127,7 @@ enum {
 #define XBIOS_saveMode		(this->hidden->saveMode)
 #define XBIOS_setMode		(this->hidden->setMode)
 #define XBIOS_restoreMode	(this->hidden->restoreMode)
-#define XBIOS_vsync			(this->hidden->vsync)
+#define XBIOS_vsync		(this->hidden->vsync)
 #define XBIOS_getScreenFormat	(this->hidden->getScreenFormat)
 #define XBIOS_getLineWidth	(this->hidden->getLineWidth)
 #define XBIOS_swapVbuffers	(this->hidden->swapVbuffers)
