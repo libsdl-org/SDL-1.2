@@ -37,7 +37,7 @@
 #include "SDL_xbios.h"
 
 static const xbiosmode_t stmodes[]={
-	{ST_LOW>>8,320,200,4, XBIOSMODE_C2P}
+	{ST_LOW>>8,320,200,4,XBIOSMODE_C2P}
 };
 
 static void listModes(_THIS, int actually_add);

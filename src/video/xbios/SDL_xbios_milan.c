@@ -33,23 +33,22 @@
 #include "SDL_xbios.h"
 #include "SDL_xbios_milan.h"
 
-#define NUM_PREDEFINED_MODES 7
-
 typedef struct {
-	Uint16 width, height;
+	Uint16 modecode, width, height;
 } predefined_mode_t;
 
-static const predefined_mode_t mode_list[NUM_PREDEFINED_MODES]={
-	{640,400},
-	{640,480},
-	{800,608},
-	{1024,768},
-	{1152,864},
-	{1280,1024},
-	{1600,1200}
+
+static const predefined_mode_t mode_list[]={
+	{0x1000+(0<<4),640,400},
+	{0x1000+(1<<4),640,480},
+	{0x1000+(2<<4),800,608},
+	{0x1000+(3<<4),1024,768},
+	{0x1000+(4<<4),1152,864},
+	{0x1000+(5<<4),1280,1024},
+	{0x1000+(6<<4),1600,1200}
 };
 
-static const Uint8 mode_bpp[4]={
+static const Uint8 mode_bpp[]={
 	8, 15, 16, 32
 };
 
@@ -81,6 +80,7 @@ void SDL_XBIOS_VideoInit_Milan(_THIS)
 	XBIOS_allocVbuffers = allocVbuffers;
 	XBIOS_freeVbuffers = freeVbuffers;
 
+	/* CTPCI doesn't need this as it's inherited from xbios_f030 */
 	this->SetColors = setColors;
 }
 
@@ -104,9 +104,9 @@ static void listModes(_THIS, int actually_add)
 	int i;
 
 	/* Read validated predefined modes */
-	for (i=0; i<NUM_PREDEFINED_MODES; i++) {
+	for (i=0; i<sizeof(mode_list)/sizeof(predefined_mode_t); i++) {
 		int j;
-		Uint16 deviceid = 0x1000 + (i<<4);
+		Uint16 deviceid = mode_list[i].modecode;
 
 		for (j=1; j<4; j++) {
 			if (Validmode(deviceid + j)) {
@@ -131,7 +131,7 @@ static void listModes(_THIS, int actually_add)
 
 static void saveMode(_THIS, SDL_PixelFormat *vformat)
 {
-	SCREENINFO si;
+	SCREENINFO si = { 0 };
 
 	/* Read infos about current mode */
 	VsetScreen(-1, &XBIOS_oldvmode, MI_MAGIC, CMD_GETMODE);
@@ -145,6 +145,8 @@ static void saveMode(_THIS, SDL_PixelFormat *vformat)
 	this->info.current_h = si.scrHeight;
 
 	XBIOS_oldvbase = (void*)si.frameadr;
+
+	vformat->BitsPerPixel = si.scrPlanes;
 
 	XBIOS_oldnumcol = 0;
 	if (si.scrFlags & SCRINFO_OK) {
