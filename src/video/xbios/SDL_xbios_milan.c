@@ -183,7 +183,6 @@ static void restoreMode(_THIS)
 
 static void swapVbuffers(_THIS)
 {
-	/*VsetScreen(-1, XBIOS_screens[XBIOS_fbnum], MI_MAGIC, CMD_SETADR);*/
 	VsetScreen(-1, -1, MI_MAGIC, CMD_FLIPPAGE);
 }
 

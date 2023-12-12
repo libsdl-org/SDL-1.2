@@ -156,6 +156,7 @@ void SDL_XBIOS_VideoInit_F30(_THIS)
 	/* CTPCI ? */
 	if ((Getcookie(C_CT60, &cookie_dummy) == C_FOUND)
 	    && (Getcookie(C__PCI, &cookie_dummy) == C_FOUND)
+	    /* This check is to differentiate between booting in Videl/Radeon */
 	    && ((unsigned long)Physbase()>=0x01000000UL))
 	{
 		SDL_XBIOS_VideoInit_Ctpci(this);

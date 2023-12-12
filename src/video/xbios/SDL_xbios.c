@@ -444,7 +444,7 @@ static SDL_Surface *XBIOS_SetVideoMode(_THIS, SDL_Surface *current,
 	new_screen_size = lineWidth * height;
 	new_screen_size += 256; /* To align on a 256 byte adress */
 
-	if (new_video_mode->flags & XBIOSMODE_C2P) {
+	if (new_video_mode->flags & (XBIOSMODE_C2P | XBIOSMODE_SHADOWCOPY)) {
 		XBIOS_shadowscreen = Atari_SysMalloc(new_screen_size, MX_PREFTTRAM);
 
 		if (XBIOS_shadowscreen == NULL) {
@@ -554,11 +554,11 @@ static void XBIOS_UnlockHWSurface(_THIS, SDL_Surface *surface)
 static void XBIOS_UpdateRects(_THIS, int numrects, SDL_Rect *rects)
 {
 	SDL_Surface *surface;
+	int i;
 
 	surface = this->screen;
 
 	if (XBIOS_current->flags & XBIOSMODE_C2P) {
-		int i;
 		int doubleline = (XBIOS_current->flags & XBIOSMODE_DOUBLELINE ? 1 : 0);
 
 		for (i=0;i<numrects;i++) {
@@ -589,6 +589,26 @@ static void XBIOS_UpdateRects(_THIS, int numrects, SDL_Rect *rects)
 				surface->pitch,
 				XBIOS_pitch
 			);
+		}
+	} else if (XBIOS_current->flags & XBIOSMODE_SHADOWCOPY) {
+		for (i=0;i<numrects;i++) {
+			Uint8 *blockSrcStart, *blockDstStart;
+			int y;
+
+			blockSrcStart = (Uint8 *) surface->pixels;
+			blockSrcStart += surface->pitch*rects[i].y;
+			blockSrcStart += surface->format->BytesPerPixel*rects[i].x;
+
+			blockDstStart = ((Uint8 *) XBIOS_screens[XBIOS_fbnum]) + surface->offset;
+			blockDstStart += XBIOS_pitch*rects[i].y;
+			blockDstStart += surface->format->BytesPerPixel*rects[i].x;
+
+			for(y=0;y<rects[i].h;y++){
+				SDL_memcpy(blockDstStart,blockSrcStart,surface->pitch);
+
+				blockSrcStart += surface->pitch;
+				blockDstStart += XBIOS_pitch;
+			}
 		}
 	}
 
@@ -629,6 +649,18 @@ static int XBIOS_FlipHWSurface(_THIS, SDL_Surface *surface)
 			surface->pitch,
 			XBIOS_pitch
 		);
+	} else if (XBIOS_current->flags & XBIOSMODE_SHADOWCOPY) {
+		int i;
+		Uint8 *src, *dst;
+
+		src = surface->pixels;
+		dst = ((Uint8 *) XBIOS_screens[XBIOS_fbnum]) + surface->offset;
+
+		for (i=0; i<surface->h; i++) {
+			SDL_memcpy(dst, src, surface->w * surface->format->BytesPerPixel);
+			src += surface->pitch;
+			dst += XBIOS_pitch;
+		}
 	}
 
 	if ((surface->flags & SDL_DOUBLEBUF) == SDL_DOUBLEBUF) {
