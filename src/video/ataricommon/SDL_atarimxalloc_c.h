@@ -30,6 +30,8 @@
 #ifndef _SDL_ATARI_MXALLOC_H_
 #define _SDL_ATARI_MXALLOC_H_
 
+#include "SDL_stdinc.h"
+
 /*--- Functions ---*/
 
 extern void *Atari_SysMalloc(Uint32 size, Uint16 alloc_type);
