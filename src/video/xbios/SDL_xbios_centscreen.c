@@ -35,7 +35,7 @@
 
 static void listModes(_THIS, int actually_add);
 static void saveMode(_THIS, SDL_PixelFormat *vformat);
-static void setMode(_THIS, xbiosmode_t *new_video_mode);
+static void setMode(_THIS, const xbiosmode_t *new_video_mode);
 static void restoreMode(_THIS);
 
 void SDL_XBIOS_VideoInit_Centscreen(_THIS)
@@ -98,7 +98,7 @@ static void saveMode(_THIS, SDL_PixelFormat *vformat)
 	}
 }
 
-static void setMode(_THIS, xbiosmode_t *new_video_mode)
+static void setMode(_THIS, const xbiosmode_t *new_video_mode)
 {
 	centscreen_mode_t newmode, curmode;
 

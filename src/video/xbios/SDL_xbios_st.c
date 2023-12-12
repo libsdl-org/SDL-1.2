@@ -42,14 +42,14 @@ static const xbiosmode_t stmodes[]={
 
 static void listModes(_THIS, int actually_add);
 static void saveMode(_THIS, SDL_PixelFormat *vformat);
-static void setMode_ST(_THIS, xbiosmode_t *new_video_mode);
-static void setMode_STE(_THIS, xbiosmode_t *new_video_mode);
+static void setMode_ST(_THIS, const xbiosmode_t *new_video_mode);
+static void setMode_STE(_THIS, const xbiosmode_t *new_video_mode);
 static void restoreMode(_THIS);
 static void vsync_ST(_THIS);
 static void getScreenFormat(_THIS, int bpp, Uint32 *rmask, Uint32 *gmask, Uint32 *bmask, Uint32 *amask);
-static int getLineWidth(_THIS, xbiosmode_t *new_video_mode, int width, int bpp);
+static int getLineWidth(_THIS, const xbiosmode_t *new_video_mode, int width, int bpp);
 static void swapVbuffers(_THIS);
-static int allocVbuffers(_THIS, int num_buffers, int bufsize);
+static int allocVbuffers(_THIS, const xbiosmode_t *new_video_mode, int num_buffers, int bufsize);
 static void freeVbuffers(_THIS);
 static int setColors(_THIS, int firstcolor, int ncolors, SDL_Color *colors);
 
@@ -104,7 +104,7 @@ static void saveMode(_THIS, SDL_PixelFormat *vformat)
 	}
 }
 
-static void setMode_ST(_THIS, xbiosmode_t *new_video_mode)
+static void setMode_ST(_THIS, const xbiosmode_t *new_video_mode)
 {
 	int i;
 
@@ -119,7 +119,7 @@ static void setMode_ST(_THIS, xbiosmode_t *new_video_mode)
 	Setpalette(TT_palette);
 }
 
-static void setMode_STE(_THIS, xbiosmode_t *new_video_mode)
+static void setMode_STE(_THIS, const xbiosmode_t *new_video_mode)
 {
 	int i;
 
@@ -156,7 +156,7 @@ static void getScreenFormat(_THIS, int bpp, Uint32 *rmask, Uint32 *gmask, Uint32
 	*rmask = *gmask = *bmask = *amask = 0;
 }
 
-static int getLineWidth(_THIS, xbiosmode_t *new_video_mode, int width, int bpp)
+static int getLineWidth(_THIS, const xbiosmode_t *new_video_mode, int width, int bpp)
 {
 	if (bpp==4) {
 		return (width >> 1);
@@ -170,7 +170,7 @@ static void swapVbuffers(_THIS)
 	Setscreen(-1,XBIOS_screens[XBIOS_fbnum],-1);
 }
 
-static int allocVbuffers(_THIS, int num_buffers, int bufsize)
+static int allocVbuffers(_THIS, const xbiosmode_t *new_video_mode, int num_buffers, int bufsize)
 {
 	int i;
 
