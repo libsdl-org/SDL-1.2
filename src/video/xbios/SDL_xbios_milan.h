@@ -39,6 +39,19 @@
 #define MI_MAGIC	0x4D49	/* Milan */
 #define VN_MAGIC	0x564E	/* CTPCI */
 
+/* Vsetscreen() modecode extended flags */
+
+#define HORFLAG		0x200	/* double width */
+#define HORFLAG2	0x400	/* width increased */
+#define VESA_600	0x800	/* SVGA 600 lines */
+#define VESA_768	0x1000	/* SVGA 768 lines */
+#define VERTFLAG2	0x2000	/* double height */
+#define DEVID		0x4000	/* bits 11-3 used for devID */
+#define VIRTUAL_SCREEN	0x8000	/* width * 2 and height * 2, 2048 x 2048 max */
+
+#define GET_DEVID(x) (((x) & DEVID) ? (((x) & 0x3FF8) >> 3) : -1)
+#define SET_DEVID(x) ((((x) << 3) & 0x3FF8) | DEVID)
+
 enum {
 	/* Milan/CTPCI */
 	CMD_GETMODE=0,
