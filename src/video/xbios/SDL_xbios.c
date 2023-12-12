@@ -204,12 +204,13 @@ static SDL_VideoDevice *XBIOS_CreateDevice(int devindex)
 
 	device->free = XBIOS_DeleteDevice;
 
+	device->hidden->updRects = XBIOS_UpdateRects;
+
 	/* Setup device specific functions, default to ST for everything */
 	if (Getcookie(C__VDO, &cookie_cvdo) != C_FOUND) {
 		cookie_cvdo = VDO_ST << 16;
 	}
 	SDL_XBIOS_VideoInit_ST(device, cookie_cvdo);
-	device->hidden->updRects = XBIOS_UpdateRects;
 
 	switch (cookie_cvdo>>16) {
 		case VDO_ST:
@@ -292,6 +293,7 @@ void SDL_XBIOS_AddMode(_THIS, int actually_add, const xbiosmode_t *modeinfo)
 	}
 }
 
+/* Called after XBIOS_CreateDevice, and SDL_XBIOS_VideoInit_ST (and its follow-ups) */
 static int XBIOS_VideoInit(_THIS, SDL_PixelFormat *vformat)
 {
 	int i;
@@ -368,7 +370,7 @@ static int XBIOS_VideoInit(_THIS, SDL_PixelFormat *vformat)
 
 	/* Update hardware info */
 	this->info.hw_available = 1;
-	this->info.video_mem = (Uint32) Atari_SysMalloc(-1L, MX_STRAM);
+	this->info.video_mem = (Uint32) Atari_SysMalloc(-1L, MX_STRAM) / 1024;
 
 	/* Init chunky to planar routine */
 	SDL_Atari_C2pConvert = SDL_Atari_C2pConvert8;
