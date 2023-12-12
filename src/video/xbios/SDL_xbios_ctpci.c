@@ -71,10 +71,10 @@ static SDL_VideoDevice *enum_this;
 
 static void listModes(_THIS, int actually_add);
 static void saveMode(_THIS, SDL_PixelFormat *vformat);
-static void setMode(_THIS, xbiosmode_t *new_video_mode);
+static void setMode(_THIS, const xbiosmode_t *new_video_mode);
 static void restoreMode(_THIS);
-static int getLineWidth(_THIS, xbiosmode_t *new_video_mode, int width, int bpp);
-static int allocVbuffers(_THIS, int num_buffers, int bufsize);
+static int getLineWidth(_THIS, const xbiosmode_t *new_video_mode, int width, int bpp);
+static int allocVbuffers(_THIS, const xbiosmode_t *new_video_mode, int num_buffers, int bufsize);
 static void freeVbuffers(_THIS);
 static void updateRects(_THIS, int numrects, SDL_Rect *rects);
 static int flipHWSurface(_THIS, SDL_Surface *surface);
@@ -172,7 +172,7 @@ static void saveMode(_THIS, SDL_PixelFormat *vformat)
 	}
 }
 
-static void setMode(_THIS, xbiosmode_t *new_video_mode)
+static void setMode(_THIS, const xbiosmode_t *new_video_mode)
 {
 	VsetScreen(-1, XBIOS_screens[0], VN_MAGIC, CMD_SETADR);
 
@@ -194,7 +194,7 @@ static void restoreMode(_THIS)
 	}
 }
 
-static int getLineWidth(_THIS, xbiosmode_t *new_video_mode, int width, int bpp)
+static int getLineWidth(_THIS, const xbiosmode_t *new_video_mode, int width, int bpp)
 {
 	SCREENINFO si;
 	int retvalue = width * (((bpp==15) ? 16 : bpp)>>3);
@@ -211,7 +211,7 @@ static int getLineWidth(_THIS, xbiosmode_t *new_video_mode, int width, int bpp)
 	return (retvalue);
 }
 
-static int allocVbuffers(_THIS, int num_buffers, int bufsize)
+static int allocVbuffers(_THIS, const xbiosmode_t *new_video_mode, int num_buffers, int bufsize)
 {
 	int i;
 
@@ -220,7 +220,7 @@ static int allocVbuffers(_THIS, int num_buffers, int bufsize)
 			/* Buffer 0 is current screen */
 			XBIOS_screensmem[i] = XBIOS_oldvbase;
 		} else {
-			VsetScreen(&XBIOS_screensmem[i], XBIOS_current, VN_MAGIC, CMD_ALLOCPAGE);
+			VsetScreen(&XBIOS_screensmem[i], new_video_mode->number, VN_MAGIC, CMD_ALLOCPAGE);
 		}
 
 		if (!XBIOS_screensmem[i]) {

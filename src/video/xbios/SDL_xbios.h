@@ -57,7 +57,7 @@ struct SDL_PrivateVideoData {
 	int frame_number;		/* Number of frame for double buffer */
 	int pitch;				/* Destination line width for C2P */
 
-	xbiosmode_t *current;	/* Current set mode */
+	const xbiosmode_t *current;	/* Current set mode */
 	int SDL_nummodes[NUM_MODELISTS];
 	SDL_Rect **SDL_modelist[NUM_MODELISTS];
 	xbiosmode_t **SDL_xbiosmode[NUM_MODELISTS];
@@ -69,13 +69,13 @@ struct SDL_PrivateVideoData {
 
 	void (*listModes)(_THIS, int actually_add);	/* List video modes */
 	void (*saveMode)(_THIS, SDL_PixelFormat *vformat);	/* Save mode,palette,vbase change format if needed */
-	void (*setMode)(_THIS, xbiosmode_t *new_video_mode);	/* Set mode */
+	void (*setMode)(_THIS, const xbiosmode_t *new_video_mode);	/* Set mode */
 	void (*restoreMode)(_THIS);	/* Restore system mode */
 	void (*vsync)(_THIS);
 	void (*getScreenFormat)(_THIS, int bpp, Uint32 *rmask, Uint32 *gmask, Uint32 *bmask, Uint32 *amask);	/* Get TrueColor screen format */
-	int (*getLineWidth)(_THIS, xbiosmode_t *new_video_mode, int width, int bpp);	/* Return video mode pitch */
+	int (*getLineWidth)(_THIS, const xbiosmode_t *new_video_mode, int width, int bpp);	/* Return video mode pitch */
 	void (*swapVbuffers)(_THIS);	/* Swap video buffers */
-	int (*allocVbuffers)(_THIS, int num_buffers, int bufsize);	/* Allocate video buffers */
+	int (*allocVbuffers)(_THIS, const xbiosmode_t *new_video_mode, int num_buffers, int bufsize);	/* Allocate video buffers */
 	void (*freeVbuffers)(_THIS);	/* Free video buffers */
 
 	void (*updRects)(_THIS, int numrects, SDL_Rect *rects);	/* updateRects to use when video ready */

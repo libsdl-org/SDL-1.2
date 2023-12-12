@@ -58,13 +58,13 @@ static void XBIOS_DeleteDevice_NOVA(_THIS);
 
 static void listModes(_THIS, int actually_add);
 static void saveMode(_THIS, SDL_PixelFormat *vformat);
-static void setMode(_THIS, xbiosmode_t *new_video_mode);
+static void setMode(_THIS, const xbiosmode_t *new_video_mode);
 static void restoreMode(_THIS);
 static void vsync_NOVA(_THIS);
 static void getScreenFormat(_THIS, int bpp, Uint32 *rmask, Uint32 *gmask, Uint32 *bmask, Uint32 *amask);
-static int getLineWidth(_THIS, xbiosmode_t *new_video_mode, int width, int bpp);
+static int getLineWidth(_THIS, const xbiosmode_t *new_video_mode, int width, int bpp);
 static void swapVbuffers(_THIS);
-static int allocVbuffers(_THIS, int num_buffers, int bufsize);
+static int allocVbuffers(_THIS, const xbiosmode_t *new_video_mode, int num_buffers, int bufsize);
 static void freeVbuffers(_THIS);
 static int setColors(_THIS, int firstcolor, int ncolors, SDL_Color *colors);
 
@@ -170,7 +170,7 @@ static void saveMode(_THIS, SDL_PixelFormat *vformat)
 	NOVA_xcb->blnk_time = 0;
 }
 
-static void setMode(_THIS, xbiosmode_t *new_video_mode)
+static void setMode(_THIS, const xbiosmode_t *new_video_mode)
 {
 	NOVA_SetMode(this, new_video_mode->number);
 }
@@ -234,7 +234,7 @@ static void getScreenFormat(_THIS, int bpp, Uint32 *rmask, Uint32 *gmask, Uint32
 	}
 }
 
-static int getLineWidth(_THIS, xbiosmode_t *new_video_mode, int width, int bpp)
+static int getLineWidth(_THIS, const xbiosmode_t *new_video_mode, int width, int bpp)
 {
 	return (NOVA_modes[new_video_mode->number].pitch);
 }
@@ -244,7 +244,7 @@ static void swapVbuffers(_THIS)
 	NOVA_SetScreen(this, XBIOS_screens[XBIOS_fbnum]);
 }
 
-static int allocVbuffers(_THIS, int num_buffers, int bufsize)
+static int allocVbuffers(_THIS, const xbiosmode_t *new_video_mode, int num_buffers, int bufsize)
 {
 	XBIOS_screens[0] = NOVA_xcb->base;
 	if (num_buffers>1) {

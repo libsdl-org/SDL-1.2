@@ -475,7 +475,7 @@ static SDL_Surface *XBIOS_SetVideoMode(_THIS, SDL_Surface *current,
 	}
 
 	/* Allocate buffers */
-	if (!(*XBIOS_allocVbuffers)(this, num_buffers, new_screen_size)) {
+	if (!(*XBIOS_allocVbuffers)(this, new_video_mode, num_buffers, new_screen_size)) {
 		XBIOS_FreeBuffers(this);
 		return (NULL);
 	}
@@ -489,20 +489,17 @@ static SDL_Surface *XBIOS_SetVideoMode(_THIS, SDL_Surface *current,
 		return(NULL);
 	}
 
-	XBIOS_current = new_video_mode;
+	/* this is for C2P conversion */
+	XBIOS_pitch = (*XBIOS_getLineWidth)(this, new_video_mode, new_video_mode->width, new_video_mode->depth);
+
 	current->w = width;
 	current->h = height;
 	current->pitch = lineWidth;
-
-	/* this is for C2P conversion */
-	XBIOS_pitch = (*XBIOS_getLineWidth)(this, new_video_mode, new_video_mode->width, new_video_mode->depth);
 
 	if (XBIOS_shadowscreen)
 		current->pixels = XBIOS_shadowscreen;
 	else
 		current->pixels = XBIOS_screens[0];
-
-	XBIOS_fbnum = 0;
 
 #if SDL_VIDEO_OPENGL
 	if (flags & SDL_OPENGL) {
@@ -524,6 +521,9 @@ static SDL_Surface *XBIOS_SetVideoMode(_THIS, SDL_Surface *current,
 
 	(*XBIOS_vsync)(this);
 #endif
+
+	XBIOS_fbnum = 0;
+	XBIOS_current = new_video_mode;
 
 	this->UpdateRects = XBIOS_updRects;
 

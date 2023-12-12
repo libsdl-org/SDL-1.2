@@ -122,11 +122,11 @@ static int has_supervidel;
 
 static void listModes(_THIS, int actually_add);
 static void saveMode(_THIS, SDL_PixelFormat *vformat);
-static void setMode(_THIS, xbiosmode_t *new_video_mode);
+static void setMode(_THIS, const xbiosmode_t *new_video_mode);
 static void restoreMode(_THIS);
 static int setColors(_THIS, int firstcolor, int ncolors, SDL_Color *colors);
 
-static int allocVbuffers_SV(_THIS, int num_buffers, int bufsize);
+static int allocVbuffers_SV(_THIS, const xbiosmode_t *new_video_mode, int num_buffers, int bufsize);
 #ifdef ENABLE_SV_SHADOWBUF
 static void updateRects_SV(_THIS, int numrects, SDL_Rect *rects);
 static int flipHWSurface_SV(_THIS, SDL_Surface *surface);
@@ -223,7 +223,7 @@ static void saveMode(_THIS, SDL_PixelFormat *vformat)
 	}
 }
 
-static void setMode(_THIS, xbiosmode_t *new_video_mode)
+static void setMode(_THIS, const xbiosmode_t *new_video_mode)
 {
 	Setscreen(-1,XBIOS_screens[0],-1);
 
@@ -263,7 +263,7 @@ static int setColors(_THIS, int firstcolor, int ncolors, SDL_Color *colors)
 	return 1;
 }
 
-static int allocVbuffers_SV(_THIS, int num_buffers, int bufsize)
+static int allocVbuffers_SV(_THIS, const xbiosmode_t *new_video_mode, int num_buffers, int bufsize)
 {
 	int i;
 	Uint32 tmp;
