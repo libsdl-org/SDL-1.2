@@ -31,8 +31,6 @@
 #include <mint/osbind.h>
 #include <mint/falcon.h>
 
-#include "../SDL_sysvideo.h"
-
 #include "../ataricommon/SDL_atarimxalloc_c.h"
 
 #include "SDL_xbios.h"
@@ -41,7 +39,7 @@
 #include "SDL_xbios_centscreen.h"
 
 /* Use shadow buffer on Supervidel */
-/*#define ENABLE_SV_SHADOWBUF 1*/
+/* #define ENABLE_SV_SHADOWBUF */
 
 static const xbiosmode_t rgb_modes[]={
 	{BPS16|COL80|OVERSCAN|VERTFLAG,768,480,16,0},
@@ -71,51 +69,56 @@ static const xbiosmode_t vga_modes[]={
 	{BPS8|VERTFLAG,320,240,8,XBIOSMODE_C2P}
 };
 
+#ifndef ENABLE_SV_SHADOWBUF
+#undef XBIOSMODE_SHADOWCOPY
+#define XBIOSMODE_SHADOWCOPY 0
+#endif
+
 static const xbiosmode_t sv_modes[]={
-	{SVEXT|SVEXT_BASERES(4)|BPS32|COL80|OVERSCAN,2560,1440,32,0},	/* 32-bits */
-	{SVEXT|SVEXT_BASERES(3)|BPS32|COL80|OVERSCAN,1920,1200,32,0},
-	{SVEXT|SVEXT_BASERES(2)|BPS32|COL80|OVERSCAN,1920,1080,32,0},
-	{SVEXT|SVEXT_BASERES(1)|BPS32|COL80|OVERSCAN,1680,1050,32,0},
-	{SVEXT|SVEXT_BASERES(4)|BPS32|COL80,1600,1200,32,0},
-	{SVEXT|SVEXT_BASERES(3)|BPS32|COL80,1280,1024,32,0},
-	{SVEXT|SVEXT_BASERES(0)|BPS32|COL80|OVERSCAN,1280,720,32,0},
-	{SVEXT|SVEXT_BASERES(2)|BPS32|COL80,1024,768,32,0},
-	{SVEXT|SVEXT_BASERES(1)|BPS32|COL80,800,600,32,0},
+	{SVEXT|SVEXT_BASERES(4)|BPS32|COL80|OVERSCAN,2560,1440,32,XBIOSMODE_SHADOWCOPY},	/* 32-bits */
+	{SVEXT|SVEXT_BASERES(3)|BPS32|COL80|OVERSCAN,1920,1200,32,XBIOSMODE_SHADOWCOPY},
+	{SVEXT|SVEXT_BASERES(2)|BPS32|COL80|OVERSCAN,1920,1080,32,XBIOSMODE_SHADOWCOPY},
+	{SVEXT|SVEXT_BASERES(1)|BPS32|COL80|OVERSCAN,1680,1050,32,XBIOSMODE_SHADOWCOPY},
+	{SVEXT|SVEXT_BASERES(4)|BPS32|COL80,1600,1200,32,XBIOSMODE_SHADOWCOPY},
+	{SVEXT|SVEXT_BASERES(3)|BPS32|COL80,1280,1024,32,XBIOSMODE_SHADOWCOPY},
+	{SVEXT|SVEXT_BASERES(0)|BPS32|COL80|OVERSCAN,1280,720,32,XBIOSMODE_SHADOWCOPY},
+	{SVEXT|SVEXT_BASERES(2)|BPS32|COL80,1024,768,32,XBIOSMODE_SHADOWCOPY},
+	{SVEXT|SVEXT_BASERES(1)|BPS32|COL80,800,600,32,XBIOSMODE_SHADOWCOPY},
 
-	{SVEXT|SVEXT_BASERES(0)|BPS32|COL80,640,480,32,0},
-	{SVEXT|SVEXT_BASERES(0)|BPS32|COL80|VERTFLAG,640,240,32,0},
-	{SVEXT|SVEXT_BASERES(0)|BPS32,320,480,32,0},
-	{SVEXT|SVEXT_BASERES(0)|BPS32|VERTFLAG,320,240,32,0},
+	{SVEXT|SVEXT_BASERES(0)|BPS32|COL80,640,480,32,XBIOSMODE_SHADOWCOPY},
+	{SVEXT|SVEXT_BASERES(0)|BPS32|COL80|VERTFLAG,640,240,32,XBIOSMODE_SHADOWCOPY},
+	{SVEXT|SVEXT_BASERES(0)|BPS32,320,480,32,XBIOSMODE_SHADOWCOPY},
+	{SVEXT|SVEXT_BASERES(0)|BPS32|VERTFLAG,320,240,32,XBIOSMODE_SHADOWCOPY},
 
-	{SVEXT|SVEXT_BASERES(4)|BPS16|COL80|OVERSCAN,2560,1440,16,0},	/* 16-bits */
-	{SVEXT|SVEXT_BASERES(3)|BPS16|COL80|OVERSCAN,1920,1200,16,0},
-	{SVEXT|SVEXT_BASERES(2)|BPS16|COL80|OVERSCAN,1920,1080,16,0},
-	{SVEXT|SVEXT_BASERES(1)|BPS16|COL80|OVERSCAN,1680,1050,16,0},
-	{SVEXT|SVEXT_BASERES(4)|BPS16|COL80,1600,1200,16,0},
-	{SVEXT|SVEXT_BASERES(3)|BPS16|COL80,1280,1024,16,0},
-	{SVEXT|SVEXT_BASERES(0)|BPS16|COL80|OVERSCAN,1280,720,16,0},
-	{SVEXT|SVEXT_BASERES(2)|BPS16|COL80,1024,768,16,0},
-	{SVEXT|SVEXT_BASERES(1)|BPS16|COL80,800,600,16,0},
+	{SVEXT|SVEXT_BASERES(4)|BPS16|COL80|OVERSCAN,2560,1440,16,XBIOSMODE_SHADOWCOPY},	/* 16-bits */
+	{SVEXT|SVEXT_BASERES(3)|BPS16|COL80|OVERSCAN,1920,1200,16,XBIOSMODE_SHADOWCOPY},
+	{SVEXT|SVEXT_BASERES(2)|BPS16|COL80|OVERSCAN,1920,1080,16,XBIOSMODE_SHADOWCOPY},
+	{SVEXT|SVEXT_BASERES(1)|BPS16|COL80|OVERSCAN,1680,1050,16,XBIOSMODE_SHADOWCOPY},
+	{SVEXT|SVEXT_BASERES(4)|BPS16|COL80,1600,1200,16,XBIOSMODE_SHADOWCOPY},
+	{SVEXT|SVEXT_BASERES(3)|BPS16|COL80,1280,1024,16,XBIOSMODE_SHADOWCOPY},
+	{SVEXT|SVEXT_BASERES(0)|BPS16|COL80|OVERSCAN,1280,720,16,XBIOSMODE_SHADOWCOPY},
+	{SVEXT|SVEXT_BASERES(2)|BPS16|COL80,1024,768,16,XBIOSMODE_SHADOWCOPY},
+	{SVEXT|SVEXT_BASERES(1)|BPS16|COL80,800,600,16,XBIOSMODE_SHADOWCOPY},
 
-	{BPS16|COL80,640,480,16,0},
-	{BPS16|COL80|VERTFLAG,640,240,16,0},
-	{BPS16,320,480,16,0},
-	{BPS16|VERTFLAG,320,240,16,0},
+	{BPS16|COL80,640,480,16,XBIOSMODE_SHADOWCOPY},
+	{BPS16|COL80|VERTFLAG,640,240,16,XBIOSMODE_SHADOWCOPY},
+	{BPS16,320,480,16,XBIOSMODE_SHADOWCOPY},
+	{BPS16|VERTFLAG,320,240,16,XBIOSMODE_SHADOWCOPY},
 
-	{SVEXT|SVEXT_BASERES(4)|BPS8C|COL80|OVERSCAN,2560,1440,8,0},	/* 8-bits chunky */
-	{SVEXT|SVEXT_BASERES(3)|BPS8C|COL80|OVERSCAN,1920,1200,8,0},
-	{SVEXT|SVEXT_BASERES(2)|BPS8C|COL80|OVERSCAN,1920,1080,8,0},
-	{SVEXT|SVEXT_BASERES(1)|BPS8C|COL80|OVERSCAN,1680,1050,8,0},
-	{SVEXT|SVEXT_BASERES(4)|BPS8C|COL80,1600,1200,8,0},
-	{SVEXT|SVEXT_BASERES(3)|BPS8C|COL80,1280,1024,8,0},
-	{SVEXT|SVEXT_BASERES(0)|BPS8C|COL80|OVERSCAN,1280,720,8,0},
-	{SVEXT|SVEXT_BASERES(2)|BPS8C|COL80,1024,768,8,0},
-	{SVEXT|SVEXT_BASERES(1)|BPS8C|COL80,800,600,8,0},
+	{SVEXT|SVEXT_BASERES(4)|BPS8C|COL80|OVERSCAN,2560,1440,8,XBIOSMODE_SHADOWCOPY},	/* 8-bits chunky */
+	{SVEXT|SVEXT_BASERES(3)|BPS8C|COL80|OVERSCAN,1920,1200,8,XBIOSMODE_SHADOWCOPY},
+	{SVEXT|SVEXT_BASERES(2)|BPS8C|COL80|OVERSCAN,1920,1080,8,XBIOSMODE_SHADOWCOPY},
+	{SVEXT|SVEXT_BASERES(1)|BPS8C|COL80|OVERSCAN,1680,1050,8,XBIOSMODE_SHADOWCOPY},
+	{SVEXT|SVEXT_BASERES(4)|BPS8C|COL80,1600,1200,8,XBIOSMODE_SHADOWCOPY},
+	{SVEXT|SVEXT_BASERES(3)|BPS8C|COL80,1280,1024,8,XBIOSMODE_SHADOWCOPY},
+	{SVEXT|SVEXT_BASERES(0)|BPS8C|COL80|OVERSCAN,1280,720,8,XBIOSMODE_SHADOWCOPY},
+	{SVEXT|SVEXT_BASERES(2)|BPS8C|COL80,1024,768,8,XBIOSMODE_SHADOWCOPY},
+	{SVEXT|SVEXT_BASERES(1)|BPS8C|COL80,800,600,8,XBIOSMODE_SHADOWCOPY},
 
-	{BPS8C|COL80,640,480,8,0},
-	{BPS8C|COL80|VERTFLAG,640,240,8,0},
-	{BPS8C,320,480,8,0},
-	{BPS8C|VERTFLAG,320,240,8,0}
+	{BPS8C|COL80,640,480,8,XBIOSMODE_SHADOWCOPY},
+	{BPS8C|COL80|VERTFLAG,640,240,8,XBIOSMODE_SHADOWCOPY},
+	{BPS8C,320,480,8,XBIOSMODE_SHADOWCOPY},
+	{BPS8C|VERTFLAG,320,240,8,XBIOSMODE_SHADOWCOPY}
 };
 
 static int has_supervidel;
@@ -127,10 +130,6 @@ static void restoreMode(_THIS);
 static int setColors(_THIS, int firstcolor, int ncolors, SDL_Color *colors);
 
 static int allocVbuffers_SV(_THIS, const xbiosmode_t *new_video_mode, int num_buffers, int bufsize);
-#ifdef ENABLE_SV_SHADOWBUF
-static void updateRects_SV(_THIS, int numrects, SDL_Rect *rects);
-static int flipHWSurface_SV(_THIS, SDL_Surface *surface);
-#endif
 
 void SDL_XBIOS_VideoInit_F30(_THIS)
 {
@@ -141,16 +140,16 @@ void SDL_XBIOS_VideoInit_F30(_THIS)
 	XBIOS_setMode = setMode;
 	XBIOS_restoreMode = restoreMode;
 
+	/*
+	 * Must be set before others as it may or may not
+	 * get overwritten by the further inits.
+	 */
 	this->SetColors = setColors;
 
 	/* Supervidel ? */
 	has_supervidel = 0;
 	if (Getcookie(C_SupV, &cookie_dummy) == C_FOUND) {
 		XBIOS_allocVbuffers = allocVbuffers_SV;
-#ifdef ENABLE_SV_SHADOWBUF
-		XBIOS_updRects = updateRects_SV;
-		this->FlipHWSurface = flipHWSurface_SV;
-#endif
 		has_supervidel = 1;
 	} else
 	/* CTPCI ? */
@@ -261,7 +260,7 @@ static int setColors(_THIS, int firstcolor, int ncolors, SDL_Color *colors)
 	}
 	VsetRGB(firstcolor,ncolors,F30_palette);
 
-	return 1;
+	return (1);
 }
 
 static int allocVbuffers_SV(_THIS, const xbiosmode_t *new_video_mode, int num_buffers, int bufsize)
@@ -284,84 +283,5 @@ static int allocVbuffers_SV(_THIS, const xbiosmode_t *new_video_mode, int num_bu
 		XBIOS_screens[i] = (void *) tmp;
 	}
 
-#ifdef ENABLE_SV_SHADOWBUF
-	/*--- Always use shadow buffer ---*/
-	if (XBIOS_shadowscreen) {
-		Mfree(XBIOS_shadowscreen);
-		XBIOS_shadowscreen=NULL;
-	}
-
-	/* allocate shadow buffer in TT-RAM */
-	XBIOS_shadowscreen = Atari_SysMalloc(bufsize, MX_PREFTTRAM);
-
-	if (XBIOS_shadowscreen == NULL) {
-		SDL_SetError("Can not allocate %d KB for shadow buffer", bufsize>>10);
-		return (0);
-	}
-	SDL_memset(XBIOS_shadowscreen, 0, bufsize);
-#endif
-
 	return (1);
 }
-
-#ifdef ENABLE_SV_SHADOWBUF
-static void updateRects_SV(_THIS, int numrects, SDL_Rect *rects)
-{
-	SDL_Surface *surface;
-	int i;
-
-	surface = this->screen;
-
-	for (i=0;i<numrects;i++) {
-		Uint8 *blockSrcStart, *blockDstStart;
-		int y;
-
-		blockSrcStart = (Uint8 *) surface->pixels;
-		blockSrcStart += surface->pitch*rects[i].y;
-		blockSrcStart += surface->format->BytesPerPixel*rects[i].x;
-
-		blockDstStart = ((Uint8 *) XBIOS_screens[XBIOS_fbnum]) + surface->offset;
-		blockDstStart += XBIOS_pitch*rects[i].y;
-		blockDstStart += surface->format->BytesPerPixel*rects[i].x;
-
-		for(y=0;y<rects[i].h;y++){
-			SDL_memcpy(blockDstStart,blockSrcStart,surface->pitch);
-
-			blockSrcStart += surface->pitch;
-			blockDstStart += XBIOS_pitch;
-		}
-	}
-
-	if ((surface->flags & SDL_DOUBLEBUF) == SDL_DOUBLEBUF) {
-		Setscreen(-1,XBIOS_screens[XBIOS_fbnum],-1);
-		(*XBIOS_vsync)(this);
-
-		XBIOS_fbnum ^= 1;
-	}
-}
-
-static int flipHWSurface_SV(_THIS, SDL_Surface *surface)
-{
-	int i;
-	Uint8 *src, *dst;
-
-	src = surface->pixels;
-	dst = ((Uint8 *) XBIOS_screens[XBIOS_fbnum]) + surface->offset;
-
-	for (i=0; i<surface->h; i++) {
-		SDL_memcpy(dst, src, surface->w * surface->format->BytesPerPixel);
-		src += surface->pitch;
-		dst += XBIOS_pitch;
-
-	}
-
- 	if ((surface->flags & SDL_DOUBLEBUF) == SDL_DOUBLEBUF) {
-		Setscreen(-1,XBIOS_screens[XBIOS_fbnum],-1);
-		(*XBIOS_vsync)(this);
-
-		XBIOS_fbnum ^= 1;
-	}
-
-	return(0);
-}
-#endif
