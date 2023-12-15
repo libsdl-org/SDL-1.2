@@ -40,11 +40,11 @@
 
 /* Some ioctl() errno values which occur when the tray is empty */
 #ifndef ENOMEDIUM
-#define ENOMEDIUM ENOENT
+#define ENOMEDIUM 17
 #endif
-#define ERRNO_TRAYEMPTY(errno)	\
-	((errno == EIO)    || (errno == ENOENT) || \
-	 (errno == EINVAL) || (errno == ENOMEDIUM))
+#define ERRNO_TRAYEMPTY(err)	\
+	((err == -EIO)    || (err == -ENOENT) || \
+	 (err == -EINVAL) || (err == -ENOMEDIUM))
 
 /* The maximum number of CD-ROM drives we'll detect */
 #define MAX_DRIVES	32	
@@ -102,9 +102,10 @@ int SDL_SYS_CDInit(void)
 		if (metainit.drives_map & (1<<(i-'A'))) {
 			handle = Metaopen(i, &metaopen);
 			if (handle == 0) {
+				long err;
 
 				info.cdsc_format = CDROM_MSF;
-				if ( (Metaioctl(i, METADOS_IOCTL_MAGIC, CDROMSUBCHNL, &info) == 0) || ERRNO_TRAYEMPTY(errno) ) {
+				if ( ((err = Metaioctl(i, METADOS_IOCTL_MAGIC, CDROMSUBCHNL, &info)) == 0) || ERRNO_TRAYEMPTY(err) ) {
 					metados_drives[SDL_numcds].device[0] = i;
 					++SDL_numcds;
 				}
@@ -163,7 +164,7 @@ static int SDL_SYS_CDioctl(int id, int command, void *arg)
 
 	retval = Metaioctl(metados_drives[id].device[0], METADOS_IOCTL_MAGIC, command, arg);
 	if ( retval < 0 ) {
-		SDL_SetError("ioctl() error: %s", strerror(errno));
+		SDL_SetError("ioctl() error: %s", strerror(-retval));
 	}
 	return(retval);
 }
@@ -223,10 +224,11 @@ static CDstatus SDL_SYS_CDStatus(SDL_CD *cdrom, int *position)
 	CDstatus status;
 	struct cdrom_tochdr toc;
 	struct cdrom_subchnl info;
+	int err;
 
 	info.cdsc_format = CDROM_MSF;
-	if ( SDL_SYS_CDioctl(cdrom->id, CDROMSUBCHNL, &info) < 0 ) {
-		if ( ERRNO_TRAYEMPTY(errno) ) {
+	if ( (err = SDL_SYS_CDioctl(cdrom->id, CDROMSUBCHNL, &info)) < 0 ) {
+		if ( ERRNO_TRAYEMPTY(err) ) {
 			status = CD_TRAYEMPTY;
 		} else {
 			status = CD_ERROR;
