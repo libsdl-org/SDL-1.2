@@ -559,10 +559,16 @@ static void XBIOS_UnlockHWSurface(_THIS, SDL_Surface *surface)
 
 static void XBIOS_UpdateRects(_THIS, int numrects, SDL_Rect *rects)
 {
-	SDL_Surface *surface;
-	int i;
+	/* SDL_UpdateRects() already added surface->offset_[xy] to each rect's coordinates */
+	SDL_Surface *surface = this->screen;
 
-	surface = this->screen;
+	/*
+	 * SDL_LockSurface() adds surface->offset to surface->pixels
+	 * NOTE: documentation explicitly discourages to call this
+	 *       function while the screen surface is locked
+	 */
+	int src_offset = (surface->locked ? -surface->offset : 0);
+	int i;
 
 	if (XBIOS_current->flags & XBIOSMODE_C2P) {
 		int doubleline = (XBIOS_current->flags & XBIOSMODE_DOUBLELINE ? 1 : 0);
@@ -572,18 +578,19 @@ static void XBIOS_UpdateRects(_THIS, int numrects, SDL_Rect *rects)
 			int x1,x2;
 
 			x1 = rects[i].x & ~15;
-			x2 = rects[i].x+rects[i].w;
+			x2 = rects[i].x + rects[i].w;
 			if (x2 & 15) {
 				x2 = (x2 | 15) +1;
 			}
 
-			source = surface->pixels;
+			source = surface->pixels + src_offset;
 			source += surface->pitch * rects[i].y;
+			/* Always one byte per pixel */
 			source += x1;
 
 			destination = XBIOS_screens[XBIOS_fbnum];
 			destination += XBIOS_pitch * rects[i].y;
-			destination += x1;
+			destination += (XBIOS_current->depth * x1) / 8;
 
 			/* Convert chunky to planar screen */
 			SDL_Atari_C2pConvert(
@@ -597,17 +604,18 @@ static void XBIOS_UpdateRects(_THIS, int numrects, SDL_Rect *rects)
 			);
 		}
 	} else if (XBIOS_current->flags & XBIOSMODE_SHADOWCOPY) {
+		/* Always bpp >= 8 */
 		for (i=0;i<numrects;i++) {
 			Uint8 *blockSrcStart, *blockDstStart;
 			int y;
 
-			blockSrcStart = (Uint8 *) surface->pixels;
-			blockSrcStart += surface->pitch*rects[i].y;
-			blockSrcStart += surface->format->BytesPerPixel*rects[i].x;
+			blockSrcStart = (Uint8 *) surface->pixels + src_offset;
+			blockSrcStart += surface->pitch * rects[i].y;
+			blockSrcStart += surface->format->BytesPerPixel * rects[i].x;
 
-			blockDstStart = ((Uint8 *) XBIOS_screens[XBIOS_fbnum]) + surface->offset;
-			blockDstStart += XBIOS_pitch*rects[i].y;
-			blockDstStart += surface->format->BytesPerPixel*rects[i].x;
+			blockDstStart = ((Uint8 *) XBIOS_screens[XBIOS_fbnum]);
+			blockDstStart += XBIOS_pitch * rects[i].y;
+			blockDstStart += surface->format->BytesPerPixel * rects[i].x;
 
 			for(y=0;y<rects[i].h;y++){
 				SDL_memcpy(blockDstStart,blockSrcStart,surface->pitch);
@@ -634,7 +642,7 @@ static void XBIOS_UpdateRects(_THIS, int numrects, SDL_Rect *rects)
 
 		XBIOS_fbnum ^= 1;
 		if (!XBIOS_shadowscreen) {
-			int src_offset = (surface->locked ? surface->offset : 0);
+			src_offset = (surface->locked ? surface->offset : 0);
 			surface->pixels=((Uint8 *) XBIOS_screens[XBIOS_fbnum]) + src_offset;
 		}
 	}
@@ -642,15 +650,15 @@ static void XBIOS_UpdateRects(_THIS, int numrects, SDL_Rect *rects)
 
 static int XBIOS_FlipHWSurface(_THIS, SDL_Surface *surface)
 {
-	int src_offset;
+	/* SDL_LockSurface() adds surface->offset to surface->pixels */
+	int src_offset = (surface->locked ? 0 : surface->offset);
+	int dst_offset;
 
 	if (XBIOS_current->flags & XBIOSMODE_C2P) {
 		int doubleline = (XBIOS_current->flags & XBIOSMODE_DOUBLELINE ? 1 : 0);
-		int dst_offset;
 
-		src_offset = (surface->locked ? 0 : surface->offset);
 		dst_offset = this->offset_y * XBIOS_pitch +
-				(this->offset_x & ~15) * this->screen->format->BytesPerPixel;
+				(this->offset_x & ~15) * XBIOS_current->depth / 8;
 
 		/* Convert chunky to planar screen */
 		SDL_Atari_C2pConvert(
@@ -663,11 +671,15 @@ static int XBIOS_FlipHWSurface(_THIS, SDL_Surface *surface)
 			XBIOS_pitch
 		);
 	} else if (XBIOS_current->flags & XBIOSMODE_SHADOWCOPY) {
+		/* Always bpp >= 8 */
 		int i;
 		Uint8 *src, *dst;
 
-		src = surface->pixels;
-		dst = ((Uint8 *) XBIOS_screens[XBIOS_fbnum]) + surface->offset;
+		/* Same dimensions as source surface */
+		dst_offset = surface->offset;
+
+		src = surface->pixels + src_offset;
+		dst = ((Uint8 *) XBIOS_screens[XBIOS_fbnum]) + dst_offset;
 
 		for (i=0; i<surface->h; i++) {
 			SDL_memcpy(dst, src, surface->w * surface->format->BytesPerPixel);
