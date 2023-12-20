@@ -52,10 +52,6 @@
 
 #define XBIOS_VID_DRIVER_NAME "xbios"
 
-#ifndef C_fVDI
-#define C_fVDI 0x66564449L
-#endif
-
 /* Debug print info */
 #if 0
 #define DEBUG_PRINT(what) \
@@ -89,20 +85,21 @@ static void XBIOS_GL_SwapBuffers(_THIS);
 
 /* Xbios driver bootstrap functions */
 
+static long cookie_vdo;
+
 static int XBIOS_Available(void)
 {
-	long cookie_vdo, /*cookie_mil,*/ cookie_hade, cookie_scpn;
-	long cookie_fvdi;
-	const char *envr = SDL_getenv("SDL_VIDEODRIVER");
+	long cookie_hade, cookie_scpn, cookie_fvdi;
 
-	/* Milan/Hades Atari clones do not have an Atari video chip */
-	if ( /*(Getcookie(C__MIL, &cookie_mil) == C_FOUND) ||*/
-		(Getcookie(C_hade, &cookie_hade) == C_FOUND) ) {
+	/* Hades does not have neither Atari video chip nor compatible Xbios */
+	if (Getcookie(C_hade, &cookie_hade) == C_FOUND) {
 		return 0;
 	}
 
 	/* fVDI means graphic card, so no Xbios with it */
 	if (Getcookie(C_fVDI, &cookie_fvdi) == C_FOUND) {
+		const char *envr = SDL_getenv("SDL_VIDEODRIVER");
+
 		if (!envr) {
 			return 0;
 		}
@@ -463,6 +460,10 @@ static SDL_Surface *XBIOS_SetVideoMode(_THIS, SDL_Surface *current,
 	if (new_video_mode->flags & XBIOSMODE_DOUBLELINE) {
 		new_screen_size <<= 1;
 	}
+	/* Output buffer for 4-bit modes is just half the size */
+	if (new_video_mode->depth == 4) {
+		new_screen_size >>= 1;
+	}
 
 	/* Double buffer ? */
 	num_buffers = 1;
@@ -488,7 +489,7 @@ static SDL_Surface *XBIOS_SetVideoMode(_THIS, SDL_Surface *current,
 	/* Allocate the new pixel format for the screen */
 	(*XBIOS_getScreenFormat)(this, new_depth, &rmask, &gmask, &bmask, &amask);
 
-	if ( ! SDL_ReallocFormat(current, new_depth, rmask, gmask, bmask, amask) ) {
+	if (!SDL_ReallocFormat(current, new_depth, rmask, gmask, bmask, amask)) {
 		XBIOS_FreeBuffers(this);
 		SDL_SetError("Couldn't allocate new pixel format for requested mode");
 		return(NULL);
@@ -619,9 +620,16 @@ static void XBIOS_UpdateRects(_THIS, int numrects, SDL_Rect *rects)
 
 	if ((surface->flags & SDL_DOUBLEBUF) == SDL_DOUBLEBUF) {
 #ifndef DEBUG_VIDEO_XBIOS
-		(*XBIOS_swapVbuffers)(this);
+		if ((cookie_vdo >> 16) != VDO_F30) {
+			(*XBIOS_swapVbuffers)(this);
 
-		(*XBIOS_vsync)(this);
+			(*XBIOS_vsync)(this);
+		} else {
+			/* Make sure that the Videl registers are updated during vertical retrace */
+			(*XBIOS_vsync)(this);
+
+			(*XBIOS_swapVbuffers)(this);
+		}
 #endif
 
 		XBIOS_fbnum ^= 1;
@@ -670,9 +678,16 @@ static int XBIOS_FlipHWSurface(_THIS, SDL_Surface *surface)
 
 	if ((surface->flags & SDL_DOUBLEBUF) == SDL_DOUBLEBUF) {
 #ifndef DEBUG_VIDEO_XBIOS
-		(*XBIOS_swapVbuffers)(this);
+		if ((cookie_vdo >> 16) != VDO_F30) {
+			(*XBIOS_swapVbuffers)(this);
 
-		(*XBIOS_vsync)(this);
+			(*XBIOS_vsync)(this);
+		} else {
+			/* Make sure that the Videl registers are updated during vertical retrace */
+			(*XBIOS_vsync)(this);
+
+			(*XBIOS_swapVbuffers)(this);
+		}
 #endif
 
 		XBIOS_fbnum ^= 1;
