@@ -96,11 +96,11 @@ static void GEM_UpdateRects(_THIS, int numrects, SDL_Rect *rects);
 static void GEM_FreeBuffers(_THIS);
 static void GEM_ClearScreen(_THIS);
 static void GEM_ClearRect(_THIS, short *pxy);
-static void GEM_ClearRectXYWH(_THIS, short *rect);
+static void GEM_ClearRectXYWH(_THIS, GRECT *rect);
 static void GEM_SetNewPalette(_THIS, Uint16 newpal[256][3]);
 static void GEM_LockScreen(_THIS);
 static void GEM_UnlockScreen(_THIS);
-static void refresh_window(_THIS, int winhandle, short *rect, SDL_bool pad_only);
+static void refresh_window(_THIS, int winhandle, GRECT *rect, SDL_bool pad_only);
 
 #if SDL_VIDEO_OPENGL
 /* OpenGL functions */
@@ -338,7 +338,13 @@ static void VDI_ReadExtInfo(_THIS, short *work_out)
 int GEM_VideoInit(_THIS, SDL_PixelFormat *vformat)
 {
 	int i, menubar_size;
-	short work_in[12], work_out[272], dummy;
+	short work_in[12];
+	/*
+	 * The standalone enhancer.prg has a bug
+	 * and copies 273 values here
+	 */
+	short work_out[273];
+	short dummy;
 
 	/* Open AES (Application Environment Services) */
 	GEM_ap_id = internal_ap_id;
@@ -384,15 +390,12 @@ int GEM_VideoInit(_THIS, SDL_PixelFormat *vformat)
 	VDI_h = work_out[1] + 1;
 
 	/* Read desktop size and position */
-	if (!wind_get(DESKTOP_HANDLE, WF_WORKXYWH, &GEM_desk_x, &GEM_desk_y, &GEM_desk_w, &GEM_desk_h)) {
+	if (!wind_get_grect(DESKTOP_HANDLE, WF_WORKXYWH, &GEM_desk)) {
 		fprintf(stderr,"Can not read desktop properties\n");
 		return 1;
 	}
 
-	GEM_work_x = GEM_desk_x;
-	GEM_work_y = GEM_desk_y;
-	GEM_work_w = GEM_desk_w;
-	GEM_work_h = GEM_desk_h;
+	GEM_work = GEM_desk;
 
 	/* Read bit depth */
 	vq_extnd(VDI_handle, 1, work_out);
@@ -493,7 +496,7 @@ int GEM_VideoInit(_THIS, SDL_PixelFormat *vformat)
 	vsf_perimeter(VDI_handle,0);
 
 	/* Menu bar save buffer */
-	menubar_size = GEM_desk_w * GEM_desk_y * VDI_pixelsize;
+	menubar_size = GEM_desk.g_w * GEM_desk.g_y * VDI_pixelsize;
 	GEM_menubar=Atari_SysMalloc(menubar_size,MX_PREFTTRAM);
 
 	/* Fill video modes list */
@@ -564,14 +567,14 @@ void GEM_ClearRect(_THIS, short *pxy)
 	vs_color(VDI_handle, 0, oldrgb);
 }
 
-void GEM_ClearRectXYWH(_THIS, short *rect)
+void GEM_ClearRectXYWH(_THIS, GRECT *rect)
 {
 	short pxy[4];
 
-	pxy[0] = rect[0];
-	pxy[1] = rect[1];
-	pxy[2] = rect[0]+rect[2]-1;
-	pxy[3] = rect[1]+rect[3]-1;
+	pxy[0] = rect->g_x;
+	pxy[1] = rect->g_y;
+	pxy[2] = rect->g_x+rect->g_w-1;
+	pxy[3] = rect->g_y+rect->g_h-1;
 
 	GEM_ClearRect(this, pxy);
 }
@@ -614,9 +617,9 @@ static void GEM_LockScreen(_THIS)
 			short blitcoords[8];
 
 			mfdb_src.fd_addr=GEM_menubar;
-			mfdb_src.fd_w=GEM_desk_w;
-			mfdb_src.fd_h=GEM_desk_y;
-			mfdb_src.fd_wdwidth=GEM_desk_w>>4;
+			mfdb_src.fd_w=GEM_desk.g_w;
+			mfdb_src.fd_h=GEM_desk.g_y;
+			mfdb_src.fd_wdwidth=GEM_desk.g_w>>4;
 			mfdb_src.fd_nplanes=VDI_bpp;
 			mfdb_src.fd_stand=
 				mfdb_src.fd_r1=
@@ -625,8 +628,8 @@ static void GEM_LockScreen(_THIS)
 
 			blitcoords[0] = blitcoords[4] = 0;
 			blitcoords[1] = blitcoords[5] = 0;
-			blitcoords[2] = blitcoords[6] = GEM_desk_w-1;
-			blitcoords[3] = blitcoords[7] = GEM_desk_y-1;
+			blitcoords[2] = blitcoords[6] = GEM_desk.g_w-1;
+			blitcoords[3] = blitcoords[7] = GEM_desk.g_y-1;
 
 			vro_cpyfm(VDI_handle, S_ONLY, blitcoords, &VDI_dst_mfdb, &mfdb_src);
 		}
@@ -644,9 +647,9 @@ static void GEM_UnlockScreen(_THIS)
 			short blitcoords[8];
 
 			mfdb_src.fd_addr=GEM_menubar;
-			mfdb_src.fd_w=GEM_desk_w;
-			mfdb_src.fd_h=GEM_desk_y;
-			mfdb_src.fd_wdwidth=GEM_desk_w>>4;
+			mfdb_src.fd_w=GEM_desk.g_w;
+			mfdb_src.fd_h=GEM_desk.g_y;
+			mfdb_src.fd_wdwidth=GEM_desk.g_w>>4;
 			mfdb_src.fd_nplanes=VDI_bpp;
 			mfdb_src.fd_stand=
 				mfdb_src.fd_r1=
@@ -655,8 +658,8 @@ static void GEM_UnlockScreen(_THIS)
 
 			blitcoords[0] = blitcoords[4] = 0;
 			blitcoords[1] = blitcoords[5] = 0;
-			blitcoords[2] = blitcoords[6] = GEM_desk_w-1;
-			blitcoords[3] = blitcoords[7] = GEM_desk_y-1;
+			blitcoords[2] = blitcoords[6] = GEM_desk.g_w-1;
+			blitcoords[3] = blitcoords[7] = GEM_desk.g_y-1;
 
 			vro_cpyfm(VDI_handle, S_ONLY, blitcoords, &mfdb_src, &VDI_dst_mfdb);
 		}
@@ -772,7 +775,7 @@ SDL_Surface *GEM_SetVideoMode(_THIS, SDL_Surface *current,
 		GEM_fullscreen = SDL_TRUE;
 	} else {
 		int old_win_type;
-		short x2,y2,w2,h2;
+		GRECT gr;
 
 		GEM_UnlockScreen(this);
 
@@ -793,29 +796,33 @@ SDL_Surface *GEM_SetVideoMode(_THIS, SDL_Surface *current,
 		/* Recreate window ? only for different widget or non-created window */
 		if ((old_win_type != GEM_win_type) || (GEM_handle < 0)) {
 			/* Calculate window size */
-			if (!wind_calc(WC_BORDER, GEM_win_type, 0,0,width+16,height, &x2,&y2,&w2,&h2)) {
+			gr.g_x = 0;
+			gr.g_y = 0;
+			gr.g_w = width + 16;
+			gr.g_h = height;
+			if (!wind_calc_grect(WC_BORDER, GEM_win_type, &gr, &gr)) {
 				GEM_FreeBuffers(this);
 				SDL_SetError("Can not calculate window attributes");
 				return NULL;
 			}
 
 			/* Center window */
-			x2 = (GEM_desk_w-w2)>>1;
-			y2 = (GEM_desk_h-h2)>>1;
-			if (x2<0) {
-				x2 = 0;
+			gr.g_x = (GEM_desk.g_w-gr.g_w)>>1;
+			gr.g_y = (GEM_desk.g_h-gr.g_h)>>1;
+			if (gr.g_x<0) {
+				gr.g_x = 0;
 			}
-			if (y2<0) {
-				y2 = 0;
+			if (gr.g_y<0) {
+				gr.g_y = 0;
 			}
-			x2 += GEM_desk_x;
-			y2 += GEM_desk_y;
+			gr.g_x += GEM_desk.g_x;
+			gr.g_y += GEM_desk.g_y;
 
 			/* Align work area on 16 pixels boundary (faster for bitplanes modes) */
-			wind_calc(WC_WORK, GEM_win_type, x2,y2,w2,h2, &x2,&y2,&w2,&h2);
-			x2 &= ~15;
-			x2 -= 8;
-			wind_calc(WC_BORDER, GEM_win_type, x2,y2,w2,h2, &x2,&y2,&w2,&h2);
+			wind_calc_grect(WC_WORK, GEM_win_type, &gr, &gr);
+			gr.g_x &= ~15;
+			gr.g_x -= 8;
+			wind_calc_grect(WC_BORDER, GEM_win_type, &gr, &gr);
 
 			/* Destroy existing window */
 			if (GEM_handle >= 0) {
@@ -824,7 +831,7 @@ SDL_Surface *GEM_SetVideoMode(_THIS, SDL_Surface *current,
 			}
 
 			/* Create window */
-			GEM_handle=wind_create(GEM_win_type, x2,y2,w2,h2);
+			GEM_handle=wind_create_grect(GEM_win_type, &gr);
 			if (GEM_handle<0) {
 				GEM_FreeBuffers(this);
 				SDL_SetError("Can not create window");
@@ -836,21 +843,20 @@ SDL_Surface *GEM_SetVideoMode(_THIS, SDL_Surface *current,
 #endif
 
 			/* Setup window name */
-			wind_set(GEM_handle,WF_NAME,
-				(short)(((unsigned long)GEM_title_name)>>16),
-				(short)(((unsigned long)GEM_title_name) & 0xffff),
-				0,0);
+			wind_set_str(GEM_handle,WF_NAME,GEM_title_name);
 			GEM_refresh_name = SDL_FALSE;
 
 			/* Open the window */
-			wind_open(GEM_handle,x2,y2,w2,h2);
+			wind_open_grect(GEM_handle,&gr);
 
 			GEM_iconified = SDL_FALSE;
 		} else {
 			/* Resize window to fit asked video mode */
-			wind_get (GEM_handle, WF_WORKXYWH, &x2,&y2,&w2,&h2);
-			if (wind_calc(WC_BORDER, GEM_win_type, x2,y2,width+16,height, &x2,&y2,&w2,&h2)) {
-				wind_set (GEM_handle, WF_CURRXYWH, x2,y2,w2,h2);
+			wind_get_grect (GEM_handle, WF_WORKXYWH, &gr);
+			gr.g_w = width;
+			gr.g_h = height;
+			if (wind_calc_grect(WC_BORDER, GEM_win_type, &gr, &gr)) {
+				wind_set_grect (GEM_handle, WF_CURRXYWH, &gr);
 			}
 		}
 
@@ -898,40 +904,40 @@ void GEM_align_work_area(_THIS, short windowid, SDL_bool clear_pads)
 {
 	int new_x, new_w, old_x, old_w;
 
-	wind_get(windowid, WF_WORKXYWH, &GEM_work_x,&GEM_work_y,&GEM_work_w,&GEM_work_h);
+	wind_get_grect(windowid, WF_WORKXYWH, &GEM_work);
 	if (GEM_iconified) {
 		return;
 	}
 
 	/* Align work area on 16 pixels boundary (faster for bitplanes modes) */
-	new_x = old_x = GEM_work_x;
-	new_w = old_w = GEM_work_w;
+	new_x = old_x = GEM_work.g_x;
+	new_w = old_w = GEM_work.g_w;
 	if (new_x & 15) {
 		new_x = (new_x|15)+1;
 	} else {
 		new_w -= 16;
 	}
-	new_w -= (new_x - GEM_work_x);
+	new_w -= (new_x - GEM_work.g_x);
 	new_w &= ~15;
 
-	GEM_work_x = new_x;
-	GEM_work_w = new_w;
+	GEM_work.g_x = new_x;
+	GEM_work.g_w = new_w;
 
 	if (clear_pads) {
-		short rect[4];
+		GRECT rect;
 
-		rect[1] = GEM_work_y;
-		rect[3] = GEM_work_h;
+		rect.g_y = GEM_work.g_y;
+		rect.g_h = GEM_work.g_h;
 
 		/* Left padding */
-		rect[0] = old_x;
-		rect[2] = new_x-old_x+1;
-		GEM_wind_redraw(this, GEM_handle, rect, SDL_TRUE);
+		rect.g_x = old_x;
+		rect.g_w = new_x-old_x+1;
+		GEM_wind_redraw(this, GEM_handle, &rect, SDL_TRUE);
 
 		/* Right padding */
-		rect[0] = new_x + new_w;
-		rect[2] = (old_w-new_w)-(new_x-old_x)+1;
-		GEM_wind_redraw(this, GEM_handle, rect, SDL_TRUE);
+		rect.g_x = new_x + new_w;
+		rect.g_w = (old_w-new_w)-(new_x-old_x)+1;
+		GEM_wind_redraw(this, GEM_handle, &rect, SDL_TRUE);
 	}
 }
 
@@ -1036,16 +1042,16 @@ static void GEM_UpdateRectsFullscreen(_THIS, int numrects, SDL_Rect *rects)
 
 static void GEM_UpdateRectsWindowed(_THIS, int numrects, SDL_Rect *rects)
 {
-	short rect[4];
+	GRECT rect;
 	int i;
 
 	for ( i=0; i<numrects; ++i ) {
-		rect[0] = GEM_work_x + rects[i].x;
-		rect[1] = GEM_work_y + rects[i].y;
-		rect[2] = rects[i].w;
-		rect[3] = rects[i].h;
+		rect.g_x = GEM_work.g_x + rects[i].x;
+		rect.g_y = GEM_work.g_y + rects[i].y;
+		rect.g_w = rects[i].w;
+		rect.g_h = rects[i].h;
 
-		GEM_wind_redraw(this, GEM_handle, rect, SDL_FALSE);
+		GEM_wind_redraw(this, GEM_handle, &rect, SDL_FALSE);
 	}
 }
 
@@ -1127,15 +1133,8 @@ static int GEM_FlipHWSurfaceFullscreen(_THIS, SDL_Surface *surface)
 
 static int GEM_FlipHWSurfaceWindowed(_THIS, SDL_Surface *surface)
 {
-	short rect[4];
-
 	/* Update the whole window */
-	rect[0] = GEM_work_x;
-	rect[1] = GEM_work_y;
-	rect[2] = GEM_work_w;
-	rect[3] = GEM_work_h;
-
-	GEM_wind_redraw(this, GEM_handle, rect, SDL_FALSE);
+	GEM_wind_redraw(this, GEM_handle, &GEM_work, SDL_FALSE);
 
 	return(0);
 }
@@ -1242,9 +1241,9 @@ void GEM_VideoQuit(_THIS)
 	this->screen->pixels = NULL;
 }
 
-void GEM_wind_redraw(_THIS, int winhandle, short *inside, SDL_bool pad_only)
+void GEM_wind_redraw(_THIS, int winhandle, const GRECT *inside, SDL_bool pad_only)
 {
-	short todo[4];
+	GRECT todo;
 
 	/* Tell AES we are going to update */
 	wind_update(BEG_UPDATE);
@@ -1252,15 +1251,15 @@ void GEM_wind_redraw(_THIS, int winhandle, short *inside, SDL_bool pad_only)
 	v_hide_c(VDI_handle);
 
 	/* Browse the rectangle list to redraw */
-	if (wind_get(winhandle, WF_FIRSTXYWH, &todo[0], &todo[1], &todo[2], &todo[3])!=0) {
+	if (wind_get_grect(winhandle, WF_FIRSTXYWH, &todo)!=0) {
 
-		while (todo[2] && todo[3]) {
+		while (todo.g_w && todo.g_h) {
 
-			if (rc_intersect((GRECT *)inside,(GRECT *)todo)) {
-				refresh_window(this, winhandle, todo, pad_only);
+			if (rc_intersect(inside, &todo)) {
+				refresh_window(this, winhandle, &todo, pad_only);
 			}
 
-			if (wind_get(winhandle, WF_NEXTXYWH, &todo[0], &todo[1], &todo[2], &todo[3])==0) {
+			if (wind_get_grect(winhandle, WF_NEXTXYWH, &todo)==0) {
 				break;
 			}
 		}
@@ -1273,32 +1272,30 @@ void GEM_wind_redraw(_THIS, int winhandle, short *inside, SDL_bool pad_only)
 	v_show_c(VDI_handle,1);
 }
 
-static void refresh_window(_THIS, int winhandle, short *rect, SDL_bool pad_only)
+static void refresh_window(_THIS, int winhandle, GRECT *rect, SDL_bool pad_only)
 {
 	MFDB mfdb_src;
-	short pxy[8], work_rect[4];
+	short pxy[8];
+	GRECT work_rect;
 	SDL_Surface *surface;
 	int max_width, max_height;
 
-	work_rect[0] = GEM_work_x;
-	work_rect[1] = GEM_work_y;
-	work_rect[2] = GEM_work_w;
-	work_rect[3] = GEM_work_h;
+	work_rect = GEM_work;
 
 	/* Clip against screen */
-	if (work_rect[0]<0) {
-		work_rect[2] += work_rect[0];
-		work_rect[0] = 0;
+	if (work_rect.g_x<0) {
+		work_rect.g_w += work_rect.g_x;
+		work_rect.g_x = 0;
 	}
-	if (work_rect[0]+work_rect[2]>=VDI_w) {
-		work_rect[2] = VDI_w-work_rect[0];
+	if (work_rect.g_x+work_rect.g_w>=VDI_w) {
+		work_rect.g_w = VDI_w-work_rect.g_x;
 	}
-	if (work_rect[1]<0) {
-		work_rect[3] += work_rect[1];
-		work_rect[1] = 0;
+	if (work_rect.g_y<0) {
+		work_rect.g_h += work_rect.g_y;
+		work_rect.g_y = 0;
 	}
-	if (work_rect[1]+work_rect[3]>=VDI_h) {
-		work_rect[3] = VDI_h-work_rect[1];
+	if (work_rect.g_y+work_rect.g_h>=VDI_h) {
+		work_rect.g_h = VDI_h-work_rect.g_y;
 	}
 
 	surface = this->screen;
@@ -1312,53 +1309,53 @@ static void refresh_window(_THIS, int winhandle, short *rect, SDL_bool pad_only)
 		}
 
 		/* Center icon inside window if it is smaller */
-		if (GEM_work_w>surface->w) {
-			work_rect[0] += (GEM_work_w-surface->w)>>1;
-			work_rect[2] = surface->w;
+		if (GEM_work.g_w>surface->w) {
+			work_rect.g_x += (GEM_work.g_w-surface->w)>>1;
+			work_rect.g_w = surface->w;
 		}
-		if (GEM_work_h>surface->h) {
-			work_rect[1] += (GEM_work_h-surface->h)>>1;
-			work_rect[3] = surface->h;
+		if (GEM_work.g_h>surface->h) {
+			work_rect.g_y += (GEM_work.g_h-surface->h)>>1;
+			work_rect.g_h = surface->h;
 		}
 	} else {
 		/* Y1,Y2 for padding zones */
-		pxy[1] = rect[1];
-		pxy[3] = rect[1]+rect[3]-1;
+		pxy[1] = rect->g_y;
+		pxy[3] = rect->g_y+rect->g_h-1;
 
 		/* Clear left padding zone ? */
-		pxy[0] = rect[0];
-		pxy[2] = MIN(rect[0]+rect[2]-1, GEM_work_x-1);
+		pxy[0] = rect->g_x;
+		pxy[2] = MIN(rect->g_x+rect->g_w-1, GEM_work.g_x-1);
 		if (pxy[0]<=pxy[2]) {
 			GEM_ClearRect(this, pxy);
 		}
 
 		/* Clear right padding zone ? */
-		pxy[0] = MAX(rect[0], GEM_work_x+GEM_work_w);
-		pxy[2] = rect[0]+rect[2]-1;
+		pxy[0] = MAX(rect->g_x, GEM_work.g_x+GEM_work.g_w);
+		pxy[2] = rect->g_x+rect->g_w-1;
 		if (pxy[0]<=pxy[2]) {
 			GEM_ClearRect(this, pxy);
 		}
 	}
 
 	/* Do we intersect zone to redraw ? */
-	if (pad_only || !rc_intersect((GRECT *)work_rect, (GRECT *)rect)) {
+	if (pad_only || !rc_intersect(&work_rect, rect)) {
 		return;
 	}
 
 	/* Calculate intersection rectangle to redraw */
-	max_width = MIN(work_rect[2], rect[2]);
-	max_height = MIN(work_rect[3], rect[3]);
+	max_width = MIN(work_rect.g_w, rect->g_w);
+	max_height = MIN(work_rect.g_h, rect->g_h);
 
-	pxy[4]=pxy[0]=MAX(work_rect[0],rect[0]);
-	pxy[5]=pxy[1]=MAX(work_rect[1],rect[1]);
+	pxy[4]=pxy[0]=MAX(work_rect.g_x,rect->g_x);
+	pxy[5]=pxy[1]=MAX(work_rect.g_y,rect->g_y);
 	pxy[6]=pxy[2]=pxy[0]+max_width-1;
 	pxy[7]=pxy[3]=pxy[1]+max_height-1;
 
 	/* Calculate source image pos relative to window */
-	pxy[0] -= GEM_work_x;
-	pxy[1] -= GEM_work_y;
-	pxy[2] -= GEM_work_x;
-	pxy[3] -= GEM_work_y;
+	pxy[0] -= GEM_work.g_x;
+	pxy[1] -= GEM_work.g_y;
+	pxy[2] -= GEM_work.g_x;
+	pxy[3] -= GEM_work.g_y;
 
 #if DEBUG_VIDEO_GEM
 	printf("sdl:video:gem: redraw %dx%d: (%d,%d,%d,%d) to (%d,%d,%d,%d)\n",

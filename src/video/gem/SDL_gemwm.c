@@ -97,7 +97,7 @@ int GEM_IconifyWindow(_THIS)
 	GEM_message[2] = 0;
 	GEM_message[3] = GEM_handle;
 	GEM_message[4] = 0;
-	GEM_message[5] = GEM_desk_h-ICONHEIGHT;
+	GEM_message[5] = GEM_desk.g_h-ICONHEIGHT;
 	GEM_message[6] = ICONWIDTH;
 	GEM_message[7] = ICONHEIGHT;
 
