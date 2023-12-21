@@ -464,6 +464,11 @@ int GEM_VideoInit(_THIS, SDL_PixelFormat *vformat)
 	VDI_ReadNOVAInfo(this, work_out);
 	VDI_ReadExtInfo(this, work_out);
 
+	if (VDI_format == VDI_FORMAT_INTER)
+		GEM_align_windows = SDL_getenv("SDL_GEM_ALIGN_WINDOW") != NULL;
+	else
+		GEM_align_windows = SDL_FALSE;
+
 #ifdef DEBUG_VIDEO_GEM
 	printf("sdl:video:gem: screen: address=0x%08x, pitch=%d\n", VDI_screen, VDI_pitch);
 	printf("sdl:video:gem: format=%d\n", VDI_format);
@@ -798,7 +803,7 @@ SDL_Surface *GEM_SetVideoMode(_THIS, SDL_Surface *current,
 			/* Calculate window size */
 			gr.g_x = 0;
 			gr.g_y = 0;
-			gr.g_w = width + 16;
+			gr.g_w = width;
 			gr.g_h = height;
 			if (!wind_calc_grect(WC_BORDER, GEM_win_type, &gr, &gr)) {
 				GEM_FreeBuffers(this);
@@ -820,8 +825,8 @@ SDL_Surface *GEM_SetVideoMode(_THIS, SDL_Surface *current,
 
 			/* Align work area on 16 pixels boundary (faster for bitplanes modes) */
 			wind_calc_grect(WC_WORK, GEM_win_type, &gr, &gr);
-			gr.g_x &= ~15;
-			gr.g_x -= 8;
+			if (GEM_align_windows)
+				gr.g_x &= ~15;
 			wind_calc_grect(WC_BORDER, GEM_win_type, &gr, &gr);
 
 			/* Destroy existing window */
@@ -860,7 +865,7 @@ SDL_Surface *GEM_SetVideoMode(_THIS, SDL_Surface *current,
 			}
 		}
 
-		GEM_align_work_area(this, GEM_handle, 0);
+		GEM_align_work_area(this, GEM_handle);
 		GEM_fullscreen = SDL_FALSE;
 	}
 
@@ -900,44 +905,22 @@ SDL_Surface *GEM_SetVideoMode(_THIS, SDL_Surface *current,
 	return(current);
 }
 
-void GEM_align_work_area(_THIS, short windowid, SDL_bool clear_pads)
+void GEM_align_work_area(_THIS, short windowid)
 {
-	int new_x, new_w, old_x, old_w;
-
 	wind_get_grect(windowid, WF_WORKXYWH, &GEM_work);
 	if (GEM_iconified) {
 		return;
 	}
 
 	/* Align work area on 16 pixels boundary (faster for bitplanes modes) */
-	new_x = old_x = GEM_work.g_x;
-	new_w = old_w = GEM_work.g_w;
-	if (new_x & 15) {
-		new_x = (new_x|15)+1;
-	} else {
-		new_w -= 16;
-	}
-	new_w -= (new_x - GEM_work.g_x);
-	new_w &= ~15;
+	if (GEM_align_windows) {
+		//wind_get_grect(windowid, WF_WORKXYWH, &GEM_work);
 
-	GEM_work.g_x = new_x;
-	GEM_work.g_w = new_w;
-
-	if (clear_pads) {
-		GRECT rect;
-
-		rect.g_y = GEM_work.g_y;
-		rect.g_h = GEM_work.g_h;
-
-		/* Left padding */
-		rect.g_x = old_x;
-		rect.g_w = new_x-old_x+1;
-		GEM_wind_redraw(this, GEM_handle, &rect, SDL_TRUE);
-
-		/* Right padding */
-		rect.g_x = new_x + new_w;
-		rect.g_w = (old_w-new_w)-(new_x-old_x)+1;
-		GEM_wind_redraw(this, GEM_handle, &rect, SDL_TRUE);
+		if (GEM_work.g_x & 15) {
+			GEM_work.g_x = (GEM_work.g_x|15)+1;
+			wind_set_grect(windowid, WF_WORKXYWH, &GEM_work);
+			wind_get_grect(windowid, WF_WORKXYWH, &GEM_work);
+		}
 	}
 }
 
