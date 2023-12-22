@@ -206,7 +206,7 @@ static int do_messages(_THIS, short *message, short latest_msg_id)
 			break;
 		case WM_REDRAW:
 			if (!GEM_lock_redraw) {
-				GEM_wind_redraw(this, message[3], (GRECT *)&message[4], SDL_FALSE);
+				GEM_wind_redraw(this, message[3], (GRECT *)&message[4]);
 			}
 			break;
 		case WM_ICONIFY:

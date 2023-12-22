@@ -100,7 +100,7 @@ static void GEM_ClearRectXYWH(_THIS, GRECT *rect);
 static void GEM_SetNewPalette(_THIS, Uint16 newpal[256][3]);
 static void GEM_LockScreen(_THIS);
 static void GEM_UnlockScreen(_THIS);
-static void refresh_window(_THIS, int winhandle, GRECT *rect, SDL_bool pad_only);
+static void refresh_window(_THIS, int winhandle, GRECT *rect);
 
 #if SDL_VIDEO_OPENGL
 /* OpenGL functions */
@@ -1034,7 +1034,7 @@ static void GEM_UpdateRectsWindowed(_THIS, int numrects, SDL_Rect *rects)
 		rect.g_w = rects[i].w;
 		rect.g_h = rects[i].h;
 
-		GEM_wind_redraw(this, GEM_handle, &rect, SDL_FALSE);
+		GEM_wind_redraw(this, GEM_handle, &rect);
 	}
 }
 
@@ -1117,7 +1117,7 @@ static int GEM_FlipHWSurfaceFullscreen(_THIS, SDL_Surface *surface)
 static int GEM_FlipHWSurfaceWindowed(_THIS, SDL_Surface *surface)
 {
 	/* Update the whole window */
-	GEM_wind_redraw(this, GEM_handle, &GEM_work, SDL_FALSE);
+	GEM_wind_redraw(this, GEM_handle, &GEM_work);
 
 	return(0);
 }
@@ -1224,7 +1224,7 @@ void GEM_VideoQuit(_THIS)
 	this->screen->pixels = NULL;
 }
 
-void GEM_wind_redraw(_THIS, int winhandle, const GRECT *inside, SDL_bool pad_only)
+void GEM_wind_redraw(_THIS, int winhandle, const GRECT *inside)
 {
 	GRECT todo;
 
@@ -1239,7 +1239,7 @@ void GEM_wind_redraw(_THIS, int winhandle, const GRECT *inside, SDL_bool pad_onl
 		while (todo.g_w && todo.g_h) {
 
 			if (rc_intersect(inside, &todo)) {
-				refresh_window(this, winhandle, &todo, pad_only);
+				refresh_window(this, winhandle, &todo);
 			}
 
 			if (wind_get_grect(winhandle, WF_NEXTXYWH, &todo)==0) {
@@ -1255,7 +1255,7 @@ void GEM_wind_redraw(_THIS, int winhandle, const GRECT *inside, SDL_bool pad_onl
 	v_show_c(VDI_handle,1);
 }
 
-static void refresh_window(_THIS, int winhandle, GRECT *rect, SDL_bool pad_only)
+static void refresh_window(_THIS, int winhandle, GRECT *rect)
 {
 	MFDB mfdb_src;
 	short pxy[8];
@@ -1300,28 +1300,10 @@ static void refresh_window(_THIS, int winhandle, GRECT *rect, SDL_bool pad_only)
 			work_rect.g_y += (GEM_work.g_h-surface->h)>>1;
 			work_rect.g_h = surface->h;
 		}
-	} else {
-		/* Y1,Y2 for padding zones */
-		pxy[1] = rect->g_y;
-		pxy[3] = rect->g_y+rect->g_h-1;
-
-		/* Clear left padding zone ? */
-		pxy[0] = rect->g_x;
-		pxy[2] = MIN(rect->g_x+rect->g_w-1, GEM_work.g_x-1);
-		if (pxy[0]<=pxy[2]) {
-			GEM_ClearRect(this, pxy);
-		}
-
-		/* Clear right padding zone ? */
-		pxy[0] = MAX(rect->g_x, GEM_work.g_x+GEM_work.g_w);
-		pxy[2] = rect->g_x+rect->g_w-1;
-		if (pxy[0]<=pxy[2]) {
-			GEM_ClearRect(this, pxy);
-		}
 	}
 
 	/* Do we intersect zone to redraw ? */
-	if (pad_only || !rc_intersect(&work_rect, rect)) {
+	if (!rc_intersect(&work_rect, rect)) {
 		return;
 	}
 
