@@ -374,6 +374,23 @@ static void do_mouse_motion(_THIS, short mx, short my)
 	prevmy = my;
 }
 
+static int atari_GetButton(int button)
+{
+	switch(button)
+	{
+		case 0:
+		default:
+			return SDL_BUTTON_LEFT;
+			break;
+		case 1:
+			return SDL_BUTTON_RIGHT;
+			break;
+		case 2:
+			return SDL_BUTTON_MIDDLE;
+			break;
+	}
+}
+
 static void do_mouse_buttons(_THIS, short mb)
 {
 	int i;
@@ -392,10 +409,10 @@ static void do_mouse_buttons(_THIS, short mb)
 		prevbutton = prevmb & (1<<i);
 
 		if (curbutton && !prevbutton) {
-			SDL_PrivateMouseButton(SDL_PRESSED, i+1, 0, 0);
+			SDL_PrivateMouseButton(SDL_PRESSED, atari_GetButton(i), 0, 0);
 		}
 		if (!curbutton && prevbutton) {
-			SDL_PrivateMouseButton(SDL_RELEASED, i+1, 0, 0);
+			SDL_PrivateMouseButton(SDL_RELEASED, atari_GetButton(i), 0, 0);
 		}
 	}
 
