@@ -141,11 +141,7 @@ int main(int argc, char *argv[])
 				PrintKey(&event.key.keysym, 0);
 				break;
 			case SDL_MOUSEBUTTONDOWN:
-				printf("mouse button down %d\n", event.button.button);
-				break;
-			case SDL_MOUSEBUTTONUP:
-				printf("mouse button up %d\n", event.button.button);
-				break;
+				/* Any button press quits the app... */
 			case SDL_QUIT:
 				done = 1;
 				break;
