@@ -409,7 +409,9 @@ extern DECLSPEC size_t SDLCALL SDL_strlcpy(char *dst, const char *src, size_t ma
 extern DECLSPEC size_t SDLCALL SDL_strlcat(char *dst, const char *src, size_t maxlen);
 #endif
 
-#ifdef HAVE_STRDUP
+#if defined(HAVE_STRDUP) && defined(_WIN32)
+#define SDL_strdup    _strdup
+#elif defined(HAVE_STRDUP)
 #define SDL_strdup     strdup
 #else
 extern DECLSPEC char * SDLCALL SDL_strdup(const char *string);
