@@ -646,11 +646,15 @@ static void XBIOS_UpdateRects(_THIS, int numrects, SDL_Rect *rects)
 			blockDstStart += XBIOS_pitch * rects[i].y;
 			blockDstStart += surface->format->BytesPerPixel * rects[i].x;
 
-			for(y=0;y<rects[i].h;y++){
-				SDL_memcpy(blockDstStart,blockSrcStart,surface->pitch);
+			if ((surface->pitch == XBIOS_pitch) && (surface->pitch == rects[i].w * surface->format->BytesPerPixel)) {
+				SDL_memcpy(blockDstStart, blockSrcStart, rects[i].h * surface->pitch);
+			} else {
+				for(y=0;y<rects[i].h;y++){
+					SDL_memcpy(blockDstStart, blockSrcStart, rects[i].w * surface->format->BytesPerPixel);
 
-				blockSrcStart += surface->pitch;
-				blockDstStart += XBIOS_pitch;
+					blockSrcStart += surface->pitch;
+					blockDstStart += XBIOS_pitch;
+				}
 			}
 		}
 	}
@@ -715,10 +719,15 @@ static int XBIOS_FlipHWSurface(_THIS, SDL_Surface *surface)
 		src = surface->pixels + src_offset;
 		dst = ((Uint8 *) XBIOS_screens[XBIOS_fbnum]) + dst_offset;
 
-		for (i=0; i<surface->h; i++) {
-			SDL_memcpy(dst, src, surface->w * surface->format->BytesPerPixel);
-			src += surface->pitch;
-			dst += XBIOS_pitch;
+		if ((surface->pitch == XBIOS_pitch) && (surface->pitch == surface->w * surface->format->BytesPerPixel)) {
+			SDL_memcpy(dst, src, surface->h * surface->pitch);
+		} else {
+			for (i=0; i<surface->h; i++) {
+				SDL_memcpy(dst, src, surface->w * surface->format->BytesPerPixel);
+
+				src += surface->pitch;
+				dst += XBIOS_pitch;
+			}
 		}
 	}
 
