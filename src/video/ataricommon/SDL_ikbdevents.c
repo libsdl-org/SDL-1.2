@@ -43,21 +43,6 @@
 
 static Uint16 atari_prevmouseb;	/* save state of mouse buttons */
 
-static short AtariIkbd_Shiftstate(void)
-{
-	short kstate = 0;
-
-	if (SDL_AtariIkbd_keyboard[SCANCODE_LEFTSHIFT] == KEY_PRESSED)
-		kstate |= K_LSHIFT;
-	if (SDL_AtariIkbd_keyboard[SCANCODE_RIGHTSHIFT] == KEY_PRESSED)
-		kstate |= K_RSHIFT;
-	if (SDL_AtariIkbd_keyboard[SCANCODE_LEFTCONTROL] == KEY_PRESSED)
-		kstate |= K_CTRL;
-	if (SDL_AtariIkbd_keyboard[SCANCODE_LEFTALT] == KEY_PRESSED)
-		kstate |= K_ALT;
-	return kstate;
-}
-
 void AtariIkbd_InitOSKeymap(_THIS)
 {
 	SDL_memset((void *) SDL_AtariIkbd_keyboard, KEY_UNDEFINED, sizeof(SDL_AtariIkbd_keyboard));
@@ -88,6 +73,7 @@ void AtariIkbd_PumpEvents(_THIS)
 {
 	int i;
 	SDL_keysym keysym;
+	static short shiftstate;
 
 	SDL_AtariMint_BackgroundTasks();
 
@@ -96,15 +82,65 @@ void AtariIkbd_PumpEvents(_THIS)
 	for (i=0; i<ATARIBIOS_MAXKEYS; i++) {
 		/* Key pressed ? */
 		if (SDL_AtariIkbd_keyboard[i]==KEY_PRESSED) {
+			switch (i) {
+			case SCANCODE_LEFTSHIFT:
+				shiftstate |= K_LSHIFT;
+				break;
+			case SCANCODE_RIGHTSHIFT:
+				shiftstate |= K_RSHIFT;
+				break;
+			case SCANCODE_LEFTCONTROL:
+				shiftstate |= K_CTRL;
+				break;
+			case SCANCODE_LEFTALT:
+				shiftstate |= K_ALT;
+				break;
+			case SCANCODE_CAPSLOCK:
+				shiftstate |= K_CAPSLOCK;
+				break;
+			}
+
 			SDL_PrivateKeyboard(SDL_PRESSED,
-				SDL_Atari_TranslateKey(i, &keysym, SDL_TRUE, AtariIkbd_Shiftstate()));
+				SDL_Atari_TranslateKey(i, &keysym, SDL_TRUE, shiftstate));
+			if (i == SCANCODE_CAPSLOCK) {
+				/* Pressed capslock: generate a release event, too because this
+				 * is what SDL expects; it handles locking by itself.
+				 */
+				SDL_PrivateKeyboard(SDL_RELEASED,
+					SDL_Atari_TranslateKey(i, &keysym, SDL_FALSE, shiftstate & ~K_CAPSLOCK));
+			}
 			SDL_AtariIkbd_keyboard[i]=KEY_UNDEFINED;
 		}
-			
+
 		/* Key released ? */
 		if (SDL_AtariIkbd_keyboard[i]==KEY_RELEASED) {
+			switch (i) {
+			case SCANCODE_LEFTSHIFT:
+				shiftstate &= ~K_LSHIFT;
+				break;
+			case SCANCODE_RIGHTSHIFT:
+				shiftstate &= ~K_RSHIFT;
+				break;
+			case SCANCODE_LEFTCONTROL:
+				shiftstate &= ~K_CTRL;
+				break;
+			case SCANCODE_LEFTALT:
+				shiftstate &= ~K_ALT;
+				break;
+			case SCANCODE_CAPSLOCK:
+				shiftstate &= ~K_CAPSLOCK;
+				break;
+			}
+
+			if (i == SCANCODE_CAPSLOCK) {
+				/* Released capslock: generate a pressed event, too because this
+				 * is what SDL expects; it handles locking by itself.
+				 */
+				SDL_PrivateKeyboard(SDL_PRESSED,
+					SDL_Atari_TranslateKey(i, &keysym, SDL_TRUE, shiftstate | K_CAPSLOCK));
+			}
 			SDL_PrivateKeyboard(SDL_RELEASED,
-				SDL_Atari_TranslateKey(i, &keysym, SDL_FALSE, AtariIkbd_Shiftstate()));
+				SDL_Atari_TranslateKey(i, &keysym, SDL_FALSE, shiftstate));
 			SDL_AtariIkbd_keyboard[i]=KEY_UNDEFINED;
 		}
 	}

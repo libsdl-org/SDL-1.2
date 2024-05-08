@@ -90,14 +90,30 @@ void AtariBios_PumpEvents(_THIS)
 	/* Now generate events */
 	for (i=0; i<ATARIBIOS_MAXKEYS; i++) {
 		/* Key pressed ? */
-		if (bios_currentkeyboard[i] && !bios_previouskeyboard[i])
+		if (bios_currentkeyboard[i] && !bios_previouskeyboard[i]) {
 			SDL_PrivateKeyboard(SDL_PRESSED,
 				SDL_Atari_TranslateKey(i, &keysym, SDL_TRUE, kstate));
-			
+			if (i == SCANCODE_CAPSLOCK) {
+				/* Pressed capslock: generate a release event, too because this
+				 * is what SDL expects; it handles locking by itself.
+				 */
+				SDL_PrivateKeyboard(SDL_RELEASED,
+					SDL_Atari_TranslateKey(i, &keysym, SDL_FALSE, kstate & ~K_CAPSLOCK));
+			}
+		}
+
 		/* Key unpressed ? */
-		if (bios_previouskeyboard[i] && !bios_currentkeyboard[i])
+		if (bios_previouskeyboard[i] && !bios_currentkeyboard[i]) {
+			if (i == SCANCODE_CAPSLOCK) {
+				/* Released capslock: generate a pressed event, too because this
+				 * is what SDL expects; it handles locking by itself.
+				 */
+				SDL_PrivateKeyboard(SDL_PRESSED,
+					SDL_Atari_TranslateKey(i, &keysym, SDL_TRUE, kstate | K_CAPSLOCK));
+			}
 			SDL_PrivateKeyboard(SDL_RELEASED,
 				SDL_Atari_TranslateKey(i, &keysym, SDL_FALSE, kstate));
+		}
 	}
 
 	if (use_dev_mouse) {
@@ -112,9 +128,9 @@ void AtariBios_PumpEvents(_THIS)
 
 static void UpdateSpecialKeys(int special_keys_state)
 {
-#define UPDATE_SPECIAL_KEYS(numbit,scancode) \
+#define UPDATE_SPECIAL_KEYS(mask,scancode) \
 	{	\
-		if (special_keys_state & (1<<(numbit))) { \
+		if (special_keys_state & mask) { \
 			bios_currentkeyboard[scancode]=0xFF; \
 		}	\
 	}
