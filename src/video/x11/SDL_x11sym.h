@@ -81,7 +81,7 @@ SDL_X11_SYM(int,XPeekEvent,(Display* a,XEvent* b),(a,b),return)
 SDL_X11_SYM(int,XPending,(Display* a),(a),return)
 SDL_X11_SYM(int,XPutImage,(Display* a,Drawable b,GC c,XImage* d,int e,int f,int g,int h,unsigned int i,unsigned int j),(a,b,c,d,e,f,g,h,i,j),return)
 SDL_X11_SYM(int,XQueryColors,(Display* a,Colormap b,XColor* c,int d),(a,b,c,d),return)
-SDL_X11_SYM(int,XQueryKeymap,(Display* a,char *b),(a,b),return)
+SDL_X11_SYM(int,XQueryKeymap,(Display* a,char b[32]),(a,b),return)
 SDL_X11_SYM(Bool,XQueryPointer,(Display* a,Window b,Window* c,Window* d,int* e,int* f,int* g,int* h,unsigned int* i),(a,b,c,d,e,f,g,h,i),return)
 SDL_X11_SYM(int,XRaiseWindow,(Display* a,Window b),(a,b),return)
 SDL_X11_SYM(int,XReparentWindow,(Display* a,Window b,Window c,int d,int e),(a,b,c,d,e),return)
@@ -203,4 +203,3 @@ SDL_X11_SYM(void,XRRFreeScreenConfigInfo,(XRRScreenConfiguration *config),(confi
 #endif
 
 /* end of SDL_x11sym.h ... */
-
