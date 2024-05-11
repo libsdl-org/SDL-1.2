@@ -98,6 +98,9 @@ void AtariIkbd_PumpEvents(_THIS)
 			case SCANCODE_CAPSLOCK:
 				shiftstate |= K_CAPSLOCK;
 				break;
+			case SCANCODE_ALTGR:
+				shiftstate |= 0x80;
+				break;
 			}
 
 			SDL_PrivateKeyboard(SDL_PRESSED,
@@ -129,6 +132,9 @@ void AtariIkbd_PumpEvents(_THIS)
 				break;
 			case SCANCODE_CAPSLOCK:
 				shiftstate &= ~K_CAPSLOCK;
+				break;
+			case SCANCODE_ALTGR:
+				shiftstate &= ~0x80;
 				break;
 			}
 

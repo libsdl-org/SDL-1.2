@@ -94,6 +94,7 @@
 #define SCANCODE_LEFTALT	0x38
 #define SCANCODE_SPACE		0x39
 #define SCANCODE_CAPSLOCK	0x3a
+#define SCANCODE_ALTGR		0x4c	/* Milan's AltGr */
 
 /* Functions keys */
 #define SCANCODE_F1		0x3b

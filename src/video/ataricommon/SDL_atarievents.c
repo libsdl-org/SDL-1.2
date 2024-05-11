@@ -174,6 +174,7 @@ void SDL_Atari_InitInternalKeymap(_THIS)
 	keymap[SCANCODE_RIGHTSHIFT] = SDLK_RSHIFT;
 	keymap[SCANCODE_LEFTALT] = SDLK_LALT;
 	keymap[SCANCODE_CAPSLOCK] = SDLK_CAPSLOCK;
+	keymap[SCANCODE_ALTGR] = SDLK_MODE;
 }
 
 void Atari_PumpEvents(_THIS)
