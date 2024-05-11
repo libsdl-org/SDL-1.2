@@ -74,21 +74,15 @@ enum {
 	ENCODING_UTF32,		/* Needs byte order marker */
 	ENCODING_UTF32BE,
 	ENCODING_UTF32LE,
-	ENCODING_UCS2BE,
-	ENCODING_UCS2LE,
-	ENCODING_UCS4BE,
-	ENCODING_UCS4LE,
+	ENCODING_UCS2,		/* Native byte order assumed */
+	ENCODING_UCS4,		/* Native byte order assumed */
 };
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
 #define ENCODING_UTF16NATIVE	ENCODING_UTF16BE
 #define ENCODING_UTF32NATIVE	ENCODING_UTF32BE
-#define ENCODING_UCS2NATIVE	ENCODING_UCS2BE
-#define ENCODING_UCS4NATIVE	ENCODING_UCS4BE
 #else
 #define ENCODING_UTF16NATIVE	ENCODING_UTF16LE
 #define ENCODING_UTF32NATIVE	ENCODING_UTF32LE
-#define ENCODING_UCS2NATIVE	ENCODING_UCS2LE
-#define ENCODING_UCS4NATIVE	ENCODING_UCS4LE
 #endif
 
 struct _SDL_iconv_t
@@ -119,16 +113,10 @@ static struct {
 	{ "UTF-32BE",	ENCODING_UTF32BE },
 	{ "UTF32LE",	ENCODING_UTF32LE },
 	{ "UTF-32LE",	ENCODING_UTF32LE },
-	{ "UCS2",	ENCODING_UCS2BE },
-	{ "UCS-2",	ENCODING_UCS2BE },
-	{ "UCS-2LE",	ENCODING_UCS2LE },
-	{ "UCS-2BE",	ENCODING_UCS2BE },
-	{ "UCS-2-INTERNAL", ENCODING_UCS2NATIVE },
-	{ "UCS4",	ENCODING_UCS4BE },
-	{ "UCS-4",	ENCODING_UCS4BE },
-	{ "UCS-4LE",	ENCODING_UCS4LE },
-	{ "UCS-4BE",	ENCODING_UCS4BE },
-	{ "UCS-4-INTERNAL", ENCODING_UCS4NATIVE },
+	{ "UCS2",	ENCODING_UCS2 },
+	{ "UCS-2",	ENCODING_UCS2 },
+	{ "UCS4",	ENCODING_UCS4 },
+	{ "UCS-4",	ENCODING_UCS4 },
 };
 
 static const char *getlocale(char *buffer, size_t bufsize)
@@ -324,14 +312,40 @@ size_t SDL_iconv(SDL_iconv_t cd,
 				Uint8 *p = (Uint8 *)src;
 				size_t left = 0;
 				SDL_bool overlong = SDL_FALSE;
-				if ( p[0] >= 0xF0 ) {
+				if ( p[0] >= 0xFC ) {
+					if ( (p[0] & 0xFE) != 0xFC ) {
+						/* Skip illegal sequences
+						return SDL_ICONV_EILSEQ;
+						*/
+						ch = UNKNOWN_UNICODE;
+					} else {
+						if ( p[0] == 0xFC ) {
+							overlong = SDL_TRUE;
+						}
+						ch = (Uint32)(p[0] & 0x01);
+						left = 5;
+					}
+				} else if ( p[0] >= 0xF8 ) {
+					if ( (p[0] & 0xFC) != 0xF8 ) {
+						/* Skip illegal sequences
+						return SDL_ICONV_EILSEQ;
+						*/
+						ch = UNKNOWN_UNICODE;
+					} else {
+						if ( p[0] == 0xF8 ) {
+							overlong = SDL_TRUE;
+						}
+						ch = (Uint32)(p[0] & 0x03);
+						left = 4;
+					}
+				} else if ( p[0] >= 0xF0 ) {
 					if ( (p[0] & 0xF8) != 0xF0 ) {
 						/* Skip illegal sequences
 						return SDL_ICONV_EILSEQ;
 						*/
 						ch = UNKNOWN_UNICODE;
 					} else {
-						if ( p[0] == 0xF0 && srclen > 1 && (p[1] & 0xF0) == 0x80 ) {
+						if ( p[0] == 0xF0 ) {
 							overlong = SDL_TRUE;
 						}
 						ch = (Uint32)(p[0] & 0x07);
@@ -344,7 +358,7 @@ size_t SDL_iconv(SDL_iconv_t cd,
 						*/
 						ch = UNKNOWN_UNICODE;
 					} else {
-						if ( p[0] == 0xE0 && srclen > 1 && (p[1] & 0xE0) == 0x80 ) {
+						if ( p[0] == 0xE0 ) {
 							overlong = SDL_TRUE;
 						}
 						ch = (Uint32)(p[0] & 0x0F);
@@ -485,29 +499,6 @@ size_t SDL_iconv(SDL_iconv_t cd,
 				      (Uint32)(W2 & 0x3FF)) + 0x10000;
 			}
 			break;
-		    case ENCODING_UCS2LE:
-			{
-				Uint8 *p = (Uint8 *)src;
-				if ( srclen < 2 ) {
-					return SDL_ICONV_EINVAL;
-				}
-				ch = ((Uint32) p[1] << 8) | (Uint32) p[0];
-				src += 2;
-				srclen -= 2;
-			}
-			break;
-		    case ENCODING_UCS2BE:
-			{
-				Uint8 *p = (Uint8 *)src;
-				if ( srclen < 2 ) {
-					return SDL_ICONV_EINVAL;
-				}
-				ch = ((Uint32) p[0] << 8) | (Uint32) p[1];
-				src += 2;
-				srclen -= 2;
-			}
-			break;
-		    case ENCODING_UCS4BE:
 		    case ENCODING_UTF32BE:
 			{
 				Uint8 *p = (Uint8 *)src;
@@ -516,12 +507,12 @@ size_t SDL_iconv(SDL_iconv_t cd,
 				}
 				ch = ((Uint32)p[0] << 24) |
 				     ((Uint32)p[1] << 16) |
-				     ((Uint32)p[2] << 8) | (Uint32)p[3];
+				     ((Uint32)p[2] << 8) |
+				      (Uint32)p[3];
 				src += 4;
 				srclen -= 4;
 			}
 			break;
-		    case ENCODING_UCS4LE:
 		    case ENCODING_UTF32LE:
 			{
 				Uint8 *p = (Uint8 *)src;
@@ -530,7 +521,30 @@ size_t SDL_iconv(SDL_iconv_t cd,
 				}
 				ch = ((Uint32)p[3] << 24) |
 				     ((Uint32)p[2] << 16) |
-				     ((Uint32)p[1] << 8) | (Uint32)p[0];
+				     ((Uint32)p[1] << 8) |
+				      (Uint32)p[0];
+				src += 4;
+				srclen -= 4;
+			}
+			break;
+		    case ENCODING_UCS2:
+			{
+				Uint16 *p = (Uint16 *)src;
+				if ( srclen < 2 ) {
+					return SDL_ICONV_EINVAL;
+				}
+				ch = *p;
+				src += 2;
+				srclen -= 2;
+			}
+			break;
+		    case ENCODING_UCS4:
+			{
+				Uint32 *p = (Uint32 *)src;
+				if ( srclen < 4 ) {
+					return SDL_ICONV_EINVAL;
+				}
+				ch = *p;
 				src += 4;
 				srclen -= 4;
 			}
@@ -599,7 +613,7 @@ size_t SDL_iconv(SDL_iconv_t cd,
 					p[2] = 0x80 | (Uint8)(ch & 0x3F);
 					dst += 3;
 					dstlen -= 3;
-				} else {
+				} else if ( ch <= 0x1FFFFF ) {
 					if ( dstlen < 4 ) {
 						return SDL_ICONV_E2BIG;
 					}
@@ -609,6 +623,29 @@ size_t SDL_iconv(SDL_iconv_t cd,
 					p[3] = 0x80 | (Uint8)(ch & 0x3F);
 					dst += 4;
 					dstlen -= 4;
+				} else if ( ch <= 0x3FFFFFF ) {
+					if ( dstlen < 5 ) {
+						return SDL_ICONV_E2BIG;
+					}
+					p[0] = 0xF8 | (Uint8)((ch >> 24) & 0x03);
+					p[1] = 0x80 | (Uint8)((ch >> 18) & 0x3F);
+					p[2] = 0x80 | (Uint8)((ch >> 12) & 0x3F);
+					p[3] = 0x80 | (Uint8)((ch >> 6) & 0x3F);
+					p[4] = 0x80 | (Uint8)(ch & 0x3F);
+					dst += 5;
+					dstlen -= 5;
+				} else {
+					if ( dstlen < 6 ) {
+						return SDL_ICONV_E2BIG;
+					}
+					p[0] = 0xFC | (Uint8)((ch >> 30) & 0x01);
+					p[1] = 0x80 | (Uint8)((ch >> 24) & 0x3F);
+					p[2] = 0x80 | (Uint8)((ch >> 18) & 0x3F);
+					p[3] = 0x80 | (Uint8)((ch >> 12) & 0x3F);
+					p[4] = 0x80 | (Uint8)((ch >> 6) & 0x3F);
+					p[5] = 0x80 | (Uint8)(ch & 0x3F);
+					dst += 6;
+					dstlen -= 6;
 				}
 			}
 			break;
@@ -674,47 +711,12 @@ size_t SDL_iconv(SDL_iconv_t cd,
 				}
 			}
 			break;
-		    case ENCODING_UCS2BE:
-			{
-				Uint8 *p = (Uint8 *)dst;
-				if ( ch > 0xFFFF ) {
-					ch = UNKNOWN_UNICODE;
-				}
-				if ( dstlen < 2 ) {
-					return SDL_ICONV_E2BIG;
-				}
-				p[0] = (Uint8)(ch >> 8);
-				p[1] = (Uint8)ch;
-				dst += 2;
-				dstlen -= 2;
-			}
-			break;
-		    case ENCODING_UCS2LE:
-			{
-				Uint8 *p = (Uint8 *)dst;
-				if ( ch > 0xFFFF ) {
-					ch = UNKNOWN_UNICODE;
-				}
-				if ( dstlen < 2 ) {
-					return SDL_ICONV_E2BIG;
-				}
-				p[1] = (Uint8)(ch >> 8);
-				p[0] = (Uint8)ch;
-				dst += 2;
-				dstlen -= 2;
-			}
-			break;
 		    case ENCODING_UTF32BE:
-			if ( ch > 0x10FFFF ) {
-				ch = UNKNOWN_UNICODE;
-			}
-			/* fallthrough */
-		    case ENCODING_UCS4BE:
-			if ( ch > 0x7FFFFFFF ) {
-				ch = UNKNOWN_UNICODE;
-			}
 			{
 				Uint8 *p = (Uint8 *)dst;
+				if ( ch > 0x10FFFF ) {
+					ch = UNKNOWN_UNICODE;
+				}
 				if ( dstlen < 4 ) {
 					return SDL_ICONV_E2BIG;
 				}
@@ -727,16 +729,11 @@ size_t SDL_iconv(SDL_iconv_t cd,
 			}
 			break;
 		    case ENCODING_UTF32LE:
-			if ( ch > 0x10FFFF ) {
-				ch = UNKNOWN_UNICODE;
-			}
-			/* fallthrough */
-		    case ENCODING_UCS4LE:
-			if ( ch > 0x7FFFFFFF ) {
-				ch = UNKNOWN_UNICODE;
-			}
 			{
 				Uint8 *p = (Uint8 *)dst;
+				if ( ch > 0x10FFFF ) {
+					ch = UNKNOWN_UNICODE;
+				}
 				if ( dstlen < 4 ) {
 					return SDL_ICONV_E2BIG;
 				}
@@ -744,6 +741,34 @@ size_t SDL_iconv(SDL_iconv_t cd,
 				p[2] = (Uint8)(ch >> 16);
 				p[1] = (Uint8)(ch >> 8);
 				p[0] = (Uint8)ch;
+				dst += 4;
+				dstlen -= 4;
+			}
+			break;
+		    case ENCODING_UCS2:
+			{
+				Uint16 *p = (Uint16 *)dst;
+				if ( ch > 0xFFFF ) {
+					ch = UNKNOWN_UNICODE;
+				}
+				if ( dstlen < 2 ) {
+					return SDL_ICONV_E2BIG;
+				}
+				*p = (Uint16)ch;
+				dst += 2;
+				dstlen -= 2;
+			}
+			break;
+		    case ENCODING_UCS4:
+			{
+				Uint32 *p = (Uint32 *)dst;
+				if ( ch > 0x7FFFFFFF ) {
+					ch = UNKNOWN_UNICODE;
+				}
+				if ( dstlen < 4 ) {
+					return SDL_ICONV_E2BIG;
+				}
+				*p = ch;
 				dst += 4;
 				dstlen -= 4;
 			}
