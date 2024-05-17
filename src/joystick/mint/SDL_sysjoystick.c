@@ -300,7 +300,7 @@ int SDL_SYS_JoystickInit(void)
 			atarijoysticks[PORTB_PAD3].enabled = SDL_TRUE;
 	}
 	if (!atarijoysticks[IKBD_JOY1].enabled) {
-		atarijoysticks[XBIOS_JOY1].enabled=SDL_AtariXbios_enabled;
+		atarijoysticks[XBIOS_JOY1].enabled=(SDL_AtariXbios_enabled!=0);
 	}
 
 	/* Read environment for joysticks to enable */
@@ -505,9 +505,11 @@ void SDL_SYS_JoystickUpdate(SDL_Joystick *joystick)
 
 				if (numjoystick==IKBD_JOY1) {
 					curstate = SDL_AtariIkbd_joystick & 0xff;
+					curstate |= (SDL_AtariIkbd_mouseb & 0x01) << 7;
 				}
 				if (numjoystick==XBIOS_JOY1) {
 					curstate = SDL_AtariXbios_joystick & 0xff;
+					curstate |= (SDL_AtariXbios_mouseb & 0x01) << 7;
 				}
 
 				if (curstate != prevstate) {
