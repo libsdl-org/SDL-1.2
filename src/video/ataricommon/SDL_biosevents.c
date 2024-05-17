@@ -37,11 +37,9 @@
 #include "SDL_atarikeys.h"
 #include "SDL_atarievents_c.h"
 #include "SDL_xbiosevents_c.h"
-#include "SDL_ataridevmouse_c.h"
 
 static unsigned char bios_currentkeyboard[ATARIBIOS_MAXKEYS];
 static unsigned char bios_previouskeyboard[ATARIBIOS_MAXKEYS];
-static SDL_bool use_dev_mouse = SDL_FALSE;
 
 static void UpdateSpecialKeys(int special_keys_state);
 
@@ -53,15 +51,8 @@ void AtariBios_InitOSKeymap(_THIS)
 	SDL_memset(bios_currentkeyboard, 0, sizeof(bios_currentkeyboard));
 	SDL_memset(bios_previouskeyboard, 0, sizeof(bios_previouskeyboard));
 
-	use_dev_mouse = (SDL_AtariDevMouse_Open()!=0) ? SDL_TRUE : SDL_FALSE;
-
 	vectors_mask = ATARI_XBIOS_JOYSTICKEVENTS;	/* XBIOS joystick events */
-	if (!use_dev_mouse) {
-		vectors_mask |= ATARI_XBIOS_MOUSEEVENTS;	/* XBIOS mouse events */
-	}
-/*	if (Getcookie(C_MiNT, &dummy)==C_FOUND) {
-		vectors_mask = 0;
-	}*/
+	vectors_mask |= ATARI_XBIOS_MOUSEEVENTS;	/* XBIOS mouse events */
 
 	SDL_AtariXbios_InstallVectors(vectors_mask);
 }
@@ -116,11 +107,7 @@ void AtariBios_PumpEvents(_THIS)
 		}
 	}
 
-	if (use_dev_mouse) {
-		SDL_AtariDevMouse_PostMouseEvents(this, SDL_TRUE);
-	} else {
-		SDL_AtariXbios_PostMouseEvents(this, SDL_TRUE);
-	}
+	SDL_AtariXbios_PostMouseEvents(this, SDL_TRUE);
 
 	/* Will be previous table */
 	SDL_memcpy(bios_previouskeyboard, bios_currentkeyboard, sizeof(bios_previouskeyboard));
@@ -146,7 +133,4 @@ static void UpdateSpecialKeys(int special_keys_state)
 void AtariBios_ShutdownEvents(void)
 {
 	SDL_AtariXbios_RestoreVectors();
-	if (use_dev_mouse) {
-		SDL_AtariDevMouse_Close();
-	}
 }

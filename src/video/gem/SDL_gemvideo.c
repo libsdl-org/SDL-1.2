@@ -53,7 +53,6 @@
 #include "SDL_gemmouse_c.h"
 #include "SDL_gemwm_c.h"
 #include "../ataricommon/SDL_xbiosevents_c.h"
-#include "../ataricommon/SDL_ataridevmouse_c.h"
 
 /* Defines */
 
@@ -190,16 +189,8 @@ static SDL_VideoDevice *GEM_CreateDevice(int devindex)
 	device->GL_SwapBuffers = GEM_GL_SwapBuffers;
 #endif
 
-	device->hidden->use_dev_mouse =
-		(SDL_AtariDevMouse_Open()!=0) ? SDL_TRUE : SDL_FALSE;
-
 	vectors_mask = ATARI_XBIOS_JOYSTICKEVENTS;	/* XBIOS joystick events */
-	if (!(device->hidden->use_dev_mouse)) {
-		vectors_mask |= ATARI_XBIOS_MOUSEEVENTS;	/* XBIOS mouse events */
-	}
-/*	if (Getcookie(C_MiNT, &dummy)==C_FOUND) {
-		vectors_mask = 0;
-	}*/
+	vectors_mask |= ATARI_XBIOS_MOUSEEVENTS;	/* XBIOS mouse events */
 
 	SDL_AtariXbios_InstallVectors(vectors_mask);
 
@@ -1181,9 +1172,6 @@ void GEM_VideoQuit(_THIS)
 	graf_mouse(ARROW, NULL);
 
 	SDL_AtariXbios_RestoreVectors();
-	if (GEM_usedevmouse) {
-		SDL_AtariDevMouse_Close();
-	}
 
 	GEM_FreeBuffers(this);
 

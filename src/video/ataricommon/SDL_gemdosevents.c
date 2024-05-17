@@ -37,13 +37,11 @@
 #include "SDL_atarikeys.h"
 #include "SDL_atarievents_c.h"
 #include "SDL_xbiosevents_c.h"
-#include "SDL_ataridevmouse_c.h"
 
 /* To save state of keyboard */
 
 static unsigned char gemdos_currentkeyboard[ATARIBIOS_MAXKEYS];
 static unsigned char gemdos_previouskeyboard[ATARIBIOS_MAXKEYS];
-static SDL_bool use_dev_mouse = SDL_FALSE;
 
 static void UpdateSpecialKeys(int special_keys_state);
 
@@ -55,15 +53,9 @@ void AtariGemdos_InitOSKeymap(_THIS)
 	SDL_memset(gemdos_currentkeyboard, 0, sizeof(gemdos_currentkeyboard));
 	SDL_memset(gemdos_previouskeyboard, 0, sizeof(gemdos_previouskeyboard));
 
-	use_dev_mouse = (SDL_AtariDevMouse_Open()!=0) ? SDL_TRUE : SDL_FALSE;
-
 	vectors_mask = ATARI_XBIOS_JOYSTICKEVENTS;	/* XBIOS joystick events */
-	if (!use_dev_mouse) {
-		vectors_mask |= ATARI_XBIOS_MOUSEEVENTS;	/* XBIOS mouse events */
-	}
-/*	if (Getcookie(C_MiNT, &dummy)==C_FOUND) {
-		vectors_mask = 0;
-	}*/
+	vectors_mask |= ATARI_XBIOS_MOUSEEVENTS;	/* XBIOS mouse events */
+
 	SDL_AtariXbios_InstallVectors(vectors_mask);
 }
 
@@ -117,11 +109,7 @@ void AtariGemdos_PumpEvents(_THIS)
 		}
 	}
 
-	if (use_dev_mouse) {
-		SDL_AtariDevMouse_PostMouseEvents(this, SDL_TRUE);
-	} else {
-		SDL_AtariXbios_PostMouseEvents(this, SDL_TRUE);
-	}
+	SDL_AtariXbios_PostMouseEvents(this, SDL_TRUE);
 
 	/* Will be previous table */
 	SDL_memcpy(gemdos_previouskeyboard, gemdos_currentkeyboard, sizeof(gemdos_previouskeyboard));
@@ -147,7 +135,4 @@ static void UpdateSpecialKeys(int special_keys_state)
 void AtariGemdos_ShutdownEvents(void)
 {
 	SDL_AtariXbios_RestoreVectors();
-	if (use_dev_mouse) {
-		SDL_AtariDevMouse_Close();
-	}
 }

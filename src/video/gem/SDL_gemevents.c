@@ -42,7 +42,6 @@
 #include "../ataricommon/SDL_atarikeys.h"	/* for keyboard scancodes */
 #include "../ataricommon/SDL_atarievents_c.h"
 #include "../ataricommon/SDL_xbiosevents_c.h"
-#include "../ataricommon/SDL_ataridevmouse_c.h"
 
 /* Duration after which we consider key released */
 
@@ -356,11 +355,7 @@ static void do_mouse_motion(_THIS, short mx, short my)
 
 	/* Relative mouse motion ? */
 	if (GEM_mouse_relative) {
-		if (GEM_usedevmouse) {
-			SDL_AtariDevMouse_PostMouseEvents(this, SDL_FALSE);
-		} else {
-			SDL_AtariXbios_PostMouseEvents(this, SDL_FALSE);
-		}
+		SDL_AtariXbios_PostMouseEvents(this, SDL_FALSE);
 		return;
 	}
 

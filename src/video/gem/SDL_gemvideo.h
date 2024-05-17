@@ -90,7 +90,6 @@ struct SDL_PrivateVideoData {
 	SDL_bool align_windows;		/* align windows to 16-pixel boundary */
 	short message[8];			/* To self-send an AES message */
 	void *menubar;				/* Menu bar save buffer when going fullscreen */
-	SDL_bool use_dev_mouse;		/* Use /dev/mouse ? */
 	WMcursor *cursor;			/* To restore cursor when leaving/entering window */
 	WMcursor *prev_cursor;		/* Previous cursor */
 
@@ -141,7 +140,6 @@ struct SDL_PrivateVideoData {
 #define GEM_icon			(this->hidden->icon)
 #define GEM_fullscreen		(this->hidden->fullscreen)
 #define GEM_menubar			(this->hidden->menubar)
-#define GEM_usedevmouse		(this->hidden->use_dev_mouse)
 #define GEM_cursor			(this->hidden->cursor)
 #define GEM_prev_cursor		(this->hidden->prev_cursor)
 

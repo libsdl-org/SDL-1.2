@@ -55,7 +55,7 @@ III.  Enjoy! :)
 IV.  What is supported:
 
 Keyboard (GEMDOS, BIOS, GEM, Ikbd)
-Mouse (XBIOS, GEM, Ikbd, /dev/mouse (non working atm, disabled))
+Mouse (XBIOS, GEM, Ikbd)
 Video (XBIOS (Fullscreen), GEM (Windowed and Fullscreen))
 Timer (VBL vector, GNU pth library)
 Joysticks and joypads (Ikbd, Hardware)
@@ -88,8 +88,6 @@ OpenGL driver always uses OSMesa.
 
 (1) GEM does not report relative mouse motion, so xbios mouse driver is used
 to report this type event.
-A preliminary driver for /dev/mouse device driver is present, but is disabled
-till it can be used with other applications simultaneously.
 
 (2) If you build SDL with threads using the GNU pth library, timers are
 supported via the pth library.
