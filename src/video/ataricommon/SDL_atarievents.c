@@ -39,7 +39,6 @@
 #include "SDL_atarikeys.h"
 #include "SDL_atarievents_c.h"
 #include "SDL_xbiosevents_c.h"
-#include "SDL_gemdosevents_c.h"
 #include "SDL_ikbdevents_c.h"
 
 /* from src/audio/mint/SDL_mintaudio.c */
@@ -88,9 +87,9 @@ static void Atari_InitializeEvents(_THIS)
 			Atari_ShutdownEvents=AtariIkbd_ShutdownEvents;
 			break;
 		default:
-			this->InitOSKeymap=AtariGemdos_InitOSKeymap;
-			this->PumpEvents=AtariGemdos_PumpEvents;
-			Atari_ShutdownEvents=AtariGemdos_ShutdownEvents;
+			this->InitOSKeymap=AtariXbios_InitOSKeymap;
+			this->PumpEvents=AtariXbios_PumpEvents;
+			Atari_ShutdownEvents=AtariXbios_ShutdownEvents;
 			break;
 	}
 
@@ -104,12 +103,6 @@ static void Atari_InitializeEvents(_THIS)
 		this->InitOSKeymap=AtariIkbd_InitOSKeymap;
 		this->PumpEvents=AtariIkbd_PumpEvents;
 		Atari_ShutdownEvents=AtariIkbd_ShutdownEvents;
-	}
-
-	if (SDL_strcmp(envr, "gemdos") == 0) {
-		this->InitOSKeymap=AtariGemdos_InitOSKeymap;
-		this->PumpEvents=AtariGemdos_PumpEvents;
-		Atari_ShutdownEvents=AtariGemdos_ShutdownEvents;
 	}
 
 	if (SDL_strcmp(envr, "xbios") == 0) {

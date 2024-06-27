@@ -49,7 +49,7 @@ III.  Enjoy! :)
 ==============================================================================
 IV.  What is supported:
 
-Keyboard (GEMDOS, GEM, Ikbd)
+Keyboard (XBIOS, GEM, Ikbd)
 Mouse (XBIOS, GEM, Ikbd)
 Video (XBIOS (Fullscreen), GEM (Windowed and Fullscreen))
 Timer (Timer C interrupt, GNU pth library)
@@ -63,7 +63,7 @@ OpenGL (using Mesa offscreen rendering driver)
 - Dependent driver combinations:
 Video   Kbd     Mouse   Joysticks
 xbios   ikbd    ikbd    ikbd
-xbios   gemdos  xbios   xbios
+xbios   xbios   xbios   xbios
 gem     gem     gem(1)  xbios
 
 Audio   O/S     Misc
@@ -108,7 +108,7 @@ SDL_AUDIODRIVER:
 
 SDL_ATARI_EVENTSDRIVER
 	Set to 'ikbd' to force IKBD 6301 keyboard driver
-	Set to 'gemdos' to force gemdos keyboard driver
+	Set to 'xbios' to force xbios keyboard driver
 
 SDL_JOYSTICK_ATARI:
 	Use any of these strings in the environment variable to enable or
@@ -128,7 +128,7 @@ SDL_JOYSTICK_ATARI:
 
 	Default configuration is:
 		'ikbd-joy1-on' (if IKBD events driver enabled)
-		'xbios-joy1-on' (if gemdos/gem events driver enabled)
+		'xbios-joy1-on' (if xbios/gem events driver enabled)
 		'porta-pad-on portb-pad-on' (if available on the machine)
 
 	port[a|b]-[pad|joy?|lp|anpad]-* strings are mutually exclusives.
@@ -204,8 +204,8 @@ IKBD keyboard, mouse and joystick driver:
 	Hades has an IKBD, but xbios is not available for video, so IKBD driver is
 	disabled.
 
-Gemdos keyboard driver:
-	Available on all machines. Gemdos driver is default for non-Atari machines.
+XBIOS keyboard driver:
+	Available on all machines with TOS >= 2.x. XBIOS driver is default for non-Atari machines.
 
 Mouse and joystick xbios driver:
 	Available on all machines (I think).
