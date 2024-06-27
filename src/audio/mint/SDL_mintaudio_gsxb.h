@@ -30,10 +30,6 @@
 #ifndef _SDL_mintaudio_gsxb_h
 #define _SDL_mintaudio_gsxb_h
 
-/* Bit 5 in cookie _SND */
-
-#define SND_GSXB	(1<<5)
-
 /* NSoundcmd modes */
 
 #define SETRATE			7	/* Set sample rate */
