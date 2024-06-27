@@ -38,7 +38,6 @@
 
 #include "SDL_atarikeys.h"
 #include "SDL_atarievents_c.h"
-#include "SDL_biosevents_c.h"
 #include "SDL_xbiosevents_c.h"
 #include "SDL_gemdosevents_c.h"
 #include "SDL_ikbdevents_c.h"
@@ -113,18 +112,11 @@ static void Atari_InitializeEvents(_THIS)
 		Atari_ShutdownEvents=AtariGemdos_ShutdownEvents;
 	}
 
-	if (SDL_strcmp(envr, "bios") == 0) {
-		this->InitOSKeymap=AtariBios_InitOSKeymap;
-		this->PumpEvents=AtariBios_PumpEvents;
-		Atari_ShutdownEvents=AtariBios_ShutdownEvents;
-	}
-
 	if (SDL_strcmp(envr, "xbios") == 0) {
 		this->InitOSKeymap=AtariXbios_InitOSKeymap;
 		this->PumpEvents=AtariXbios_PumpEvents;
 		Atari_ShutdownEvents=AtariXbios_ShutdownEvents;
 	}
-
 }
 
 void Atari_InitOSKeymap(_THIS)
