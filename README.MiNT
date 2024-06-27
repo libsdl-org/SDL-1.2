@@ -10,7 +10,7 @@ Using the Simple DirectMedia Layer on Atari
         download it from my web site (URL at end of this file).
 
     If you want to configure a program using SDL on Atari,
-	    see sections IV - VI.
+        see sections IV - VI.
 
 
 ==============================================================================
@@ -41,15 +41,10 @@ II. Building the Simple DirectMedia Layer test programs:
 ==============================================================================
 III.  Enjoy! :)
 
-  If you have a project you'd like me to know about, or want to ask questions,
-  go ahead and join the SDL developer's mailing list by sending e-mail to:
-
-	sdl-request@libsdl.org
-
-  and put "subscribe" into the subject of the message. Or alternatively you
-  can use the web interface:
-
-	http://www.libsdl.org/mailman/listinfo/sdl
+  If you have a project you'd like announce, or want to ask questions, go
+  ahead and join the discussion forum for SDL, with categories for
+  development, announcements, games and repository commits. Sign up at:
+  https://discourse.libsdl.org
 
 ==============================================================================
 IV.  What is supported:
@@ -57,7 +52,7 @@ IV.  What is supported:
 Keyboard (GEMDOS, BIOS, GEM, Ikbd)
 Mouse (XBIOS, GEM, Ikbd)
 Video (XBIOS (Fullscreen), GEM (Windowed and Fullscreen))
-Timer (VBL vector, GNU pth library)
+Timer (Timer C interrupt, GNU pth library)
 Joysticks and joypads (Ikbd, Hardware)
 Audio (Hardware, XBIOS, GSXB, MCSN, STFA, /dev/audio if threads enabled)
 Threads (Multitasking OS only via GNU pth library)
@@ -66,11 +61,11 @@ Audio CD (MetaDOS)
 OpenGL (using Mesa offscreen rendering driver)
 
 - Dependent driver combinations:
-Video   Kbd     Mouse   Timer   Joysticks
-xbios   ikbd    ikbd    vbl(2)  ikbd
-xbios   gemdos  xbios   vbl(2)  xbios
-xbios   bios    xbios   vbl(2)  xbios
-gem     gem     gem(1)  vbl(2)  xbios
+Video   Kbd     Mouse   Joysticks
+xbios   ikbd    ikbd    ikbd
+xbios   gemdos  xbios   xbios
+xbios   bios    xbios   xbios
+gem     gem     gem(1)  xbios
 
 Audio   O/S     Misc
 dma8    All     Uses MFP Timer A interrupt
@@ -88,9 +83,6 @@ OpenGL driver always uses OSMesa.
 
 (1) GEM does not report relative mouse motion, so xbios mouse driver is used
 to report this type event.
-
-(2) If you build SDL with threads using the GNU pth library, timers are
-supported via the pth library.
 
 ==============================================================================
 V.  Environment variables:
@@ -179,12 +171,12 @@ OpenGL:
 
 Xbios video:
 	Video chip is detected using the _VDO cookie.
-	Screen enhancers are not supported, but could be if you know how to
-	use them.
+	Screen enhancers are not supported, but could be if you know how to use
+	them.
 
 	ST, STE, Mega ST, Mega STE:
-		320x200x4 bits, shades of grey, available only for the purpose
-		of testing SDL.
+		320x200x4 bits, shades of grey, available only for the purpose of
+		testing SDL.
 	TT:
 		320x480x8 and 320x240x8 (software double-lined mode).
 		NOVA video card: All modes with 8 bits or higher depth.
@@ -192,10 +184,12 @@ Xbios video:
 		All modes supported by the current monitor (RVB or VGA).
 		BlowUp and Centscreen: Extended modes.
 		ScreenBlaster 3: Only current mode.
-		Supervidel: Same resolutions as standard Falcon.
-		CTPCI: Experimental support.
+		Supervidel: Extended modes.
+		CTPCI: Only the modes supported by XBIOS (640x480, 800x600, 1024x768,
+			   1280x960, 1600x1200 in 8/16/32 bpp).
 	Milan:
-		Experimental support
+		Nearly identical with CTPCI driver. Works only on Milan with S3 video
+		card driver (which should be newer than 12.1.2000). To be verified.
 	Clones and any machine with monochrome monitor:
 		Not supported.
 
@@ -206,13 +200,14 @@ Gem video:
 		Only the current resolution, if 8 bits or higher depth.
 
 IKBD keyboard, mouse and joystick driver:
-	Available if _MCH cookie is ST, Mega ST, STE, Mega STE, TT or Falcon.
+	Available if _MCH cookie is ST, Mega ST, STE, Mega STE, TT, Falcon or
+	ARAnyM.
 
-	Hades has an IKBD, but xbios is not available for video, so IKBD
-	driver is disabled.
+	Hades has an IKBD, but xbios is not available for video, so IKBD driver is
+	disabled.
 
 Gemdos and bios keyboard driver:
-	Available on all machines.
+	Available on all machines. Gemdos driver is default for non-Atari machines.
 
 Mouse and joystick xbios driver:
 	Available on all machines (I think).
@@ -220,11 +215,10 @@ Mouse and joystick xbios driver:
 Joypad driver:
 	Available if _MCH cookie is STE or Falcon. Supports teamtap.
 
-PTH timer driver:
-	Available with multitasking OS.
-
-VBL timer driver:
-	Available on all machines (I think).
+Timer driver:
+	If you build SDL with threads using the GNU pth library and running on a
+	multitasking OS , timers are supported via the pth library. Otherwise
+	Timer C is used (which should be available on all machines).
 
 Audio drivers:
 	Cookies _SND, MCSN, STFA and GSXB used to detect supported audio
@@ -254,3 +248,6 @@ Audio drivers:
 --
 Patrice Mandin <patmandin@gmail.com>
 http://pmandin.atari.org/
+
+Miro Kropacek <miro.kropacek@gmail.com>
+http://mikro.atari.org/
