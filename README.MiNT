@@ -49,22 +49,16 @@ III.  Enjoy! :)
 ==============================================================================
 IV.  What is supported:
 
-Keyboard (XBIOS, GEM, Ikbd)
-Mouse (XBIOS, GEM, Ikbd)
+Keyboard (XBIOS, GEM(1), Ikbd)
+Mouse (XBIOS, GEM(2), Ikbd)
 Video (XBIOS (Fullscreen), GEM (Windowed and Fullscreen))
 Timer (Timer C interrupt, GNU pth library)
-Joysticks and joypads (Ikbd, Hardware)
+Joysticks (XBIOS, Ikbd) and joypads (Hardware)
 Audio (Hardware, XBIOS, GSXB, MCSN, STFA, /dev/audio if threads enabled)
 Threads (Multitasking OS only via GNU pth library)
 Shared object loader (using LDG library from http://ldg.atari.org/)
 Audio CD (MetaDOS)
 OpenGL (using Mesa offscreen rendering driver)
-
-- Dependent driver combinations:
-Video   Kbd     Mouse   Joysticks
-xbios   ikbd    ikbd    ikbd
-xbios   xbios   xbios   xbios
-gem     gem     gem(1)  xbios
 
 Audio   O/S     Misc
 dma8    All     Uses MFP Timer A interrupt
@@ -80,15 +74,17 @@ gsxb    All     Uses GSXB callback
 Joypad driver always uses hardware access.
 OpenGL driver always uses OSMesa.
 
-(1) GEM does not report relative mouse motion, so xbios mouse driver is used
+(1) GEM does not report AltrGr and CAPSLOCK key states, so Kbshift() (a BIOS
+function) is used to report those key events.
+(2) GEM does not report relative mouse motion, so xbios mouse driver is used
 to report this type event.
 
 ==============================================================================
 V.  Environment variables:
 
 SDL_VIDEODRIVER:
-	Set to 'xbios' to force xbios video driver
-	Set to 'gem' to force gem video driver
+	Set to 'xbios' to force xbios video driver. Uses XBIOS/Ikbd events driver.
+	Set to 'gem' to force gem video driver. Uses an internal events driver.
 
 SDL_VIDEO_GL_DRIVER:
 	Set to filename to load as OpenGL library, if you use SDL_GL_LoadLibrary()
@@ -107,15 +103,16 @@ SDL_AUDIODRIVER:
 	Set to 'disk' to force disk-writing audio driver
 
 SDL_ATARI_EVENTSDRIVER
-	Set to 'ikbd' to force IKBD 6301 keyboard driver
-	Set to 'xbios' to force xbios keyboard driver
+	Set to 'ikbd' to force IKBD 6301 events driver
+	Set to 'xbios' to force XBIOS events driver
+	GEM events driver is used implicitly if 'gem' video driver is used.
 
 SDL_JOYSTICK_ATARI:
 	Use any of these strings in the environment variable to enable or
 	disable a joystick:
 
 	'ikbd-joy1-[on|off]' for IKBD joystick on port 1 (hardware access)
-	'xbios-joy1-[on|off]' for IKBD joystick on port 1 (xbios access)
+	'xbios-joy1-[on|off]' for IKBD joystick on port 1 (XBIOS access)
 	'porta-pad-[on|off]' for joypad and/or teamtap on port A
 	'porta-joy0-[on|off]' for joystick 0 on port A
 	'porta-joy1-[on|off]' for joystick 1 on port A
@@ -197,18 +194,13 @@ Gem video:
 	All machines:
 		Only the current resolution, if 8 bits or higher depth.
 
-IKBD keyboard, mouse and joystick driver:
-	Available if _MCH cookie is ST, Mega ST, STE, Mega STE, TT, Falcon or
-	ARAnyM.
+Keyboard, mouse and joystick driver:
+	XBIOS driver is automatically used in TOS >= 2.x and/or in MagiC. Otherwise
+	IKBD driver is used.
 
-	Hades has an IKBD, but xbios is not available for video, so IKBD driver is
-	disabled.
-
-XBIOS keyboard driver:
-	Available on all machines with TOS >= 2.x. XBIOS driver is default for non-Atari machines.
-
-Mouse and joystick xbios driver:
-	Available on all machines (I think).
+	As XBIOS video driver is not available on Hades, it is forced to use the
+	implicit GEM driver despite the fact that it has both IKBD and XBIOS
+	features available.
 
 Joypad driver:
 	Available if _MCH cookie is STE or Falcon. Supports teamtap.

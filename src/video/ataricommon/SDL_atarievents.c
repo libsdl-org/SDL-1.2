@@ -29,7 +29,6 @@
  *	This routines choose what the final event manager will be
  */
 
-#include <mint/cookie.h>
 #include <mint/osbind.h>
 
 #include "../../events/SDL_sysevents.h"
@@ -48,15 +47,6 @@ void SDL_AtariMint_UpdateAudio(void);
 void SDL_AtariMint_CheckTimer(void);
 #endif
 
-enum {
-	MCH_ST=0,
-	MCH_STE,
-	MCH_TT,
-	MCH_F30,
-	MCH_CLONE,
-	MCH_ARANYM
-};
-
 /* The translation tables from a console scancode to a SDL keysym */
 static SDLKey keymap[ATARIBIOS_MAXKEYS];
 static const char *keytab_normal;
@@ -67,35 +57,21 @@ void (*Atari_ShutdownEvents)(void);
 static void Atari_InitializeEvents(_THIS)
 {
 	const char *envr;
-	long cookie_mch;
 
-	/* Test if we are on an Atari machine or not */
-	if (Getcookie(C__MCH, &cookie_mch) == C_NOTFOUND) {
-		cookie_mch = 0;
-	}
-	cookie_mch >>= 16;
-
-	/* Default is Ikbd, the faster except for clones */
-	switch(cookie_mch) {
-		case MCH_ST:
-		case MCH_STE:
-		case MCH_TT:
-		case MCH_F30:
-		case MCH_ARANYM:
-			this->InitOSKeymap=AtariIkbd_InitOSKeymap;
-			this->PumpEvents=AtariIkbd_PumpEvents;
-			Atari_ShutdownEvents=AtariIkbd_ShutdownEvents;
-			break;
-		default:
-			this->InitOSKeymap=AtariXbios_InitOSKeymap;
-			this->PumpEvents=AtariXbios_PumpEvents;
-			Atari_ShutdownEvents=AtariXbios_ShutdownEvents;
-			break;
+	if (!SDL_AtariXbios_IsKeyboardVectorSupported()) {
+		/* Fall back to hardware (TOS 1.x) */
+		this->InitOSKeymap=AtariIkbd_InitOSKeymap;
+		this->PumpEvents=AtariIkbd_PumpEvents;
+		Atari_ShutdownEvents=AtariIkbd_ShutdownEvents;
+	} else {
+		this->InitOSKeymap=AtariXbios_InitOSKeymap;
+		this->PumpEvents=AtariXbios_PumpEvents;
+		Atari_ShutdownEvents=AtariXbios_ShutdownEvents;
 	}
 
 	envr = SDL_getenv("SDL_ATARI_EVENTSDRIVER");
 
- 	if (!envr) {
+	if (!envr) {
 		return;
 	}
 

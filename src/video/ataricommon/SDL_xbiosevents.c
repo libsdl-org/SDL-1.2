@@ -27,7 +27,9 @@
  *	Patrice Mandin
  */
 
+#include <mint/cookie.h>
 #include <mint/osbind.h>
+#include <mint/sysvars.h>
 
 #include "../../events/SDL_sysevents.h"
 #include "../../events/SDL_events_c.h"
@@ -52,16 +54,12 @@ static Uint16 atari_prevmouseb;	/* buttons */
 
 /* Functions */
 
-SDL_bool SDL_AtariXbios_IsKeyboardVectorSupported_Super()
-{
-	/* TODO: FreeMiNT (MagiC, Geneva?) */
-	uint16_t* oshdr = *((uint16_t**)(0x4f2));
-	return (oshdr[1] >= 0x0200) ? SDL_TRUE : SDL_FALSE;
-}
-
 SDL_bool SDL_AtariXbios_IsKeyboardVectorSupported()
 {
-	return Supexec(SDL_AtariXbios_IsKeyboardVectorSupported_Super);
+	OSHEADER *tos_header = (OSHEADER *)get_sysvar(_sysbase);
+
+	/* Available only in TOS >= 2.x or in MagiC */
+	return tos_header->os_version >= 0x0200 || Getcookie(C_MagX, NULL) == C_FOUND;
 }
 
 void AtariXbios_InitOSKeymap(_THIS)
@@ -69,12 +67,7 @@ void AtariXbios_InitOSKeymap(_THIS)
 	int vectors_mask;
 	vectors_mask  = ATARI_XBIOS_JOYSTICKEVENTS;	/* XBIOS joystick events */
 	vectors_mask |= ATARI_XBIOS_MOUSEEVENTS;	/* XBIOS mouse events */
-	if (SDL_AtariXbios_IsKeyboardVectorSupported()) {
-		vectors_mask |= ATARI_XBIOS_KEYBOARDEVENTS;	/* XBIOS keyboard events */
-	} else {
-		SDL_SetError("Xbios keyboard vector is not supported on TOS 1.x");
-        return;
-	}
+	vectors_mask |= ATARI_XBIOS_KEYBOARDEVENTS;	/* XBIOS keyboard events */
 
 	SDL_AtariXbios_InstallVectors(vectors_mask);
 }
@@ -131,8 +124,7 @@ void SDL_AtariXbios_RestoreVectors(void)
 
 static int atari_GetButton(int button)
 {
-	switch(button)
-	{
+	switch(button) {
 		case 0:
 			return SDL_BUTTON_RIGHT;
 			break;
@@ -211,7 +203,7 @@ void SDL_AtariXbios_PostKeyboardEvents(_THIS)
 			}
 			SDL_AtariXbios_keyboard[i]=KEY_UNDEFINED;
 		}
-			
+
 		/* Key released ? */
 		if (SDL_AtariXbios_keyboard[i]==KEY_RELEASED) {
 			if (i == SCANCODE_CAPSLOCK) {
