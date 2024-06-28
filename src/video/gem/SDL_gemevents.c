@@ -148,7 +148,7 @@ void GEM_PumpEvents(_THIS)
 
 	/* Update mouse state */
 	graf_mkstate(&mousex, &mousey, &mouseb, &em_out.emo_kmeta);
-	em_out.emo_kmeta |= (Kbshift(-1) & K_CAPSLOCK);	/* MU_KEYBD is not aware of CAPSLOCK */
+	em_out.emo_kmeta |= (Kbshift(-1) & (0x80 | K_CAPSLOCK));	/* MU_KEYBD is not aware of AltGr and CAPSLOCK */
 	do_keyboard_special(em_out.emo_kmeta, cur_tick);
 	do_mouse_motion(this, mousex, mousey);
 	do_mouse_buttons(this, mouseb);
@@ -390,8 +390,7 @@ static void do_mouse_motion(_THIS, short mx, short my)
 
 static int atari_GetButton(int button)
 {
-	switch(button)
-	{
+	switch(button) {
 		case 0:
 		default:
 			return SDL_BUTTON_LEFT;
