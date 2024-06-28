@@ -456,7 +456,7 @@ int GEM_VideoInit(_THIS, SDL_PixelFormat *vformat)
 	VDI_ReadExtInfo(this, work_out);
 
 	if (VDI_format == VDI_FORMAT_INTER)
-		GEM_align_windows = SDL_getenv("SDL_GEM_ALIGN_WINDOW") != NULL;
+		GEM_align_windows = SDL_getenv("SDL_VIDEO_ALIGNED_WINDOWS") != NULL;
 	else
 		GEM_align_windows = SDL_FALSE;
 

@@ -102,6 +102,10 @@ SDL_VIDEODRIVER:
 SDL_VIDEO_GL_DRIVER:
 	Set to filename to load as OpenGL library, if you use SDL_GL_LoadLibrary()
 
+SDL_VIDEO_ALIGNED_WINDOWS:
+	Set to force aligning of the window's x coordinate to a 16-pixel boundary
+	(e.g. for speed reasons)
+
 SDL_AUDIODRIVER:
 	Set to 'mint_gsxb' to force Atari GSXB audio driver
 	Set to 'mint_mcsn' to force Atari MCSN audio driver
@@ -154,11 +158,6 @@ SDL_JOYSTICK_ATARI:
 	- Joysticks: 1 hat, 1 button.
 	- Lightpen, analog paddles: 2 axis, 2 buttons. The 2 buttons are those
 	  affected to 1 button joysticks on the same port.
-
-SDL_GEM_ALIGN_WINDOW:
-        - The gem video driver no longer aligns the window to a 16-pixel
-          boundary. If you want the old behaviour (e.g. for speed reasons),
-          set this environment variable.
 
 ==============================================================================
 VI.  More informations about drivers:
