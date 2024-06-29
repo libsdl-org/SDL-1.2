@@ -655,8 +655,7 @@ void SDL_DrawCursor(SDL_Surface *screen)
 	if ( SDL_MUSTLOCK(screen) ) {
 		SDL_UnlockSurface(screen);
 	}
-	if ( (screen == SDL_VideoSurface) &&
-	     ((screen->flags & SDL_HWSURFACE) != SDL_HWSURFACE) ) {
+	if ( screen == SDL_VideoSurface ) {
 		SDL_VideoDevice *video = current_video;
 		SDL_VideoDevice *this  = current_video;
 		SDL_Rect area;
@@ -729,8 +728,7 @@ void SDL_EraseCursor(SDL_Surface *screen)
 	if ( SDL_MUSTLOCK(screen) ) {
 		SDL_UnlockSurface(screen);
 	}
-	if ( (screen == SDL_VideoSurface) &&
-	     ((screen->flags & SDL_HWSURFACE) != SDL_HWSURFACE) ) {
+	if ( screen == SDL_VideoSurface ) {
 		SDL_VideoDevice *video = current_video;
 		SDL_VideoDevice *this  = current_video;
 		SDL_Rect area;
