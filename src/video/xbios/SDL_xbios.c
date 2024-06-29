@@ -83,6 +83,8 @@ static void XBIOS_UpdateRects(_THIS, int numrects, SDL_Rect *rects);
 static void XBIOS_GL_SwapBuffers(_THIS);
 #endif
 
+static SDL_bool shadow_warning_shown;
+
 /* Xbios driver bootstrap functions */
 
 static long cookie_vdo;
@@ -564,6 +566,11 @@ static void XBIOS_UpdateRects(_THIS, int numrects, SDL_Rect *rects)
 	/* SDL_UpdateRects() already added surface->offset_[xy] to each rect's coordinates */
 	SDL_Surface *surface = this->screen;
 
+	if (this->shadow && !shadow_warning_shown) {
+		fprintf(stderr, "Warning: shadow buffer in use, add SDL_HWSURFACE to your SDL_SetVideoMode()\n");
+		shadow_warning_shown = SDL_TRUE;
+	}
+
 	/*
 	 * SDL_LockSurface() adds surface->offset to surface->pixels
 	 * NOTE: documentation explicitly discourages to call this
@@ -655,6 +662,11 @@ static int XBIOS_FlipHWSurface(_THIS, SDL_Surface *surface)
 	/* SDL_LockSurface() adds surface->offset to surface->pixels */
 	int src_offset = (surface->locked ? 0 : surface->offset);
 	int dst_offset;
+
+	if (this->shadow && !shadow_warning_shown) {
+		fprintf(stderr, "Warning: shadow buffer in use, add SDL_HWSURFACE to your SDL_SetVideoMode()\n");
+		shadow_warning_shown = SDL_TRUE;
+	}
 
 	if (XBIOS_current->flags & XBIOSMODE_C2P) {
 		int doubleline = (XBIOS_current->flags & XBIOSMODE_DOUBLELINE ? 1 : 0);
