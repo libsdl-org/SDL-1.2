@@ -195,9 +195,8 @@ static SDL_VideoDevice *XBIOS_CreateDevice(int devindex)
 	device->GL_SwapBuffers = XBIOS_GL_SwapBuffers;
 #endif
 
-	/* Events */
-	device->InitOSKeymap = Atari_InitOSKeymap;
-	device->PumpEvents = Atari_PumpEvents;
+	/* Events (XBIOS/IKBD driver) */
+	SDL_Atari_InitializeEvents(device);
 
 	device->free = XBIOS_DeleteDevice;
 
@@ -382,7 +381,7 @@ static int XBIOS_VideoInit(_THIS, SDL_PixelFormat *vformat)
 	}
 
 	/* Save & init CON: */
-	SDL_Atari_InitConsoleSettings();
+	SDL_Atari_InitializeConsoleSettings();
 
 	/* We're done! */
 	return(0);

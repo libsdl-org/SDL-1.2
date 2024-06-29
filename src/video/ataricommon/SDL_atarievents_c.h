@@ -38,10 +38,9 @@
 
 #define ATARIBIOS_MAXKEYS 128
 
-extern void Atari_InitOSKeymap(_THIS);
-extern void Atari_PumpEvents(_THIS);
+extern void SDL_Atari_InitializeEvents(_THIS);
 
-extern void SDL_Atari_InitConsoleSettings(void);
+extern void SDL_Atari_InitializeConsoleSettings(void);
 extern void SDL_Atari_RestoreConsoleSettings(void);
 
 extern void SDL_Atari_InitInternalKeymap(_THIS);

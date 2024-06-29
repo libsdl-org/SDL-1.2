@@ -512,7 +512,7 @@ int GEM_VideoInit(_THIS, SDL_PixelFormat *vformat)
 	this->info.wm_available = 1;
 
 	/* Save & init CON: */
-	SDL_Atari_InitConsoleSettings();
+	SDL_Atari_InitializeConsoleSettings();
 
 	/* We're done! */
 	return(0);

@@ -26,7 +26,7 @@
  *
  *	Patrice Mandin
  *
- *	This routines choose what the final event manager will be
+ *	These routines choose what the final event manager will be
  */
 
 #include <mint/osbind.h>
@@ -40,8 +40,8 @@
 
 #include "SDL_atarikeys.h"
 #include "SDL_atarievents_c.h"
-#include "SDL_xbiosevents_c.h"
 #include "SDL_ikbdevents_c.h"
+#include "SDL_xbiosevents_c.h"
 
 /* from src/audio/mint/SDL_mintaudio.c */
 void SDL_AtariMint_UpdateAudio(void);
@@ -58,7 +58,7 @@ static const char *keytab_shift;
 static SDL_bool conterm_set;
 static char old_conterm;
 
-static void Atari_InitializeEvents(_THIS)
+void SDL_Atari_InitializeEvents(_THIS)
 {
 	const char *envr;
 
@@ -90,16 +90,8 @@ static void Atari_InitializeEvents(_THIS)
 		this->PumpEvents=AtariXbios_PumpEvents;
 		XBIOS_ShutdownEvents=AtariXbios_ShutdownEvents;
 	}
-}
-
-void Atari_InitOSKeymap(_THIS)
-{
-	Atari_InitializeEvents(this);
 
 	SDL_Atari_InitInternalKeymap(this);
-
-	/* Call choosen routine */
-	this->InitOSKeymap(this);
 }
 
 void SDL_Atari_InitConsoleSettings(void)
@@ -171,14 +163,6 @@ void SDL_Atari_InitInternalKeymap(_THIS)
 	keymap[SCANCODE_LEFTALT] = SDLK_LALT;
 	keymap[SCANCODE_CAPSLOCK] = SDLK_CAPSLOCK;
 	keymap[SCANCODE_ALTGR] = SDLK_MODE;
-}
-
-void Atari_PumpEvents(_THIS)
-{
-	Atari_InitializeEvents(this);
-
-	/* Call choosen routine */
-	this->PumpEvents(this);
 }
 
 /* Atari to Unicode charset translation table */
