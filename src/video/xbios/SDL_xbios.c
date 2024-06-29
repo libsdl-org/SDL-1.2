@@ -458,6 +458,8 @@ static SDL_Surface *XBIOS_SetVideoMode(_THIS, SDL_Surface *current,
 		SDL_memset(XBIOS_shadowscreenmem, 0, new_screen_size);
 
 		XBIOS_shadowscreen=(void *) (( (long) XBIOS_shadowscreenmem+255) & 0xFFFFFF00UL);
+
+		modeflags &= ~SDL_HWSURFACE;
 	}
 
 	/* Output buffer needs to be twice in size for the software double-line mode */
