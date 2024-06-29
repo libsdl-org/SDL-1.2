@@ -30,6 +30,7 @@
  */
 
 #include <mint/osbind.h>
+#include <mint/sysvars.h>
 
 #include "../../events/SDL_sysevents.h"
 #include "../../events/SDL_events_c.h"
@@ -53,6 +54,9 @@ void SDL_AtariMint_CheckTimer(void);
 static SDLKey keymap[ATARIBIOS_MAXKEYS];
 static const char *keytab_normal;
 static const char *keytab_shift;
+
+static SDL_bool conterm_set;
+static char old_conterm;
 
 static void Atari_InitializeEvents(_THIS)
 {
@@ -98,6 +102,29 @@ void Atari_InitOSKeymap(_THIS)
 	this->InitOSKeymap(this);
 }
 
+void SDL_Atari_InitConsoleSettings(void)
+{
+	if (!conterm_set) {
+		long ssp = Super(SUP_SET);
+		old_conterm = *conterm;
+		*conterm &= ~((1<<2) | (1<<1) | (1<< 0));	/* disable bell, key-repeat and key-click */
+		Super(ssp);
+
+		conterm_set = SDL_TRUE;
+	}
+}
+void SDL_Atari_RestoreConsoleSettings(void)
+{
+	if (conterm_set) {
+		long ssp = Super(SUP_SET);
+		*conterm = old_conterm;
+		Super(ssp);
+
+		conterm_set = SDL_FALSE;
+	}
+}
+
+/* SDL_Atari_TranslateKey() is used also in GEM events driver */
 void SDL_Atari_InitInternalKeymap(_THIS)
 {
 	int i;

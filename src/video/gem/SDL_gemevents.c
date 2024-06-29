@@ -223,6 +223,7 @@ static int do_messages(_THIS, short *message, short latest_msg_id)
 		case WM_ONTOP:
 			SDL_PrivateAppActive(1, SDL_APPINPUTFOCUS);
 			VDI_setpalette(this, VDI_curpalette);
+			SDL_Atari_InitConsoleSettings();
 			break;
 		case WM_REDRAW:
 			if (!GEM_lock_redraw) {
@@ -291,6 +292,7 @@ static int do_messages(_THIS, short *message, short latest_msg_id)
 		case WM_UNTOPPED:
 			SDL_PrivateAppActive(0, SDL_APPINPUTFOCUS);
 			VDI_setpalette(this, VDI_oldpalette);
+			SDL_Atari_RestoreConsoleSettings();
 			break;
 	}
 

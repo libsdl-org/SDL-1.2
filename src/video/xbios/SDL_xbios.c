@@ -381,6 +381,9 @@ static int XBIOS_VideoInit(_THIS, SDL_PixelFormat *vformat)
 		SDL_XBIOS_TveilleDisable(this);
 	}
 
+	/* Save & init CON: */
+	SDL_Atari_InitConsoleSettings();
+
 	/* We're done! */
 	return(0);
 }
@@ -718,6 +721,9 @@ static int XBIOS_FlipHWSurface(_THIS, SDL_Surface *surface)
 static void XBIOS_VideoQuit(_THIS)
 {
 	int i,j;
+
+	/* Restore CON: */
+	SDL_Atari_RestoreConsoleSettings();
 
 	(*XBIOS_ShutdownEvents)(this);
 
