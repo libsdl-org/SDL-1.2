@@ -178,7 +178,7 @@ void AtariIkbd_PumpEvents(_THIS)
 	}
 }
 
-void AtariIkbd_ShutdownEvents(void)
+void AtariIkbd_ShutdownEvents(_THIS)
 {
 	Supexec(SDL_AtariIkbd_Restore);
 }

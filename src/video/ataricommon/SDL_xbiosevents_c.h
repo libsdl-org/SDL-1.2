@@ -43,7 +43,7 @@ extern SDL_bool SDL_AtariXbios_enabled;
 
 extern void AtariXbios_InitOSKeymap(_THIS);
 extern void AtariXbios_PumpEvents(_THIS);
-extern void AtariXbios_ShutdownEvents(void);
+extern void AtariXbios_ShutdownEvents(_THIS);
 
 extern void SDL_AtariXbios_InstallVectors(int vectors_mask);
 extern void SDL_AtariXbios_RestoreVectors(void);

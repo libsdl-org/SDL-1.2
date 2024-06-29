@@ -78,7 +78,7 @@ void AtariXbios_PumpEvents(_THIS)
 	SDL_AtariXbios_PostMouseEvents(this, SDL_TRUE);
 }
 
-void AtariXbios_ShutdownEvents(void)
+void AtariXbios_ShutdownEvents(_THIS)
 {
 	SDL_AtariXbios_RestoreVectors();
 }

@@ -35,6 +35,8 @@
 #include "../../events/SDL_events_c.h"
 #include "../../timer/SDL_timer_c.h"
 
+#include "../xbios/SDL_xbios.h"	/* XBIOS SDL_PrivateVideoData */
+
 #include "SDL_atarikeys.h"
 #include "SDL_atarievents_c.h"
 #include "SDL_xbiosevents_c.h"
@@ -52,8 +54,6 @@ static SDLKey keymap[ATARIBIOS_MAXKEYS];
 static const char *keytab_normal;
 static const char *keytab_shift;
 
-void (*Atari_ShutdownEvents)(void);
-
 static void Atari_InitializeEvents(_THIS)
 {
 	const char *envr;
@@ -62,11 +62,11 @@ static void Atari_InitializeEvents(_THIS)
 		/* Fall back to hardware (TOS 1.x) */
 		this->InitOSKeymap=AtariIkbd_InitOSKeymap;
 		this->PumpEvents=AtariIkbd_PumpEvents;
-		Atari_ShutdownEvents=AtariIkbd_ShutdownEvents;
+		XBIOS_ShutdownEvents=AtariIkbd_ShutdownEvents;
 	} else {
 		this->InitOSKeymap=AtariXbios_InitOSKeymap;
 		this->PumpEvents=AtariXbios_PumpEvents;
-		Atari_ShutdownEvents=AtariXbios_ShutdownEvents;
+		XBIOS_ShutdownEvents=AtariXbios_ShutdownEvents;
 	}
 
 	envr = SDL_getenv("SDL_ATARI_EVENTSDRIVER");
@@ -78,13 +78,13 @@ static void Atari_InitializeEvents(_THIS)
 	if (SDL_strcmp(envr, "ikbd") == 0) {
 		this->InitOSKeymap=AtariIkbd_InitOSKeymap;
 		this->PumpEvents=AtariIkbd_PumpEvents;
-		Atari_ShutdownEvents=AtariIkbd_ShutdownEvents;
+		XBIOS_ShutdownEvents=AtariIkbd_ShutdownEvents;
 	}
 
 	if (SDL_strcmp(envr, "xbios") == 0) {
 		this->InitOSKeymap=AtariXbios_InitOSKeymap;
 		this->PumpEvents=AtariXbios_PumpEvents;
-		Atari_ShutdownEvents=AtariXbios_ShutdownEvents;
+		XBIOS_ShutdownEvents=AtariXbios_ShutdownEvents;
 	}
 }
 
@@ -155,8 +155,7 @@ void Atari_PumpEvents(_THIS)
 }
 
 /* Atari to Unicode charset translation table */
-
-Uint16 SDL_AtariToUnicodeTable[256]={
+const static Uint16 SDL_AtariToUnicodeTable[256]={
 	/* Standard ASCII characters from 0x00 to 0x7e */
 	/* Unicode stuff from 0x7f to 0xff */
 

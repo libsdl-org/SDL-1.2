@@ -719,7 +719,7 @@ static void XBIOS_VideoQuit(_THIS)
 {
 	int i,j;
 
-	Atari_ShutdownEvents();
+	(*XBIOS_ShutdownEvents)(this);
 
 	/* Restore video mode and palette */
 #ifndef DEBUG_VIDEO_XBIOS
