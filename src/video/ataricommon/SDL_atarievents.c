@@ -94,7 +94,7 @@ void SDL_Atari_InitializeEvents(_THIS)
 	SDL_Atari_InitInternalKeymap(this);
 }
 
-void SDL_Atari_InitConsoleSettings(void)
+void SDL_Atari_InitializeConsoleSettings(void)
 {
 	if (!conterm_set) {
 		long ssp = Super(SUP_SET);
