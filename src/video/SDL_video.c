@@ -893,10 +893,11 @@ SDL_Surface * SDL_SetVideoMode (int width, int height, int bpp, Uint32 flags)
 	}
 
 	/* Create a shadow surface if necessary */
-	/* There are three conditions under which we create a shadow surface:
+	/* There are four conditions under which we create a shadow surface:
 		1.  We need a particular bits-per-pixel that we didn't get.
 		2.  We need a hardware palette and didn't get one.
 		3.  We need a software surface and got a hardware surface.
+		4.  We need a double-buffered surface and got a plain hardware surface.
 	*/
 	if ( !(SDL_VideoSurface->flags & SDL_OPENGL) &&
 	     (
