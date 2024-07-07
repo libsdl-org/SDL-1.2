@@ -62,6 +62,8 @@ void SDL_Atari_InitializeEvents(_THIS)
 {
 	const char *envr;
 
+	SDL_Atari_InitInternalKeymap(this);
+
 	if (!SDL_AtariXbios_IsKeyboardVectorSupported()) {
 		/* Fall back to hardware (TOS 1.x) */
 		this->InitOSKeymap=AtariIkbd_InitOSKeymap;
@@ -90,8 +92,6 @@ void SDL_Atari_InitializeEvents(_THIS)
 		this->PumpEvents=AtariXbios_PumpEvents;
 		XBIOS_ShutdownEvents=AtariXbios_ShutdownEvents;
 	}
-
-	SDL_Atari_InitInternalKeymap(this);
 }
 
 void SDL_Atari_InitializeConsoleSettings(void)
