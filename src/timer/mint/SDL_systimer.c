@@ -45,8 +45,6 @@
 #include "SDL_timer.h"
 #include "../SDL_timer_c.h"
 
-#include "../../video/ataricommon/SDL_atarisuper.h"
-
 /* from src/video/ataricommon/SDL_atarievents.c */
 void SDL_AtariMint_BackgroundTasks(void);
 
@@ -104,14 +102,7 @@ void SDL_Delay (Uint32 ms)
 
 static Uint32 readHz200Timer(void)
 {
-	void *old_stack;
-	Uint32 now;
-
-	old_stack = (void *)Super(0);
-	now = *((volatile long *)_hz_200);
-	SuperToUser(old_stack);
-
-	return now;
+	return get_sysvar(_hz_200);
 }
 
 /* Non-threaded version of timer */
