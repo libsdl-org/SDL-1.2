@@ -28,6 +28,7 @@
  */
 
 #include <mint/cookie.h>
+#include <mint/mintbind.h>
 #include <mint/osbind.h>
 #include <mint/sysvars.h>
 
@@ -53,6 +54,35 @@ SDL_bool SDL_AtariXbios_enabled=SDL_FALSE;
 static Uint16 atari_prevmouseb;	/* buttons */
 
 /* Functions */
+
+static int GetButton(int button)
+{
+	switch(button) {
+		case 0:
+			return SDL_BUTTON_RIGHT;
+			break;
+		case 1:
+		default:
+			return SDL_BUTTON_LEFT;
+			break;
+	}
+}
+
+static SDL_bool CheckAccess(const void *addr, size_t length)
+{
+	Uint32 flags;
+
+	if (Getcookie(C_MiNT, NULL) != C_FOUND)
+		return SDL_TRUE;
+
+	if (Mvalidate(0, addr, length, &flags) < 0)
+		return SDL_FALSE;
+
+	if (((flags+0x10)&0xf0) != MX_SUPERVISOR && ((flags+0x10)&0xf0) != MX_GLOBAL)
+		return SDL_FALSE;
+
+	return SDL_TRUE;
+}
 
 SDL_bool SDL_AtariXbios_IsKeyboardVectorSupported()
 {
@@ -95,15 +125,26 @@ void SDL_AtariXbios_InstallVectors(int vectors_mask)
 
 	SDL_memset((void*)SDL_AtariXbios_keyboard, KEY_UNDEFINED, 128);
 
-	if (vectors_mask==0) {
-		SDL_AtariXbios_enabled=SDL_FALSE;
+	if (vectors_mask==0)
 		return;
-	}
 
 	/* Install our vectors */
 	SDL_AtariXbios_installmousevector = (vectors_mask & ATARI_XBIOS_MOUSEEVENTS) != 0;
 	SDL_AtariXbios_installjoystickvector = (vectors_mask & ATARI_XBIOS_JOYSTICKEVENTS) != 0;
 	SDL_AtariXbios_installkeyboardvector = (vectors_mask & ATARI_XBIOS_KEYBOARDEVENTS) != 0;
+
+	if (SDL_AtariXbios_installmousevector && !CheckAccess((void *)&SDL_AtariXbios_mouseb, sizeof(SDL_AtariXbios_mouseb))) {
+		fprintf(stderr, "Insufficient privileges to install XBIOS mouse vector. Set application's PRGFLAGS to Super.\n");
+		SDL_AtariXbios_installmousevector = SDL_FALSE;
+	}
+	if (SDL_AtariXbios_installjoystickvector && !CheckAccess((void *)&SDL_AtariXbios_joystick, sizeof(SDL_AtariXbios_joystick))) {
+		fprintf(stderr, "Insufficient privileges to install XBIOS joystick vector. Set application's PRGFLAGS to Super.\n");
+		SDL_AtariXbios_installjoystickvector = SDL_FALSE;
+	}
+	if (SDL_AtariXbios_installkeyboardvector && !CheckAccess((void *)&SDL_AtariXbios_keyboard, sizeof(SDL_AtariXbios_keyboard))) {
+		fprintf(stderr, "Insufficient privileges to install XBIOS keyboard vector. Set application's PRGFLAGS to Super.\n");
+		SDL_AtariXbios_installkeyboardvector = SDL_FALSE;
+	}
 
 	Supexec(SDL_AtariXbios_Install);
 	/* SDL_AtariXbios_Restore() doesn't need SDL_AtariXbios_enabled */
@@ -120,19 +161,6 @@ void SDL_AtariXbios_RestoreVectors(void)
 
 	/* Reinstall system vector */
 	Supexec(SDL_AtariXbios_Restore);
-}
-
-static int atari_GetButton(int button)
-{
-	switch(button) {
-		case 0:
-			return SDL_BUTTON_RIGHT;
-			break;
-		case 1:
-		default:
-			return SDL_BUTTON_LEFT;
-			break;
-	}
 }
 
 void SDL_AtariXbios_PostMouseEvents(_THIS, SDL_bool buttonEvents)
@@ -158,10 +186,10 @@ void SDL_AtariXbios_PostMouseEvents(_THIS, SDL_bool buttonEvents)
 			prevbutton = atari_prevmouseb & (1<<i);
 
 			if (curbutton && !prevbutton) {
-				SDL_PrivateMouseButton(SDL_PRESSED, atari_GetButton(i), 0, 0);
+				SDL_PrivateMouseButton(SDL_PRESSED, GetButton(i), 0, 0);
 			}
 			if (!curbutton && prevbutton) {
-				SDL_PrivateMouseButton(SDL_RELEASED, atari_GetButton(i), 0, 0);
+				SDL_PrivateMouseButton(SDL_RELEASED, GetButton(i), 0, 0);
 			}
 		}
 		atari_prevmouseb = SDL_AtariXbios_mouseb;
