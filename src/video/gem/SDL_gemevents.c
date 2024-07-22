@@ -227,7 +227,7 @@ static int do_messages(_THIS, short *message, short latest_msg_id)
 			break;
 		case WM_REDRAW:
 			if (!GEM_lock_redraw) {
-				GEM_wind_redraw(this, message[3], (GRECT *)&message[4]);
+				GEM_RedrawWindow(this, message[3], (GRECT *)&message[4]);
 			}
 			break;
 		case WM_ICONIFY:
@@ -297,7 +297,7 @@ static int do_messages(_THIS, short *message, short latest_msg_id)
 	}
 
 	if (update_work_area) {
-		GEM_align_work_area(this, message[3]);
+		GEM_AlignWorkArea(this, message[3]);
 
 		if (sdl_resize) {
 			SDL_PrivateResize(GEM_work.g_w, GEM_work.g_h);
