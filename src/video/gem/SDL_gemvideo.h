@@ -89,7 +89,7 @@ struct SDL_PrivateVideoData {
 	SDL_bool cursor_hidden;		/* Mouse cursor hidden flag */
 	SDL_bool align_windows;		/* align windows to 16-pixel boundary */
 	short message[8];			/* To self-send an AES message */
-	void *menubar;				/* Menu bar save buffer when going fullscreen */
+	OBJECT *menubar;			/* Menu bar to force desktop to restore its menu bar when going from fullscreen */
 	WMcursor *cursor;			/* To restore cursor when leaving/entering window */
 	WMcursor *prev_cursor;		/* Previous cursor */
 

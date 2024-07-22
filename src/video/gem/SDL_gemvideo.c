@@ -77,6 +77,99 @@ static unsigned char vdi_index[256] = {
 
 static const char empty_name[]="";
 
+static OBJECT menu_obj[] = {
+	/*
+	 * next, head, tail, type,
+	 * flags,
+	 * state,
+	 * spec,
+	 * x, y, w,	h
+	 */
+	{-1, 1, 4, G_IBOX,				/*** 0 ***/
+	OF_NONE,
+	OS_NORMAL,
+	{(long) 0L},
+	0, 0, 80, 25},
+
+	{4, 2, 2, G_BOX,				/*** 1 ***/
+	OF_NONE,
+	OS_NORMAL,
+	{(long) 4352L},
+	0, 0, 80, 513},
+
+	{1, 3, 3, G_IBOX,				/*** 2 ***/
+	OF_NONE,
+	OS_NORMAL,
+	{(long) 0L},
+	2, 0, 10, 769},
+
+	{2, -1, -1, G_TITLE,			/*** 3 ***/
+	OF_NONE,
+	OS_NORMAL,
+	{(long) " SDL"},
+	0, 0, 10, 769},
+
+	{0, 5, 5, G_IBOX,				/*** 4 ***/
+	OF_NONE,
+	OS_NORMAL,
+	{(long) 0L},
+	0, 769, 23, 8},
+
+	{4, 6, 13, G_BOX,				/*** 5 ***/
+	OF_NONE,
+	OS_NORMAL,
+	{(long) 16716032L},
+	2, 0, 21, 8},
+
+	{7, -1, -1, G_STRING,			/*** 6 ***/
+	OF_NONE,
+	OS_NORMAL,
+	{(long) "  Empty..."},
+	0, 0, 21, 1},
+
+	{8, -1, -1, G_STRING,			/*** 7 ***/
+	OF_NONE,
+	OS_DISABLED,
+	{(long) "---------------------"},
+	0, 1, 21, 1},
+
+	{9, -1, -1, G_STRING,			/*** 8 ***/
+	OF_NONE,
+	OS_NORMAL,
+	{(long) "  Desk Accessory 1  "},
+	0, 2, 21, 1},
+
+	{10, -1, -1, G_STRING,			/*** 9 ***/
+	OF_NONE,
+	OS_NORMAL,
+	{(long) "  Desk Accessory 2"},
+	0, 3, 21, 1},
+
+	{11, -1, -1, G_STRING,			/*** 10 ***/
+	OF_NONE,
+	OS_NORMAL,
+	{(long) "  Desk Accessory 3"},
+	0, 4, 21, 1},
+
+	{12, -1, -1, G_STRING,			/*** 11 ***/
+	OF_NONE,
+	OS_NORMAL,
+	{(long) "  Desk Accessory 4"},
+	0, 5, 21, 1},
+
+	{13, -1, -1, G_STRING,			/*** 12 ***/
+	OF_NONE,
+	OS_NORMAL,
+	{(long) "  Desk Accessory 5"},
+	0, 6, 21, 1},
+
+	{5, -1, -1, G_STRING,			/*** 13 ***/
+	OF_LASTOB,
+	OS_NORMAL,
+	{(long) "  Desk Accessory 6"},
+	0, 7, 21, 1}
+};
+
 /* Initialization/Query functions */
 static int GEM_VideoInit(_THIS, SDL_PixelFormat *vformat);
 static SDL_Rect **GEM_ListModes(_THIS, SDL_PixelFormat *format, Uint32 flags);
@@ -329,7 +422,7 @@ static void VDI_ReadExtInfo(_THIS, short *work_out)
 
 int GEM_VideoInit(_THIS, SDL_PixelFormat *vformat)
 {
-	int i, menubar_size;
+	int i;
 	short work_in[12];
 	/*
 	 * The standalone enhancer.prg has a bug
@@ -492,9 +585,11 @@ int GEM_VideoInit(_THIS, SDL_PixelFormat *vformat)
 	vsf_interior(VDI_handle,1);
 	vsf_perimeter(VDI_handle,0);
 
-	/* Menu bar save buffer */
-	menubar_size = GEM_desk.g_w * GEM_desk.g_y * VDI_pixelsize;
-	GEM_menubar=Atari_SysMalloc(menubar_size,MX_PREFTTRAM);
+	/* Menu bar */
+	for (i = 0; i < sizeof(menu_obj)/sizeof(menu_obj[0]); ++i) {
+		rsrc_obfix(menu_obj, i);
+	}
+	GEM_menubar = &menu_obj[ROOT];
 
 	/* Fill video modes list */
 	SDL_modelist[0] = SDL_malloc(sizeof(SDL_Rect));
@@ -605,34 +700,14 @@ static void GEM_SetNewPalette(_THIS, Uint16 newpal[256][3])
 static void GEM_LockScreen(_THIS)
 {
 	if (!GEM_locked) {
+		/* Install menu bar to keep the application in foreground */
+		menu_bar(GEM_menubar, MENU_INSTALL);
+
 		/* Lock AES */
 		wind_update(BEG_UPDATE);
 		wind_update(BEG_MCTRL);
 		/* Reserve memory space, used to be sure of compatibility */
 		form_dial( FMD_START, 0,0,0,0, 0,0,VDI_w,VDI_h);
-
-		/* Save menu bar */
-		if (GEM_menubar) {
-			MFDB mfdb_src;
-			short blitcoords[8];
-
-			mfdb_src.fd_addr=GEM_menubar;
-			mfdb_src.fd_w=GEM_desk.g_w;
-			mfdb_src.fd_h=GEM_desk.g_y;
-			mfdb_src.fd_wdwidth=GEM_desk.g_w>>4;
-			mfdb_src.fd_nplanes=VDI_bpp;
-			mfdb_src.fd_stand=
-				mfdb_src.fd_r1=
-				mfdb_src.fd_r2=
-				mfdb_src.fd_r3= 0;
-
-			blitcoords[0] = blitcoords[4] = 0;
-			blitcoords[1] = blitcoords[5] = 0;
-			blitcoords[2] = blitcoords[6] = GEM_desk.g_w-1;
-			blitcoords[3] = blitcoords[7] = GEM_desk.g_y-1;
-
-			vro_cpyfm(VDI_handle, S_ONLY, blitcoords, &VDI_dst_mfdb, &mfdb_src);
-		}
 
 		GEM_locked=SDL_TRUE;
 	}
@@ -641,34 +716,14 @@ static void GEM_LockScreen(_THIS)
 static void GEM_UnlockScreen(_THIS)
 {
 	if (GEM_locked) {
-		/* Restore menu bar */
-		if (GEM_menubar) {
-			MFDB mfdb_src;
-			short blitcoords[8];
-
-			mfdb_src.fd_addr=GEM_menubar;
-			mfdb_src.fd_w=GEM_desk.g_w;
-			mfdb_src.fd_h=GEM_desk.g_y;
-			mfdb_src.fd_wdwidth=GEM_desk.g_w>>4;
-			mfdb_src.fd_nplanes=VDI_bpp;
-			mfdb_src.fd_stand=
-				mfdb_src.fd_r1=
-				mfdb_src.fd_r2=
-				mfdb_src.fd_r3= 0;
-
-			blitcoords[0] = blitcoords[4] = 0;
-			blitcoords[1] = blitcoords[5] = 0;
-			blitcoords[2] = blitcoords[6] = GEM_desk.g_w-1;
-			blitcoords[3] = blitcoords[7] = GEM_desk.g_y-1;
-
-			vro_cpyfm(VDI_handle, S_ONLY, blitcoords, &mfdb_src, &VDI_dst_mfdb);
-		}
-
 		/* Restore screen memory, and send REDRAW to all apps */
 		form_dial( FMD_FINISH, 0,0,0,0, 0,0,VDI_w,VDI_h);
 		/* Unlock AES */
 		wind_update(END_MCTRL);
 		wind_update(END_UPDATE);
+
+		/* Restore desktop menu bar */
+		menu_bar(GEM_menubar, MENU_REMOVE);
 
 		GEM_locked=SDL_FALSE;
 	}
@@ -1196,10 +1251,6 @@ void GEM_VideoQuit(_THIS)
 	}
 
 	GEM_UnlockScreen(this);
-	if (GEM_menubar) {
-		Mfree(GEM_menubar);
-		GEM_menubar=NULL;
-	}
 
 	appl_exit();
 
