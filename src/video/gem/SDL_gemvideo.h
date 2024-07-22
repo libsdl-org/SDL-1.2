@@ -84,12 +84,10 @@ struct SDL_PrivateVideoData {
 	SDL_bool window_fulled;		/* Window maximized ? */
 	SDL_bool iconified;			/* Window iconified ? */
 	SDL_bool mouse_relative;	/* Report relative mouse movement */
-	SDL_bool locked;			/* AES locked for fullscreen ? */
 	SDL_bool lock_redraw;		/* Prevent redraw till buffers are setup */
 	SDL_bool cursor_hidden;		/* Mouse cursor hidden flag */
 	SDL_bool align_windows;		/* align windows to 16-pixel boundary */
 	short message[8];			/* To self-send an AES message */
-	OBJECT *menubar;			/* Menu bar to force desktop to restore its menu bar when going from fullscreen */
 	WMcursor *cursor;			/* To restore cursor when leaving/entering window */
 	WMcursor *prev_cursor;		/* Previous cursor */
 
@@ -131,7 +129,6 @@ struct SDL_PrivateVideoData {
 #define GEM_win_fulled		(this->hidden->window_fulled)
 #define GEM_iconified		(this->hidden->iconified)
 #define GEM_mouse_relative	(this->hidden->mouse_relative)
-#define GEM_locked			(this->hidden->locked)
 #define GEM_lock_redraw		(this->hidden->lock_redraw)
 #define GEM_cursor_hidden	(this->hidden->cursor_hidden)
 #define GEM_align_windows	(this->hidden->align_windows)
@@ -139,7 +136,6 @@ struct SDL_PrivateVideoData {
 #define SDL_modelist		(this->hidden->SDL_modelist)
 #define GEM_icon			(this->hidden->icon)
 #define GEM_fullscreen		(this->hidden->fullscreen)
-#define GEM_menubar			(this->hidden->menubar)
 #define GEM_cursor			(this->hidden->cursor)
 #define GEM_prev_cursor		(this->hidden->prev_cursor)
 

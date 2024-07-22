@@ -28,7 +28,6 @@
 	Patrice Mandin
 */
 
-#include <gem.h>
 #include <mint/cookie.h>
 #include <mint/falcon.h>
 
@@ -72,8 +71,6 @@ static const Uint8 mode_bpp[]={
 static int enum_actually_add;
 static SDL_VideoDevice *enum_this;
 #endif
-static SDL_bool aes_present = SDL_FALSE;
-static GRECT desktop;
 
 /*--- Functions ---*/
 
@@ -157,17 +154,6 @@ static void saveMode(_THIS, SDL_PixelFormat *vformat)
 {
 	SCREENINFO si = { 0 };
 
-	if (appl_init() >= 0) {
-		wind_update(BEG_UPDATE);
-		wind_update(BEG_MCTRL);
-
-		graf_mouse(M_OFF, NULL);
-
-		wind_get(0, WF_WORKXYWH, &desktop.g_x, &desktop.g_y, &desktop.g_w, &desktop.g_h);
-
-		aes_present = SDL_TRUE;
-	}
-
 	/* Read infos about current mode */
 	VsetScreen(-1, &XBIOS_oldvmode, VN_MAGIC, CMD_GETMODE);
 
@@ -213,17 +199,6 @@ static void restoreMode(_THIS)
 	VsetScreen(-1, XBIOS_oldvmode, VN_MAGIC, CMD_SETMODE);
 	if (XBIOS_oldnumcol) {
 		VsetRGB(0, XBIOS_oldnumcol, XBIOS_oldpalette);
-	}
-
-	if (aes_present) {
-		graf_mouse(M_ON, NULL);
-		graf_mouse(ARROW, NULL);
-
-		wind_update(END_MCTRL);
-		wind_update(END_UPDATE);
-
-		form_dial(FMD_FINISH, 0, 0, 0, 0, desktop.g_x, desktop.g_y, desktop.g_w, desktop.g_h);
-		appl_exit();
 	}
 }
 

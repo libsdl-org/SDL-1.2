@@ -36,19 +36,20 @@
 #include <mint/falcon.h>
 
 #include "SDL_video.h"
-#include "SDL_mouse.h"
 #include "../SDL_sysvideo.h"
 #include "../SDL_pixels_c.h"
 #include "../../events/SDL_events_c.h"
 
 #include "../ataricommon/SDL_ataric2p_s.h"
 #include "../ataricommon/SDL_atarievents_c.h"
-#include "../ataricommon/SDL_atarimxalloc_c.h"
 #include "../ataricommon/SDL_atarigl_c.h"
+#include "../ataricommon/SDL_atarimxalloc_c.h"
+#include "../ataricommon/SDL_geminit_c.h"
+
 #include "SDL_xbios.h"
+#include "SDL_xbios_milan.h"
 #include "SDL_xbios_sb3.h"
 #include "SDL_xbios_tveille.h"
-#include "SDL_xbios_milan.h"
 
 #define XBIOS_VID_DRIVER_NAME "xbios"
 
@@ -296,6 +297,8 @@ static int XBIOS_VideoInit(_THIS, SDL_PixelFormat *vformat)
 {
 	int i;
 
+	GEM_CommonInit();
+
 	/* Initialize all variables that we clean on shutdown */
 	for ( i=0; i<NUM_MODELISTS; ++i ) {
 		SDL_nummodes[i] = 0;
@@ -500,6 +503,8 @@ static SDL_Surface *XBIOS_SetVideoMode(_THIS, SDL_Surface *current,
 		SDL_SetError("Couldn't allocate new pixel format for requested mode");
 		return(NULL);
 	}
+
+	GEM_LockScreen(SDL_TRUE);
 
 	/* this is for C2P conversion */
 	XBIOS_pitch = (*XBIOS_getLineWidth)(this, new_video_mode, new_video_mode->width, new_video_mode->depth);
@@ -756,6 +761,8 @@ static void XBIOS_VideoQuit(_THIS)
 		SDL_AtariGL_Quit(this, SDL_TRUE);
 	}
 #endif
+
+	GEM_CommonQuit(SDL_TRUE);
 
 	if (XBIOS_oldpalette) {
 		SDL_free(XBIOS_oldpalette);
