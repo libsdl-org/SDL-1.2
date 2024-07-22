@@ -435,7 +435,7 @@ int GEM_VideoInit(_THIS, SDL_PixelFormat *vformat)
 	GEM_ap_id = internal_ap_id;
 	if (GEM_ap_id == -1) {
 		fprintf(stderr,"Can not open AES\n");
-		return 1;
+		return(-1);
 	}
 
 	/* Read version and features */
@@ -455,7 +455,7 @@ int GEM_VideoInit(_THIS, SDL_PixelFormat *vformat)
 	VDI_handle = graf_handle(&dummy, &dummy, &dummy, &dummy);
 	if (VDI_handle<1) {
 		fprintf(stderr,"Wrong VDI handle %d returned by AES\n",VDI_handle);
-		return 1;
+		return(-1);
 	}
 
 	/* Open virtual VDI workstation */
@@ -467,7 +467,7 @@ int GEM_VideoInit(_THIS, SDL_PixelFormat *vformat)
 	v_opnvwk(work_in, &VDI_handle, work_out);
 	if (VDI_handle == 0) {
 		fprintf(stderr,"Can not open VDI virtual workstation\n");
-		return 1;
+		return(-1);
 	}
 
 	/* Read fullscreen size */
@@ -477,7 +477,7 @@ int GEM_VideoInit(_THIS, SDL_PixelFormat *vformat)
 	/* Read desktop size and position */
 	if (!wind_get_grect(DESKTOP_HANDLE, WF_WORKXYWH, &GEM_desk)) {
 		fprintf(stderr,"Can not read desktop properties\n");
-		return 1;
+		return(-1);
 	}
 
 	GEM_work = GEM_desk;
@@ -503,7 +503,7 @@ int GEM_VideoInit(_THIS, SDL_PixelFormat *vformat)
 			break;
 		default:
 			fprintf(stderr,"%d bits colour depth not supported\n",VDI_bpp);
-			return 1;
+			return(-1);
 	}
 
 	/* Setup hardware -> VDI palette mapping */
