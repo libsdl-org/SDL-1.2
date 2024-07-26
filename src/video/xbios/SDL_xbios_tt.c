@@ -36,8 +36,8 @@
 #include "SDL_xbios_nova.h"
 
 static const xbiosmode_t ttmodes[]={
-	{TT_LOW,320,480,8,XBIOSMODE_C2P},
-	{TT_LOW,320,240,8,XBIOSMODE_C2P|XBIOSMODE_DOUBLELINE}
+	{TT_LOW>>8,320,480,8,XBIOSMODE_C2P},
+	{TT_LOW>>8,320,240,8,XBIOSMODE_C2P|XBIOSMODE_DOUBLELINE}
 };
 
 static void listModes(_THIS, int actually_add);
@@ -75,7 +75,7 @@ static void listModes(_THIS, int actually_add)
 static void saveMode(_THIS, SDL_PixelFormat *vformat)
 {
 	XBIOS_oldvbase=Physbase();
-	XBIOS_oldvmode=EgetShift();
+	XBIOS_oldvmode=Getrez();
 
 	switch(XBIOS_oldvmode & ES_MODE) {
 		case TT_LOW:
@@ -101,16 +101,13 @@ static void saveMode(_THIS, SDL_PixelFormat *vformat)
 
 static void setMode(_THIS, const xbiosmode_t *new_video_mode)
 {
-	Setscreen(-1,XBIOS_screens[0],-1);
-
-	EsetShift(new_video_mode->number);
+	Setscreen(-1,XBIOS_screens[0],new_video_mode->number);
 }
 
 static void restoreMode(_THIS)
 {
-	Setscreen(-1,XBIOS_oldvbase,-1);
+	Setscreen(-1,XBIOS_oldvbase,XBIOS_oldvmode);
 
-	EsetShift(XBIOS_oldvmode);
 	if (XBIOS_oldnumcol) {
 		EsetPalette(0, XBIOS_oldnumcol, XBIOS_oldpalette);
 	}

@@ -32,8 +32,9 @@
 
 /* Mint includes */
 #include <mint/cookie.h>
-#include <mint/osbind.h>
 #include <mint/falcon.h>
+#include <mint/osbind.h>
+#include <mint/ostruct.h>
 
 #include "SDL_video.h"
 #include "../SDL_sysvideo.h"
@@ -125,7 +126,7 @@ static int XBIOS_Available(void)
 				return 0;
 			break;
 		case VDO_TT:
-			if ( (EgetShift() & ES_MODE) == TT_HIGH)
+			if ( Getrez() == (TT_HIGH>>8) )
 				return 0;
 			break;
 		case VDO_F30:

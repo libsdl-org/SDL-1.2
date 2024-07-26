@@ -102,9 +102,6 @@ enum {
 	MONITOR_RGB
 };
 
-/* EgetShift masks */
-#define ES_MODE		0x0700
-
 /* Hidden structure -> variables names */
 #define SDL_nummodes		(this->hidden->SDL_nummodes)
 #define SDL_modelist		(this->hidden->SDL_modelist)
