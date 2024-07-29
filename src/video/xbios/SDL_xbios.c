@@ -89,24 +89,27 @@ static SDL_bool shadow_warning_shown;
 
 /* Xbios driver bootstrap functions */
 
-static long cookie_vdo;
+static long cookie_vdo, cookie_nova;
 
 static int XBIOS_Available(void)
 {
-	long cookie_hade, cookie_scpn, cookie_fvdi;
+	long cookie_scpn;
+
+	/* NOVA card ? */
+	if (Getcookie(C_NOVA, &cookie_nova) != C_FOUND) {
+		/* Hades does not have neither Atari video chip nor compatible Xbios */
+		if (Getcookie(C_hade, NULL) == C_FOUND) {
+			return 0;
+		}
+	}
 
 	/* Cookie _VDO present ? if not, assume ST machine */
 	if (Getcookie(C__VDO, &cookie_vdo) != C_FOUND) {
 		cookie_vdo = VDO_ST << 16;
 	}
 
-	/* Hades does not have neither Atari video chip nor compatible Xbios */
-	if (Getcookie(C_hade, &cookie_hade) == C_FOUND) {
-		return 0;
-	}
-
 	/* fVDI/Milan means graphic card, so no Xbios with it */
-	if (Getcookie(C_fVDI, &cookie_fvdi) == C_FOUND || (cookie_vdo >>16) == VDO_MILAN) {
+	if (Getcookie(C_fVDI, NULL) == C_FOUND || (cookie_vdo >>16) == VDO_MILAN) {
 		const char *envr = SDL_getenv("SDL_VIDEODRIVER");
 
 		if (!envr) {
@@ -227,6 +230,10 @@ static SDL_VideoDevice *XBIOS_CreateDevice(int devindex)
 		case VDO_MILAN:
 			SDL_XBIOS_VideoInit_Milan(device);
 			break;
+	}
+
+	if (cookie_nova) {
+		SDL_XBIOS_VideoInit_Nova(device, (void *) cookie_nova);
 	}
 
 	return device;

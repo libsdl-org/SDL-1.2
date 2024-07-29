@@ -174,7 +174,6 @@ Xbios video:
 		testing SDL.
 	TT:
 		320x480x8 and 320x240x8 (software double-lined mode).
-		NOVA video card: All modes with 8 bits or higher depth.
 	Falcon:
 		All modes supported by the current monitor (RVB or VGA).
 		BlowUp and Centscreen: Extended modes.
@@ -185,6 +184,8 @@ Xbios video:
 	Milan:
 		Nearly identical with CTPCI driver. Works only on Milan with S3 video
 		card driver (which should be newer than 12.1.2000). To be verified.
+	Any machine with NOVA video card:
+		All modes with 8 bits or higher depth.
 	Clones and any machine with monochrome monitor:
 		Not supported.
 
