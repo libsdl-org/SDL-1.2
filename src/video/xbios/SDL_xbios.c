@@ -95,13 +95,18 @@ static int XBIOS_Available(void)
 {
 	long cookie_hade, cookie_scpn, cookie_fvdi;
 
+	/* Cookie _VDO present ? if not, assume ST machine */
+	if (Getcookie(C__VDO, &cookie_vdo) != C_FOUND) {
+		cookie_vdo = VDO_ST << 16;
+	}
+
 	/* Hades does not have neither Atari video chip nor compatible Xbios */
 	if (Getcookie(C_hade, &cookie_hade) == C_FOUND) {
 		return 0;
 	}
 
-	/* fVDI means graphic card, so no Xbios with it */
-	if (Getcookie(C_fVDI, &cookie_fvdi) == C_FOUND) {
+	/* fVDI/Milan means graphic card, so no Xbios with it */
+	if (Getcookie(C_fVDI, &cookie_fvdi) == C_FOUND || (cookie_vdo >>16) == VDO_MILAN) {
 		const char *envr = SDL_getenv("SDL_VIDEODRIVER");
 
 		if (!envr) {
@@ -110,12 +115,12 @@ static int XBIOS_Available(void)
 		if (SDL_strcmp(envr, XBIOS_VID_DRIVER_NAME)!=0) {
 			return 0;
 		}
-		/* Except if we force Xbios usage, through env var */
-	}
-
-	/* Cookie _VDO present ? if not, assume ST machine */
-	if (Getcookie(C__VDO, &cookie_vdo) != C_FOUND) {
-		cookie_vdo = VDO_ST << 16;
+		/* Except if we force Xbios usage, through env var.
+		 * The Milan officially has XBIOS support but it seems that only on
+		 * S3 Trio graphics cards. As this hasn't been confirmed yet and
+		 * the ATI Rage driver definitely doesn't provide it, disable it
+		 * by default.
+		 */
 	}
 
 	/* Test if we have a monochrome monitor plugged in */
@@ -156,7 +161,6 @@ static void XBIOS_DeleteDevice(SDL_VideoDevice *device)
 static SDL_VideoDevice *XBIOS_CreateDevice(int devindex)
 {
 	SDL_VideoDevice *device;
-	long cookie_cvdo;
 
 	/* Initialize all variables that we clean on shutdown */
 	device = (SDL_VideoDevice *)SDL_malloc(sizeof(SDL_VideoDevice));
@@ -207,12 +211,9 @@ static SDL_VideoDevice *XBIOS_CreateDevice(int devindex)
 	device->hidden->updRects = XBIOS_UpdateRects;
 
 	/* Setup device specific functions, default to ST for everything */
-	if (Getcookie(C__VDO, &cookie_cvdo) != C_FOUND) {
-		cookie_cvdo = VDO_ST << 16;
-	}
-	SDL_XBIOS_VideoInit_ST(device, cookie_cvdo);
+	SDL_XBIOS_VideoInit_ST(device, cookie_vdo);
 
-	switch (cookie_cvdo>>16) {
+	switch (cookie_vdo>>16) {
 		case VDO_ST:
 		case VDO_STE:
 			/* Already done as default */
