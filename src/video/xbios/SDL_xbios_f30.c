@@ -133,7 +133,7 @@ static int allocVbuffers_SV(_THIS, const xbiosmode_t *new_video_mode, int num_bu
 
 void SDL_XBIOS_VideoInit_F30(_THIS)
 {
-	long cookie_cnts, cookie_scpn, cookie_dummy;
+	long cookie_cmch, cookie_cnts, cookie_scpn, cookie_dummy;
 
 	XBIOS_listModes = listModes;
 	XBIOS_saveMode = saveMode;
@@ -145,6 +145,16 @@ void SDL_XBIOS_VideoInit_F30(_THIS)
 	 * get overwritten by the further inits.
 	 */
 	this->SetColors = setColors;
+
+	/* Apollo Vampire V4 implements TOS4-like API */
+	if (Getcookie(C__MCH, &cookie_cmch) != C_FOUND)
+		cookie_cmch = MCH_F30 << 16;
+
+	if((cookie_cmch >> 16) == MCH_V4)
+	{
+		SDL_XBIOS_VideoInit_V4(this);
+		return;
+	}
 
 	/* Supervidel ? */
 	has_supervidel = 0;

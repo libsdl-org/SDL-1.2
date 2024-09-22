@@ -94,6 +94,17 @@ enum {
 	VDO_MILAN
 };
 
+/* _MCH cookie values */
+enum {
+	MCH_ST=0,
+	MCH_STE,
+	MCH_TT,
+	MCH_F30,
+	MCH_MILAN,
+	MCH_ARANYM,
+	MCH_V4
+};
+
 /* Monitor types */
 enum {
 	MONITOR_MONO=0,
@@ -148,6 +159,9 @@ void SDL_XBIOS_VideoInit_TT(_THIS);
 
 /* SDL_xbios_f30.c */
 void SDL_XBIOS_VideoInit_F30(_THIS);
+
+/* SDL_xbios_v4.c */
+void SDL_XBIOS_VideoInit_V4(_THIS);
 
 /* SDL_xbios_milan.c */
 void SDL_XBIOS_VideoInit_Milan(_THIS);
