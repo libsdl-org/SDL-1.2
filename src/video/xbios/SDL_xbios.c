@@ -600,7 +600,7 @@ static void XBIOS_UpdateRects(_THIS, int numrects, SDL_Rect *rects)
 	int i;
 
 	if (XBIOS_current->flags & XBIOSMODE_C2P) {
-		int doubleline = (XBIOS_current->flags & XBIOSMODE_DOUBLELINE ? 1 : 0);
+		const int doubleline = (XBIOS_current->flags & XBIOSMODE_DOUBLELINE ? 1 : 0);
 
 		for (i=0;i<numrects;i++) {
 			Uint8 *source,*destination;
@@ -618,7 +618,7 @@ static void XBIOS_UpdateRects(_THIS, int numrects, SDL_Rect *rects)
 			source += x1;
 
 			destination = XBIOS_screens[XBIOS_fbnum];
-			destination += XBIOS_pitch * rects[i].y;
+			destination += (XBIOS_pitch << doubleline) * rects[i].y;
 			destination += (XBIOS_current->depth * x1) / 8;
 
 			/* Convert chunky to planar screen */
@@ -633,7 +633,7 @@ static void XBIOS_UpdateRects(_THIS, int numrects, SDL_Rect *rects)
 			);
 		}
 	} else if (XBIOS_current->flags & XBIOSMODE_SHADOWCOPY) {
-		/* Always bpp >= 8 */
+		/* Always bpp >= 8 and never XBIOSMODE_DOUBLELINE */
 		for (i=0;i<numrects;i++) {
 			Uint8 *blockSrcStart, *blockDstStart;
 			int y;
@@ -693,9 +693,9 @@ static int XBIOS_FlipHWSurface(_THIS, SDL_Surface *surface)
 	}
 
 	if (XBIOS_current->flags & XBIOSMODE_C2P) {
-		int doubleline = (XBIOS_current->flags & XBIOSMODE_DOUBLELINE ? 1 : 0);
+		const int doubleline = (XBIOS_current->flags & XBIOSMODE_DOUBLELINE ? 1 : 0);
 
-		dst_offset = this->offset_y * XBIOS_pitch +
+		dst_offset = this->offset_y * (XBIOS_pitch << doubleline) +
 				(this->offset_x & ~15) * XBIOS_current->depth / 8;
 
 		/* Convert chunky to planar screen */
@@ -709,7 +709,7 @@ static int XBIOS_FlipHWSurface(_THIS, SDL_Surface *surface)
 			XBIOS_pitch
 		);
 	} else if (XBIOS_current->flags & XBIOSMODE_SHADOWCOPY) {
-		/* Always bpp >= 8 */
+		/* Always bpp >= 8 and never XBIOSMODE_DOUBLELINE */
 		int i;
 		Uint8 *src, *dst;
 
