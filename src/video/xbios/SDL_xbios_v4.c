@@ -75,7 +75,6 @@ static const predefined_mode_t mode_list[] = {
 
 static void listModes(_THIS, int actually_add);
 static void saveMode(_THIS, SDL_PixelFormat *vformat);
-static void restoreMode(_THIS);
 static int allocVbuffers_V4(_THIS, const xbiosmode_t *new_video_mode, int num_buffers, int bufsize);
 
 void SDL_XBIOS_VideoInit_V4(_THIS)
