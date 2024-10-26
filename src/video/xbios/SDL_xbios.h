@@ -128,7 +128,6 @@ enum {
 #define XBIOS_fbnum		(this->hidden->frame_number)
 #define XBIOS_pitch		(this->hidden->pitch)
 #define XBIOS_current		(this->hidden->current)
-#define XBIOS_recoffset		(this->hidden->recalc_offset)
 
 #define TT_palette		(this->hidden->palette.pal16)
 #define F30_palette		(this->hidden->palette.pal32)
