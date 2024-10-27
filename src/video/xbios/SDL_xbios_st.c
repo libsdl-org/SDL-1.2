@@ -204,17 +204,17 @@ static void freeVbuffers(_THIS)
 
 static int setColors(_THIS, int firstcolor, int ncolors, SDL_Color *colors)
 {
+	extern Uint8 SDL_Atari_C2pPalette4[256];
 	int	i, r,g,b;
 
- 	for (i=0;i<ncolors;i++) {
+	for (i = 0; i < ncolors; i++) {
 		r = colors[i].r;
 		g = colors[i].g;
 		b = colors[i].b;
 
-		TT_palette[firstcolor+i]=((r*30)+(g*59)+(b*11))/100;
+		/* This produces values from 0 to 15 */
+		SDL_Atari_C2pPalette4[firstcolor+i] = ((r * 30) + (g * 59) + (b * 11)) / (100 * 16);
 	}
-
-	SDL_Atari_C2pConvert4_pal(TT_palette); /* convert the lighting */
 
 	return(1);
 }

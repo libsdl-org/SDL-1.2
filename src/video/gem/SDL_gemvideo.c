@@ -524,9 +524,6 @@ static int GEM_VideoInit(_THIS, SDL_PixelFormat *vformat)
 	graf_mouse(ARROW, NULL);
 	GEM_cursor = GEM_prev_cursor = NULL;
 
-	/* Init chunky to planar routine */
-	SDL_Atari_C2pConvert = SDL_Atari_C2pConvert8;
-
 	/* Setup VDI fill functions */
 	vsf_color(VDI_handle,0);
 	vsf_interior(VDI_handle,1);
@@ -887,14 +884,9 @@ static void GEM_UnlockHWSurface(_THIS, SDL_Surface *surface)
 static void GEM_UpdateRectsFullscreen(_THIS, int numrects, SDL_Rect *rects)
 {
 	SDL_Surface *surface;
-	int i, surf_width;
+	int i;
 
 	surface = this->screen;
-	/* Need to be a multiple of 16 pixels */
-	surf_width=surface->w;
-	if ((surf_width & 15) != 0) {
-		surf_width = (surf_width | 15) + 1;
-	}
 
 	if (GEM_bufops & (B2S_C2P_1TO2|B2S_C2P_1TOS)) {
 		void *destscr;
@@ -909,7 +901,6 @@ static void GEM_UpdateRectsFullscreen(_THIS, int numrects, SDL_Rect *rects)
 		}
 
 		for (i=0;i<numrects;i++) {
-			void *source,*destination;
 			int x1,x2;
 
 			x1 = rects[i].x & ~15;
@@ -918,18 +909,11 @@ static void GEM_UpdateRectsFullscreen(_THIS, int numrects, SDL_Rect *rects)
 				x2 = (x2 | 15) +1;
 			}
 
-			source = surface->pixels;
-			source += surface->pitch * rects[i].y;
-			source += x1;
-
-			destination = destscr;
-			destination += destpitch * rects[i].y;
-			destination += x1;
-
 			SDL_Atari_C2pConvert(
-				source, destination,
+				surface->pixels, destscr,
+				x1, rects[i].y,
 				x2-x1, rects[i].h,
-				SDL_FALSE,
+				SDL_FALSE, 8,
 				surface->pitch, destpitch
 			);
 		}
@@ -938,6 +922,13 @@ static void GEM_UpdateRectsFullscreen(_THIS, int numrects, SDL_Rect *rects)
 	if (GEM_bufops & (B2S_VROCPYFM_1TOS|B2S_VROCPYFM_2TOS)) {
 		MFDB mfdb_src;
 		short blitcoords[8];
+		int surf_width;
+
+		/* Need to be a multiple of 16 pixels */
+		surf_width=surface->w;
+		if ((surf_width & 15) != 0) {
+			surf_width = (surf_width | 15) + 1;
+		}
 
 		mfdb_src.fd_addr=surface->pixels;
 		mfdb_src.fd_w=surf_width;
@@ -1019,8 +1010,9 @@ static int GEM_FlipHWSurfaceFullscreen(_THIS, SDL_Surface *surface)
 
 		SDL_Atari_C2pConvert(
 			surface->pixels, destscr,
+			0, 0,
 			surf_width, surface->h,
-			SDL_FALSE,
+			SDL_FALSE, 8,
 			surface->pitch, destpitch
 		);
 	}
@@ -1234,7 +1226,6 @@ static void GEM_RefreshWindow(_THIS, int winhandle, GRECT *rect)
 #endif
 
 	if (GEM_bufops & B2S_C2P_1TO2) {
-		void *src, *dest;
 		int x1,x2;
 
 		x1 = pxy[0] & ~15;
@@ -1243,18 +1234,11 @@ static void GEM_RefreshWindow(_THIS, int winhandle, GRECT *rect)
 			x2 = (x2 | 15) +1;
 		}
 
-		src = surface->pixels;
-		src += surface->pitch * pxy[1];
-		src += x1;
-
-		dest = GEM_buffer2;
-		dest += surface->pitch * pxy[1];
-		dest += x1;
-
 		SDL_Atari_C2pConvert(
-			src, dest,
+			surface->pixels, GEM_buffer2,
+			x1, pxy[1],
 			x2-x1, pxy[3]-pxy[1]+1,
-			SDL_FALSE,
+			SDL_FALSE, 8,
 			surface->pitch, surface->pitch
 		);
 	}
