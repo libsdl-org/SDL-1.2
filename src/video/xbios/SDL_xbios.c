@@ -127,30 +127,32 @@ static int XBIOS_Available(void)
 	}
 
 	/* Test if we have a monochrome monitor plugged in */
-	switch( cookie_vdo >>16) {
-		case VDO_ST:
-		case VDO_STE:
-			if ( Getrez() == (ST_HIGH>>8) )
-				return 0;
-			break;
-		case VDO_TT:
-			if ( Getrez() == (TT_HIGH>>8) )
-				return 0;
-			break;
-		case VDO_F30:
-			if ( VgetMonitor() == MONITOR_MONO)
-				return 0;
-			if (Getcookie(C_SCPN, &cookie_scpn) == C_FOUND) {
-				if (!SDL_XBIOS_SB3Usable((scpn_cookie_t *)cookie_scpn)) {
-					return 0;
-				}
-			}
-			break;
-		case VDO_MILAN:
-			break;
-		default:
-			return 0;
-	}
+    if (cookie_nova == 0) {
+        switch( cookie_vdo >>16) {
+            case VDO_ST:
+            case VDO_STE:
+                if ( Getrez() == (ST_HIGH>>8) )
+                    return 0;
+                break;
+            case VDO_TT:
+                if ( Getrez() == (TT_HIGH>>8) )
+                    return 0;
+                break;
+            case VDO_F30:
+                if ( VgetMonitor() == MONITOR_MONO)
+                    return 0;
+                if (Getcookie(C_SCPN, &cookie_scpn) == C_FOUND) {
+                    if (!SDL_XBIOS_SB3Usable((scpn_cookie_t *)cookie_scpn)) {
+                        return 0;
+                    }
+                }
+                break;
+            case VDO_MILAN:
+                break;
+            default:
+                return 0;
+        }
+    }
 
 	return 1;
 }
