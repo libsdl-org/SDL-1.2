@@ -285,13 +285,10 @@ static void QZ_GetModeInfo(_THIS, const void *_mode, Uint32 *w, Uint32 *h, Uint3
         CFNumberGetValue (
             CFDictionaryGetValue (vidmode, kCGDisplayHeight),
             kCFNumberSInt32Type, h);
+
+        /* on older OS X, accept all bpp */
     }
 #endif
-
-    /* we only care about the 32-bit modes... */
-    if (*bpp != 32) {
-        *bpp = 0;
-    }
 }
 
 static int QZ_VideoInit (_THIS, SDL_PixelFormat *video_format)
