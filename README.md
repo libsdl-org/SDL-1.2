@@ -5,7 +5,7 @@ The 1.2 branch of SDL is deprecated. While we occasionally collect fixes
 in revision control, there has not been a formal release since 2012, and
 we have no intention to do future releases, either.
 
-Current development is happening in SDL 2.0.x, which gets regular
+Current development is happening in SDL 3.x, which gets regular
 releases and can be found at:
 
 https://github.com/libsdl-org/SDL
