@@ -91,7 +91,7 @@ typedef struct SDL_PrivateVideoData {
     CGDirectDisplayID  display;            /* 0 == main display (only support single display) */
     const void         *mode;              /* current mode of the display */
     const void         *save_mode;         /* original mode of the display */
-#if (MAC_OS_X_VERSION_MIN_REQUIRED < 1070)
+#if (MAC_OS_X_VERSION_MIN_REQUIRED < 1070) && (MAC_OS_X_VERSION_MAX_ALLOWED < 1090)
     CGDirectPaletteRef palette;            /* palette of an 8-bit display */
 #endif
     NSOpenGLContext    *gl_context;        /* OpenGL rendering context */
