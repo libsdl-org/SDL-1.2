@@ -760,7 +760,11 @@ SDL_Surface *DIB_SetVideoMode(_THIS, SDL_Surface *current,
 		settings.dmPelsWidth = width;
 		settings.dmPelsHeight = height;
 		settings.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT | DM_BITSPERPEL;
-		if ( width <= (int)SDL_desktop_mode.dmPelsWidth &&
+		if ( refresh_rate > 0 ) {
+			settings.dmDisplayFrequency = refresh_rate;
+			settings.dmFields |= DM_DISPLAYFREQUENCY;
+		}
+		else if ( width <= (int)SDL_desktop_mode.dmPelsWidth &&
 		     height <= (int)SDL_desktop_mode.dmPelsHeight ) {
 			settings.dmDisplayFrequency = SDL_desktop_mode.dmDisplayFrequency;
 			settings.dmFields |= DM_DISPLAYFREQUENCY;

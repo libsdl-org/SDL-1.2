@@ -139,6 +139,13 @@ static VideoBootStrap *bootstrap[] = {
 
 SDL_VideoDevice *current_video = NULL;
 
+int refresh_rate = SDL_REFRESH_DEFAULT;
+
+void SDL_SetRefreshRate(int rate)
+{
+	refresh_rate = rate;
+}
+
 /* Various local functions */
 int SDL_VideoInit(const char *driver_name, Uint32 flags);
 void SDL_VideoQuit(void);

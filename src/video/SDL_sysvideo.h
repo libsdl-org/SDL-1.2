@@ -422,6 +422,8 @@ extern VideoBootStrap DUMMY_bootstrap;
 /* This is the current video device */
 extern SDL_VideoDevice *current_video;
 
+extern int refresh_rate;
+
 #define SDL_VideoSurface	(current_video->screen)
 #define SDL_ShadowSurface	(current_video->shadow)
 #define SDL_PublicSurface	(current_video->visible)

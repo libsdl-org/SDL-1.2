@@ -942,7 +942,15 @@ extern DECLSPEC SDL_GrabMode SDLCALL SDL_WM_GrabInput(SDL_GrabMode mode);
 /** @internal Not in public API at the moment - do not use! */
 extern DECLSPEC int SDLCALL SDL_SoftStretch(SDL_Surface *src, SDL_Rect *srcrect,
                                     SDL_Surface *dst, SDL_Rect *dstrect);
-                    
+
+#define SDL_REFRESH_DEFAULT 0
+
+/*
+ * Set the desired refresh rate, in Hz.  This takes effect on the next
+ * video mode change.
+ */
+extern DECLSPEC void SDLCALL SDL_SetRefreshRate(int rate);
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }

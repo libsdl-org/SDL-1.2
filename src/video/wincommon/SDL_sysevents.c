@@ -614,6 +614,8 @@ LRESULT CALLBACK WinMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			if ( SDL_PublicSurface && 
 				(SDL_PublicSurface->flags & SDL_RESIZABLE) ) {
 				SDL_PrivateResize(w, h);
+				SDL_VideoSurface->w = w;
+				SDL_VideoSurface->h = h;
 			}
 		}
 		break;
