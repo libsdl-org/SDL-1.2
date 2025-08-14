@@ -16,22 +16,35 @@
     License along with this library; if not, write to the Free Software
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+    BERO
+    bero@geocities.co.jp
+
+    based on generic/SDL_thread.c
+
     Sam Lantinga
     slouken@libsdl.org
 */
 #include "SDL_config.h"
 
+#ifdef SDL_THREAD_DC
 /* Thread management routines for SDL */
 
+#include "SDL_error.h"
 #include "SDL_thread.h"
-#include "../SDL_thread_c.h"
-#include "../SDL_systhread.h"
+#include "SDL_thread_c.h"
+#include "SDL_systhread.h"
 
 #include <kos/thread.h>
 
+static void *thdfunc(void *args)
+{
+	SDL_RunThread(args);
+	return NULL;
+}
+
 int SDL_SYS_CreateThread(SDL_Thread *thread, void *args)
 {
-	thread->handle = thd_create(SDL_RunThread,args);
+	thread->handle = thd_create(1, thdfunc, args);
 	if (thread->handle == NULL) {
 		SDL_SetError("Not enough resources to create thread");
 		return(-1);
@@ -51,10 +64,11 @@ Uint32 SDL_ThreadID(void)
 
 void SDL_SYS_WaitThread(SDL_Thread *thread)
 {
-	thd_wait(thread->handle);
+	thd_join(thread->handle, NULL);
 }
 
 void SDL_SYS_KillThread(SDL_Thread *thread)
 {
 	thd_destroy(thread->handle);
 }
+#endif

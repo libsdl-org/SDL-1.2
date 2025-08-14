@@ -21,6 +21,7 @@
 */
 #include "SDL_config.h"
 
+#ifdef SDL_THREAD_DC
 /* An implementation of condition variables using semaphores and mutexes */
 /*
    This implementation borrows heavily from the BeOS condition variable
@@ -213,3 +214,5 @@ int SDL_CondWait(SDL_cond *cond, SDL_mutex *mutex)
 {
 	return SDL_CondWaitTimeout(cond, mutex, SDL_MUTEX_MAXWAIT);
 }
+
+#endif

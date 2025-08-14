@@ -21,6 +21,7 @@
 */
 #include "SDL_config.h"
 
+#ifdef SDL_THREAD_PTHREAD
 #include <sys/time.h>
 #include <unistd.h>
 #include <errno.h>
@@ -153,3 +154,4 @@ int SDL_CondWait(SDL_cond *cond, SDL_mutex *mutex)
 	}
 	return retval;
 }
+#endif

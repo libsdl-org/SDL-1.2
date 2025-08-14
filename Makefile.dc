@@ -1,111 +1,154 @@
-#GL=1
+# Custom version by Ian Micheal included fast math built in DreamHAL
+# based on chui's great SDL, now for KOS 2.x fast blit and pixel paths.
+# DreamHAL memory routines and replacements; threading updates.
+# Set GL=1 to build the GLdc-enabled archive.
 
-CC = sh-elf-gcc
-AR = sh-elf-ar
+CC := sh-elf-gcc
+AR := sh-elf-gcc-ar
+LD := sh-elf-gcc
+ARFLAGS ?= rcs
 
+# ------------------------------ Build variant ------------------------------
 ifdef GL
-DEFS += -DSDL_VIDEO_OPENGL=1
-TARGET = libSDL_gl.a
+DEFS   += -DSDL_VIDEO_OPENGL=1
+TARGET := libSDL_gl.a
 else
-TARGET = libSDL.a
+TARGET := libSDL.a
 endif
 
-CFLAGS=$(KOS_CFLAGS) $(DEFS) -Iinclude
+# ------------------------------ Flags ------------------------------
+# KOS provides KOS_BASE and KOS_ARCH via environ.sh
+KOS_CFLAGS += -Iinclude -Isrc -Isrc/audio -Isrc/cdrom -Isrc/endian
+KOS_CFLAGS += -Isrc/events -Isrc/joystick -Isrc/thread/dc -Isrc/thread -Isrc/timer
+KOS_CFLAGS += -Isrc/video -Isrc/video/dc -DNO_SIGNAL_H -DENABLE_DC
+# Ensure Dreamcast platform config and backend are selected
+KOS_CFLAGS += -D__DREAMCAST__ -DSDL_VIDEO_DRIVER_DREAMCAST
 
+CFLAGS   := $(KOS_CFLAGS) -Wimplicit-function-declaration $(DEFS) -Iinclude
+DEPFLAGS := -MMD -MP
+
+# ------------------------------ Sources ------------------------------
 SRCS = \
-	src/audio/dc/SDL_dcaudio.c \
-	src/audio/dc/aica.c \
-	src/audio/dummy/SDL_dummyaudio.c \
-	src/audio/SDL_audio.c \
-	src/audio/SDL_audiocvt.c \
-	src/audio/SDL_audiodev.c \
-	src/audio/SDL_mixer.c \
-	src/audio/SDL_wave.c \
-	src/cdrom/dc/SDL_syscdrom.c \
-	src/cdrom/SDL_cdrom.c \
-	src/events/SDL_active.c \
-	src/events/SDL_events.c \
-	src/events/SDL_expose.c \
-	src/events/SDL_keyboard.c \
-	src/events/SDL_mouse.c \
-	src/events/SDL_quit.c \
-	src/events/SDL_resize.c \
-	src/file/SDL_rwops.c \
-	src/joystick/dc/SDL_sysjoystick.c \
-	src/joystick/SDL_joystick.c \
-	src/loadso/dummy/SDL_sysloadso.c \
-	src/SDL.c \
-	src/SDL_error.c \
-	src/SDL_fatal.c \
-	src/stdlib/SDL_getenv.c \
-	src/stdlib/SDL_iconv.c \
-	src/stdlib/SDL_malloc.c \
-	src/stdlib/SDL_qsort.c \
-	src/stdlib/SDL_stdlib.c \
-	src/stdlib/SDL_string.c \
-	src/thread/dc/SDL_syscond.c \
-	src/thread/dc/SDL_sysmutex.c \
-	src/thread/dc/SDL_syssem.c \
-	src/thread/dc/SDL_systhread.c \
-	src/thread/SDL_thread.c \
-	src/timer/dc/SDL_systimer.c \
-	src/timer/SDL_timer.c \
-	src/video/dc/SDL_dcevents.c \
-	src/video/dc/SDL_dcvideo.c \
-	src/video/dummy/SDL_nullevents.c \
-	src/video/dummy/SDL_nullmouse.c \
-	src/video/dummy/SDL_nullvideo.c \
-	src/video/SDL_blit.c \
-	src/video/SDL_blit_0.c \
-	src/video/SDL_blit_1.c \
-	src/video/SDL_blit_A.c \
-	src/video/SDL_blit_N.c \
-	src/video/SDL_bmp.c \
-	src/video/SDL_cursor.c \
-	src/video/SDL_gamma.c \
-	src/video/SDL_pixels.c \
-	src/video/SDL_RLEaccel.c \
-	src/video/SDL_stretch.c \
-	src/video/SDL_surface.c \
-	src/video/SDL_video.c \
-	src/video/SDL_yuv.c \
-	src/video/SDL_yuv_sw.c \
+    src/audio/dc/sndstream/SDL_dreamcastaudio.c \
+    src/audio/dc/aica/aica.c \
+    src/audio/dc/aica/SDL_dcaudio.c \
+    src/audio/dummy/SDL_dummyaudio.c \
+    src/audio/disk/SDL_diskaudio.c \
+    src/audio/SDL_audio.c \
+    src/audio/SDL_audiocvt.c \
+    src/audio/SDL_audiodev.c \
+    src/audio/SDL_mixer.c \
+    src/audio/SDL_wave.c \
+    src/cdrom/dc/SDL_syscdrom.c \
+    src/cdrom/SDL_cdrom.c \
+    src/events/SDL_active.c \
+    src/events/SDL_events.c \
+    src/events/SDL_expose.c \
+    src/events/SDL_keyboard.c \
+    src/events/SDL_mouse.c \
+    src/events/SDL_quit.c \
+    src/events/SDL_resize.c \
+    src/file/SDL_rwops.c \
+    src/joystick/dc/SDL_sysjoystick.c \
+    src/joystick/SDL_joystick.c \
+    src/loadso/dummy/SDL_sysloadso.c \
+    src/SDL.c \
+    src/SDL_error.c \
+    src/SDL_fatal.c \
+    src/stdlib/SDL_getenv.c \
+    src/stdlib/SDL_iconv.c \
+    src/stdlib/SDL_malloc.c \
+    src/stdlib/SDL_qsort.c \
+    src/stdlib/SDL_stdlib.c \
+    src/stdlib/SDL_string.c \
+    src/thread/dc/SDL_syscond.c \
+    src/thread/dc/SDL_sysmutex.c \
+    src/thread/dc/SDL_syssem.c \
+    src/thread/dc/SDL_systhread.c \
+    src/thread/pthread/SDL_syscond.c \
+    src/thread/pthread/SDL_sysmutex.c \
+    src/thread/pthread/SDL_systhread.c \
+    src/thread/SDL_thread.c \
+    src/timer/dc/SDL_systimer.c \
+    src/timer/unix/SDL_systimer.c \
+    src/timer/SDL_timer.c \
+    src/video/dc/SDL_dcevents.c \
+    src/video/dc/SDL_dcvideo.c \
+    src/video/dc/memset.c \
+    src/video/dc/memcmp.c \
+    src/video/dc/memcpy.c \
+    src/video/dc/memmove.c \
+    src/video/dummy/SDL_nullevents.c \
+    src/video/dummy/SDL_nullmouse.c \
+    src/video/dummy/SDL_nullvideo.c \
+    src/video/SDL_blit.c \
+    src/video/SDL_blit_0.c \
+    src/video/SDL_blit_1.c \
+    src/video/SDL_blit_A.c \
+    src/video/SDL_blit_N.c \
+    src/video/SDL_bmp.c \
+    src/video/SDL_cursor.c \
+    src/video/SDL_gamma.c \
+    src/video/SDL_pixels.c \
+    src/video/SDL_RLEaccel.c \
+    src/video/SDL_stretch.c \
+    src/video/SDL_surface.c \
+    src/video/SDL_video.c \
+    src/video/SDL_yuv.c \
+    src/video/SDL_yuv_sw.c \
+    src/cpuinfo/SDL_cpuinfo.c
 
-OBJS = $(SRCS:.c=.o)
+OBJS := $(SRCS:.c=.o)
 
-TEST = \
-	test/checkkeys.c \
-	test/graywin.c \
-	test/loopwave.c \
-	test/testalpha.c \
-	test/testbitmap.c \
-	test/testcdrom.c \
-	test/testerror.c \
-	test/testgamma.c \
-	test/testgl.c \
-	test/testhread.c \
-	test/testjoystick.c \
-	test/testkeys.c \
-	test/testlock.c \
-	test/testoverlay.c \
-	test/testpalette.c \
-	test/testsem.c \
-	test/testsprite.c \
-	test/testtimer.c \
-	test/testtypes.c \
-	test/testver.c \
-	test/testvidinfo.c \
-	test/testwin.c \
-	test/testwm.c \
-	test/threadwin.c \
-	test/torturethread.c \
+# ------------------------------ Install locations ------------------------------
+INSTALL_LIB_DIR     := $(KOS_BASE)/addons/lib/$(KOS_ARCH)
+INSTALL_INCLUDE_DIR := $(KOS_BASE)/addons/include/$(KOS_ARCH)/SDL
+INSTALL_LIB         := $(INSTALL_LIB_DIR)/$(TARGET)
 
-$(TARGET): copy_config \
-	$(OBJS)
-	$(AR) rcs $(TARGET) $(OBJS) 
+# ------------------------------ Phony targets ------------------------------
+.PHONY: all install uninstall clean distclean copy_headers copy_config
 
-copy_config:
-	@cp include/SDL_config.h.default include/SDL_config.h
+# Default
+all: $(TARGET)
 
+# ------------------------------ Build rules ------------------------------
+# Create SDL_config.h from the template (mimics autotools)
+include/SDL_config.h: include/SDL_config.h.default
+	@cp -f $< $@ && echo "Updated SDL_config.h"
+
+# Objects depend on config headers (ensures rebuilds)
+$(OBJS): include/SDL_config.h include/SDL_config_dreamcast.h
+
+# Compile C → o with deps
+%.o: %.c
+	$(CC) $(CFLAGS) $(DEPFLAGS) -c $< -o $@
+
+# Single main target: build + install archive to addons/lib
+$(TARGET): copy_headers $(OBJS)
+	@mkdir -p $(INSTALL_LIB_DIR)
+	@rm -f $(INSTALL_LIB)
+	$(AR) $(ARFLAGS) $(INSTALL_LIB) $(OBJS)
+	@touch $@  # local stamp
+
+# Copy public headers into addons include dir
+copy_headers: include/SDL_config.h
+	@mkdir -p $(INSTALL_INCLUDE_DIR)
+	@cp -R include/*.h $(INSTALL_INCLUDE_DIR)/
+
+# Convenience
+install: $(TARGET)
+
+# Remove installed files under addons (does NOT touch repo files)
+uninstall:
+	@rm -f  $(INSTALL_LIB)
+	@rm -rf $(INSTALL_INCLUDE_DIR)
+
+# Clean local build artifacts only
 clean:
-	rm -f include/SDL_config.h $(OBJS)
+	rm -f include/SDL_config.h $(OBJS) $(OBJS:.o=.d) $(TARGET)
+
+# Clean + uninstall installed headers/lib
+distclean: clean uninstall
+
+# Include dependency files
+-include $(OBJS:.o=.d)
