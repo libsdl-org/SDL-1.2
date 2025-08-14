@@ -21,6 +21,7 @@
 */
 #include "SDL_config.h"
 
+#ifdef SDL_THREAD_DC
 /* An implementation of mutexes using semaphores */
 
 #include "SDL_thread.h"
@@ -120,3 +121,4 @@ int SDL_mutexV(SDL_mutex *mutex)
 	return 0;
 #endif /* SDL_THREADS_DISABLED */
 }
+#endif

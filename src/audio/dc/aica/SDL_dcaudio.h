@@ -16,25 +16,28 @@
     License along with this library; if not, write to the Free Software
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+    BERO <bero@geocities.co.jp>
+    based on SDL_diskaudio.h by
     Sam Lantinga
     slouken@libsdl.org
 */
-#include "SDL_config.h"
 
-#ifndef _AICA_H_
-#define _AICA_H_
 
-#define	AICA_MEM	0xa0800000
+#ifndef _SDL_dcaudio_h
+#define _SDL_dcaudio_h
 
-#define SM_8BIT		1
-#define SM_16BIT	0
-#define SM_ADPCM	2
+#include "SDL_sysaudio.h"
 
-void aica_play(int ch,int mode,unsigned long smpptr,int looptst,int loopend,int freq,int vol,int pan,int loopflag);
-void aica_stop(int ch);
-void aica_vol(int ch,int vol);
-void aica_pan(int ch,int pan);
-void aica_freq(int ch,int freq);
-int aica_get_pos(int ch);
+/* Hidden "this" pointer for the video functions */
+#define _THIS	SDL_AudioDevice *this
 
-#endif
+struct SDL_PrivateAudioData {
+	/* The file descriptor for the audio device */
+	Uint8 *mixbuf;
+	Uint32 mixlen;
+	int playing;
+	int leftpos,rightpos;
+	int nextbuf;
+};
+
+#endif /* _SDL_dcaudio_h */

@@ -33,6 +33,8 @@ build-deps
 *.swp
 *.tmp
 *.rej
+*.d
+.vscode/**
 
 # for Xcode
 *.mode1*
@@ -86,3 +88,5 @@ test/threadwin
 test/torturethread
 test/testcursor
 test/testloadso
+include/SDL_config.h
+src/SDL.d

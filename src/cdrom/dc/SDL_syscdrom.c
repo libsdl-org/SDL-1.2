@@ -16,8 +16,15 @@
     License along with this library; if not, write to the Free Software
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+    BERO
+    bero@geocities.co.jp
+
+    based on win32/SDL_syscdrom.c by
+
     Sam Lantinga
     slouken@libsdl.org
+
+    Modified by Lawrence Sebald <bluecrab2887@netscape.net>
 */
 #include "SDL_config.h"
 
@@ -28,8 +35,9 @@
 #include <dc/cdrom.h>
 #include <dc/spu.h>
 
+#include "SDL_error.h"
 #include "SDL_cdrom.h"
-#include "../SDL_syscdrom.h"
+#include "SDL_syscdrom.h"
 
 /* The system-dependent CD control functions */
 static const char *SDL_SYS_CDName(int drive);
@@ -57,6 +65,8 @@ int  SDL_SYS_CDInit(void)
 	SDL_CDcaps.Stop = SDL_SYS_CDStop;
 	SDL_CDcaps.Eject = SDL_SYS_CDEject;
 	SDL_CDcaps.Close = SDL_SYS_CDClose;
+
+	SDL_numcds = 1;
 
 	return(0);
 }

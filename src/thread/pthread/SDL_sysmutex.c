@@ -21,6 +21,7 @@
 */
 #include "SDL_config.h"
 
+#ifdef SDL_THREAD_PTHREAD
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
@@ -30,7 +31,7 @@
 
 #if !SDL_THREAD_PTHREAD_RECURSIVE_MUTEX && \
     !SDL_THREAD_PTHREAD_RECURSIVE_MUTEX_NP
-#define FAKE_RECURSIVE_MUTEX
+#define FAKE_RECURSIVE_MUTEX 1
 #endif
 
 struct SDL_mutex {
@@ -154,3 +155,4 @@ int SDL_mutexV(SDL_mutex *mutex)
 
 	return retval;
 }
+#endif

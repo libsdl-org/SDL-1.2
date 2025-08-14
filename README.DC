@@ -1,32 +1,121 @@
-SDL for Dreamcast (beta2)
+# SDL 1.2 — Dreamcast (KallistiOS)
 
-	BERO
-	berobero@users.sourceforge.net 
+Dreamcast support for SDL 1.2 targeting the **KallistiOS (KOS)** SDK. Optional OpenGL support uses **GLdc** (provided by **kos-ports**).
 
-	http://www.geocities.co.jp/Playtown/2004/
+**Scope:** Community-maintained. Changes are isolated to Dreamcast code paths and do not affect other platforms.
 
-this work with kos-newlib
-http://sourceforge.net/projects/dcquake/
+## Prerequisites
 
-compile
-- source environ.sh (from the KOS distribution)
-- make -f Makefile.dc
+* KOS toolchain installed; environment sourced:
 
-compile with gl support
-- install latest libgl from http://sourceforge.net/projects/dcquake/
-- uncomment GL=1 in Makefile.dc
-- make -f Makefile.dc clean
-- make -f Makefile.dc
+  ```sh
+  . /opt/toolchains/dc/kos/environ.sh
+  ```
+* (Optional) OpenGL via **GLdc** from **kos-ports**.
 
-install
-- copy include/*.h and libSDL.a or libSDL_gl.a for your enviroment
+## Building (no autoconf)
 
-changelog:
+Use the platform makefile:
 
-beta2
-- OpenGL support
-- Hardware page flip support
+```sh
+# Plain (no GL)
+make -f Makefile.dc
 
-beta
-- thread, timer don't tested so much.
-- not support OpenGL
+# With OpenGL (GLdc)
+# set GL=1 in Makefile.dc or
+make -f Makefile.dc clean && make -f Makefile.dc GL=1
+# (equivalently) GL=1 make -f Makefile.dc
+
+# remove installed headers/lib under KOS/addons
+make -f Makefile.dc uninstall
+
+# clean local objects only (does NOT remove installed files)
+make -f Makefile.dc clean
+
+# clean + uninstall
+make -f Makefile.dc distclean
+```
+
+### Artifacts & Installation
+
+* Builds produce `libSDL.a` (and `libSDL_gl.a` when `GL=1`) and headers under `include/`.
+* **Current behavior:** `Makefile.dc` **automatically installs** after a successful build to:
+  * `KOS/addons/include/$(KOS_ARCH)/SDL` (headers)
+  * `KOS/addons/lib/$(KOS_ARCH)` (library)
+
+* `make -f Makefile.dc uninstall` removes the installed headers/lib from `KOS/addons`.
+* `make -f Makefile.dc distclean` does both: `clean` + `uninstall`.
+
+## Video backends (Dreamcast)
+
+* **DMA** – double-buffered blits to PVR via DMA (default).
+* **TEXTURED** – virtual resolutions + scaling via textured blits.
+* **DIRECT** – direct framebuffer path (uses SH-4 store queues; may be faster in some cases).
+
+Select a backend via `Makefile.dc` or by API before `SDL_SetVideoMode`.
+
+## Additional capabilities
+
+* **OpenGL via GLdc** — optional GL 1.x path when `GL=1`.
+* **Analog-pad mouse emulation** — map the analog pad to mouse input when enabled.
+* **Button→key mapping** — map controller buttons to `SDLKey`.
+* **Texture formats** — supports 16-bit formats commonly used on Dreamcast (e.g., **RGB5551**, **RGB4444**).
+
+## Dreamcast-specific API (`SDL_dreamcast.h`)
+
+**Video & display**
+
+* `SDL_DC_SetVideoDriver(SDL_DC_DMA_VIDEO | SDL_DC_TEXTURED_VIDEO | SDL_DC_DIRECT_VIDEO)` — choose backend (call before `SDL_SetVideoMode`).
+* `SDL_DC_SetWindow(width, height)` — set virtual window size (textured mode).
+
+**Timing / refresh**
+
+* `SDL_DC_VerticalWait(enable)` — wait for vertical retrace before presenting.
+* `SDL_DC_ShowAskHz(enable)` — (PAL) show 50/60 Hz selector at startup.
+* `SDL_DC_Default60Hz(enable)` — (PAL) default to 60 Hz.
+
+**Input mapping**
+
+* `SDL_DC_MapKey(joy, button, key)` — map a Dreamcast controller button to an `SDLKey`.
+
+**Controller emulation helpers**
+
+* `SDL_DC_EmulateVirtualKeyboard(enable)` — simple BIOS-font on-screen keyboard.
+    *Runtime controls:* **A** submits; **Right Trigger** toggles.
+* `SDL_DC_EmulateKeyboard(enable)` — controller→keyboard emulation.
+* `SDL_DC_EmulateMouse(enable)` — controller→mouse emulation.
+
+**Audio**
+
+* `SDL_DC_SetSoundBuffer(ptr)` / `SDL_DC_RestoreSoundBuffer()` — override/restore audio buffer.
+
+> These functions are Dreamcast-only; they are no-ops on other platforms.
+
+### Defaults
+
+* **Audio:** AICA backend
+* **Concurrency:** KOS threads & timers
+
+## Tests
+
+SDL’s generic `test/` programs don’t include Dreamcast makefiles. Validate on hardware or an emulator using your own minimal harness or application (video/input/audio).
+
+## License
+
+SDL 1.2 is licensed under **LGPL-2.1**. See `COPYING`.
+
+### Third-party notices
+
+* This Dreamcast backend includes **only** SH-4 optimized memory routines (`memcpy`, `memset`, `memmove`, `memcmp`) derived from DreamHAL. These files are **Public Domain**; original file headers are retained in-file.
+* No other DreamHAL components are included.
+
+## Acknowledgments
+
+* **Troy Davis (GPF)** — Dreamcast updates/maintenance, GLdc integration, virtual keyboard.
+* **BERO** — original Dreamcast SDL work
+* **Chui** — Dreamcast improvements
+* **Ian Michael** — Dreamcast DreamHAL/GLdc lineage
+* **Kazade** — GLdc
+* **MRNEO240** — GLdc optimizations and support
+* **DreamHAL project** — related Dreamcast work
+* **Contributors** — fixes and maintenance over time

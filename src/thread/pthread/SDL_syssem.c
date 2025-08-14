@@ -21,6 +21,7 @@
 */
 #include "SDL_config.h"
 
+#if defined(SDL_THREAD_PTHREAD)
 #include <pthread.h>
 #include <semaphore.h>
 #include <errno.h>
@@ -194,3 +195,4 @@ int SDL_SemPost(SDL_sem *sem)
 }
 
 #endif /* __MACOSX__ */
+#endif
