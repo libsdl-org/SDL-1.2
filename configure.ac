@@ -1439,15 +1439,16 @@ CheckSVGA()
 [AS_HELP_STRING([--enable-video-svga], [use SVGAlib video driver [default=yes]])],
                   , enable_video_svga=yes)
     if test x$enable_video = xyes -a x$enable_video_svga = xyes; then
-        AC_MSG_CHECKING(for SVGAlib (1.4.0+) support)
+        AC_MSG_CHECKING([for SVGAlib (1.4.0+) support])
         video_svga=no
         AC_TRY_COMPILE([
+         #include <stdlib.h>
          #include <vga.h>
          #include <vgamouse.h>
          #include <vgakeyboard.h>
         ],[
-         if ( SCANCODE_RIGHTWIN && SCANCODE_LEFTWIN ) {
-             exit(0);
+         if (SCANCODE_RIGHTWIN && SCANCODE_LEFTWIN) {
+           exit(0);
          }
         ], [video_svga=yes])
         AC_MSG_RESULT($video_svga)
@@ -1470,6 +1471,7 @@ CheckVGL()
         AC_MSG_CHECKING(for libVGL support)
         video_vgl=no
         AC_TRY_COMPILE([
+         #include <stdlib.h>
          #include <sys/fbio.h>
          #include <sys/consio.h>
          #include <sys/kbio.h>

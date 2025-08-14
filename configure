@@ -19914,6 +19914,7 @@ $as_echo_n "checking for SVGAlib (1.4.0+) support... " >&6; }
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
+         #include <stdlib.h>
          #include <vga.h>
          #include <vgamouse.h>
          #include <vgakeyboard.h>
@@ -19922,8 +19923,8 @@ int
 main ()
 {
 
-         if ( SCANCODE_RIGHTWIN && SCANCODE_LEFTWIN ) {
-             exit(0);
+         if (SCANCODE_RIGHTWIN && SCANCODE_LEFTWIN) {
+           exit(0);
          }
 
   ;
@@ -19962,6 +19963,7 @@ $as_echo_n "checking for libVGL support... " >&6; }
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
+         #include <stdlib.h>
          #include <sys/fbio.h>
          #include <sys/consio.h>
          #include <sys/kbio.h>
