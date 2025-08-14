@@ -29,10 +29,6 @@
 
 #include "SDL_config.h"
 
-// #if defined(__DREAMCAST__)
-// #include "memfuncs.h"
-// #endif
-
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
@@ -597,8 +593,6 @@ extern DECLSPEC int SDLCALL SDL_strncmp(const char *str1, const char *str2, size
 #define SDL_strcasecmp  _stricmp
 #elif defined(HAVE_STRCASECMP)
 #define SDL_strcasecmp  strcasecmp
-#elif defined(HAVE__STRICMP)
-#define SDL_strcasecmp  _stricmp
 #else
 extern DECLSPEC int SDLCALL SDL_strcasecmp(const char *str1, const char *str2);
 #endif
@@ -607,8 +601,6 @@ extern DECLSPEC int SDLCALL SDL_strcasecmp(const char *str1, const char *str2);
 #define SDL_strncasecmp _strnicmp
 #elif defined(HAVE_STRNCASECMP)
 #define SDL_strncasecmp strncasecmp
-#elif defined(HAVE__STRNICMP)
-#define SDL_strncasecmp _strnicmp
 #else
 extern DECLSPEC int SDLCALL SDL_strncasecmp(const char *str1, const char *str2, size_t maxlen);
 #endif

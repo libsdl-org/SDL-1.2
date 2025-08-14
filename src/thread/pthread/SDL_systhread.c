@@ -120,4 +120,5 @@ void SDL_SYS_KillThread(SDL_Thread *thread)
 	pthread_kill(thread->handle, SIGKILL);
 #endif
 }
-#endif
+
+#endif /* SDL_THREAD_PTHREAD */

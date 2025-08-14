@@ -186,4 +186,4 @@ int SDL_SemPost(SDL_sem *sem)
 }
 
 #endif /* SDL_THREADS_DISABLED */
-#endif // #if defined(SDL_THREAD_DC) || defined(SDL_THREAD_PTHREAD)
+#endif /* #if defined(SDL_THREAD_DC) || defined(SDL_THREAD_PTHREAD) */

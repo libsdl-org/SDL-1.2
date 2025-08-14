@@ -195,4 +195,4 @@ int SDL_SemPost(SDL_sem *sem)
 }
 
 #endif /* __MACOSX__ */
-#endif
+#endif /* SDL_THREAD_PTHREAD */
