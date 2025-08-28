@@ -92,7 +92,7 @@ object_files= SDL.obj SDL_error.obj SDL_fatal.obj &
 .c.obj:
 	wcc386 $(CFLAGS) -fo=$^@ $<
 .asm.obj:
-	nasm -f obj -D__OS2__ -Isrc/hermes/ -o $^@ $<
+	nasm -f obj -DOBJ_FORMAT_obj -Isrc/hermes/ -o $^@ $<
 
 all: $(DLLFILE) $(LIBFILE) .symbolic
 
