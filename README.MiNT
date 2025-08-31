@@ -24,7 +24,7 @@ I.  Building the Simple DirectMedia Layer libraries:
     Tos does not support threads.
 
     MiNT version (maybe Magic, only for multitasking OS):
-      --disable-pthreads --enable-pth
+      --enable-pthreads --enable-pth
     Mint and Magic may supports threads, so audio can be used with current
     devices, like Sun audio, or disk-writing support. Like Tos, interrupt
     audio without threads is more suited for Atari machines.
