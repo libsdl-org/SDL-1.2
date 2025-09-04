@@ -67,6 +67,11 @@
 
 /* Variables */
 
+static short internal_ap_id = -1;
+static short internal_vdi_handle = -1;
+static short internal_bpp = -1;
+static short internal_pixelsize = -1;
+
 static unsigned char vdi_index[256] = {
 	0,  2,  3,  6,  4,  7,  5,   8,
 	9, 10, 11, 14, 12, 15, 13, 255
@@ -106,8 +111,35 @@ static void GEM_GL_SwapBuffers(_THIS);
 
 static int GEM_Available(void)
 {
-	/* Test if AES available */
-	return GEM_CommonInit() != -1;
+	short work_out[57];
+
+	if (!GEM_CommonInit(&internal_ap_id, &internal_vdi_handle) || internal_ap_id == -1)
+		return 0;
+
+	/* Read bit depth */
+	vq_extnd(internal_vdi_handle, 1, work_out);
+	internal_bpp = work_out[4];
+
+	switch(internal_bpp) {
+		case 8:
+			internal_pixelsize = 1;
+			break;
+		case 15:
+		case 16:
+			internal_pixelsize = 2;
+			break;
+		case 24:
+			internal_pixelsize = 3;
+			break;
+		case 32:
+			internal_pixelsize = 4;
+			break;
+		default:
+			fprintf(stderr, "%d bits colour depth not supported\n", internal_bpp);
+			return 0;
+	}
+
+	return 1;
 }
 
 static void GEM_DeleteDevice(SDL_VideoDevice *device)
@@ -371,20 +403,16 @@ static void VDI_ReadExtInfo(_THIS, short *work_out)
 static int GEM_VideoInit(_THIS, SDL_PixelFormat *vformat)
 {
 	int i;
-	short work_in[12];
 	/*
 	 * The standalone enhancer.prg has a bug
 	 * and copies 273 values here
 	 */
 	short work_out[273];
-	short dummy;
 
-	/* Open AES (Application Environment Services) */
-	GEM_ap_id = GEM_CommonInit();
-	if (GEM_ap_id == -1) {
-		fprintf(stderr,"Can not open AES\n");
-		return(-1);
-	}
+	GEM_ap_id = internal_ap_id;
+	VDI_handle = internal_vdi_handle;
+	VDI_bpp = internal_bpp;
+	VDI_pixelsize = internal_pixelsize;
 
 	/* Read version and features */
 	GEM_version = aes_global[0];
@@ -392,67 +420,20 @@ static int GEM_VideoInit(_THIS, SDL_PixelFormat *vformat)
 		short ap_gout[4], errorcode;
 
 		GEM_wfeatures=0;
-		errorcode=appl_getinfo(AES_WINDOW, &ap_gout[0], &ap_gout[1], &ap_gout[2], &ap_gout[3]);
+		errorcode = appl_getinfo(AES_WINDOW, &ap_gout[0], &ap_gout[1], &ap_gout[2], &ap_gout[3]);
 
-		if (errorcode==0) {
-			GEM_wfeatures=ap_gout[0];
+		if (errorcode == 0) {
+			GEM_wfeatures = ap_gout[0];
 		}
 	}
 
-	/* Ask VDI physical workstation handle opened by AES */
-	VDI_handle = graf_handle(&dummy, &dummy, &dummy, &dummy);
-	if (VDI_handle<1) {
-		fprintf(stderr,"Wrong VDI handle %d returned by AES\n",VDI_handle);
-		return(-1);
-	}
-
-	/* Open virtual VDI workstation */
-	work_in[0]=Getrez()+2;
-	for(i = 1; i < 10; i++)
-		work_in[i] = 1;
-	work_in[10] = 2;
-
-	v_opnvwk(work_in, &VDI_handle, work_out);
-	if (VDI_handle == 0) {
-		fprintf(stderr,"Can not open VDI virtual workstation\n");
-		return(-1);
-	}
-
 	/* Read fullscreen size */
+	vq_extnd(VDI_handle, 0, work_out);
 	VDI_w = work_out[0] + 1;
 	VDI_h = work_out[1] + 1;
 
-	/* Read desktop size and position */
-	if (!wind_get_grect(DESKTOP_HANDLE, WF_WORKXYWH, &GEM_desk)) {
-		fprintf(stderr,"Can not read desktop properties\n");
-		return(-1);
-	}
-
+	GEM_CommonCreateMenubar(this);
 	GEM_work = GEM_desk;
-
-	/* Read bit depth */
-	vq_extnd(VDI_handle, 1, work_out);
-	VDI_bpp = work_out[4];
-	VDI_oldnumcolors=0;
-
-	switch(VDI_bpp) {
-		case 8:
-			VDI_pixelsize=1;
-			break;
-		case 15:
-		case 16:
-			VDI_pixelsize=2;
-			break;
-		case 24:
-			VDI_pixelsize=3;
-			break;
-		case 32:
-			VDI_pixelsize=4;
-			break;
-		default:
-			fprintf(stderr,"%d bits colour depth not supported\n",VDI_bpp);
-			return(-1);
-	}
 
 	/* Setup hardware -> VDI palette mapping */
 	for(i = 16; i < 255; i++) {
@@ -722,7 +703,7 @@ static SDL_Surface *GEM_SetVideoMode(_THIS, SDL_Surface *current,
 	}
 
 	if (flags & SDL_FULLSCREEN) {
-		GEM_LockScreen(SDL_FALSE);
+		GEM_LockScreen(this, SDL_FALSE);
 
 		GEM_ClearScreen(this);
 
@@ -738,7 +719,7 @@ static SDL_Surface *GEM_SetVideoMode(_THIS, SDL_Surface *current,
 		int old_win_type;
 		GRECT gr;
 
-		GEM_UnlockScreen(SDL_FALSE);
+		GEM_UnlockScreen(this, SDL_FALSE);
 
 		/* Set window gadgets */
 		old_win_type = GEM_win_type;
@@ -1102,7 +1083,8 @@ static int GEM_SetColors(_THIS, int firstcolor, int ncolors, SDL_Color *colors)
 }
 
 /* Note:  If we are terminated, this could be called in the middle of
-   another SDL video routine -- notably UpdateRects.
+   another SDL video routine -- notably UpdateRects. Also, when quitting
+   from XBIOS_VideoInit(), this function isn't really prepared for it.
 */
 static void GEM_VideoQuit(_THIS)
 {
@@ -1132,7 +1114,7 @@ static void GEM_VideoQuit(_THIS)
 		GEM_handle=-1;
 	}
 
-	GEM_CommonQuit(SDL_FALSE);
+	GEM_CommonQuit(this, SDL_FALSE);
 
 	GEM_SetNewPalette(this, VDI_oldpalette);
 

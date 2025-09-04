@@ -306,7 +306,10 @@ static int XBIOS_VideoInit(_THIS, SDL_PixelFormat *vformat)
 {
 	int i;
 
-	GEM_CommonInit();
+	if (!GEM_CommonInit(&GEM_ap_id, &VDI_handle))
+		return(-1);
+
+	GEM_CommonCreateMenubar(this);
 
 	/* Initialize all variables that we clean on shutdown */
 	for ( i=0; i<NUM_MODELISTS; ++i ) {
@@ -502,7 +505,7 @@ static SDL_Surface *XBIOS_SetVideoMode(_THIS, SDL_Surface *current,
 		return(NULL);
 	}
 
-	GEM_LockScreen(SDL_TRUE);
+	GEM_LockScreen(this, SDL_TRUE);
 
 	/* this is for C2P conversion */
 	XBIOS_pitch = (*XBIOS_getLineWidth)(this, new_video_mode, new_video_mode->width, new_video_mode->depth);
@@ -731,7 +734,8 @@ static int XBIOS_FlipHWSurface(_THIS, SDL_Surface *surface)
 }
 
 /* Note:  If we are terminated, this could be called in the middle of
-   another SDL video routine -- notably UpdateRects.
+   another SDL video routine -- notably UpdateRects. Also, when quitting
+   from XBIOS_VideoInit(), this function isn't really prepared for it.
 */
 static void XBIOS_VideoQuit(_THIS)
 {
@@ -755,7 +759,7 @@ static void XBIOS_VideoQuit(_THIS)
 	}
 #endif
 
-	GEM_CommonQuit(SDL_TRUE);
+	GEM_CommonQuit(this, SDL_TRUE);
 
 	if (XBIOS_oldpalette) {
 		SDL_free(XBIOS_oldpalette);

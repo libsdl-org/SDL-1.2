@@ -25,11 +25,23 @@
 #define _SDL_GEMINIT_h
 
 #include "SDL_stdinc.h"
+#include "../SDL_sysvideo.h"
 
-Sint16 GEM_CommonInit();
-void GEM_CommonQuit(SDL_bool restore_cursor);
+/* Hidden "this" pointer for the video functions */
+#define _THIS	SDL_VideoDevice *this
 
-void GEM_LockScreen(SDL_bool hide_cursor);
-void GEM_UnlockScreen(SDL_bool restore_cursor);
+/* Returns SDL_TRUE if
+ * - *ap_id has been set to -1 (AES not present) or AES handle (AES present)
+ * - *vdi_handle has been set to the result of v_opnvwk() (AES present) or v_opnwk (AES not present)
+ * Returns SDL_FALSE if
+ * - ap_id or vdi_handle is NULL
+ * - AES or VDI initialization has failed
+ */
+SDL_bool GEM_CommonInit(Sint16 *ap_id, Sint16 *vdi_handle);
+void GEM_CommonCreateMenubar(_THIS);
+void GEM_CommonQuit(_THIS, SDL_bool restore_cursor);
+
+void GEM_LockScreen(_THIS, SDL_bool hide_cursor);
+void GEM_UnlockScreen(_THIS, SDL_bool restore_cursor);
 
 #endif /* _SDL_GEMINIT_h */

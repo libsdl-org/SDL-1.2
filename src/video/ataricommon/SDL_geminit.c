@@ -23,15 +23,25 @@
 
 #include <gem.h>
 
-#include "SDL_stdinc.h"
-
 #include "SDL_geminit_c.h"
 
-static GRECT GEM_desk;
-static SDL_bool GEM_locked;
+/* Private display data */
 
-static Sint16 app_id = -1;
-static SDL_bool aes_present;
+struct SDL_PrivateVideoData {
+	short vdi_handle;			/* VDI handle */
+
+	short ap_id;
+	GRECT desk;					/* Desktop properties */
+	SDL_bool locked;			/* AES locked for fullscreen ? */
+	OBJECT *menubar;			/* Menu bar to force desktop to restore its menu bar when going from fullscreen */
+};
+
+#define VDI_handle			(this->hidden->vdi_handle)
+
+#define GEM_ap_id			(this->hidden->ap_id)
+#define GEM_desk			(this->hidden->desk)
+#define GEM_locked			(this->hidden->locked)
+#define GEM_menubar			(this->hidden->menubar)
 
 static OBJECT menu_obj[] = {
 	/*
@@ -143,48 +153,101 @@ static OBJECT menu_obj[] = {
 	{(long) "  Quit"},
 	0, 0, 8, 1}
 };
-static OBJECT *GEM_menubar = &menu_obj[ROOT];
 
+SDL_bool GEM_CommonInit(Sint16 *ap_id, Sint16 *vdi_handle)
+{
+	int i;
+	short work_in[11];
+	short work_out[57];
 
-Sint16 GEM_CommonInit()
+	if (!ap_id || !vdi_handle)
+		return SDL_FALSE;
+
+	/* Test if AES available */
+	aes_global[0] = 0x0000;
+	*ap_id = appl_init();
+
+	work_in[0] = 1;	/* 'Getrez() + 2' is not reliable on TOS 4.x and graphics cards, see https://github.com/pmandin/cleancode/issues/1 */
+	for(i = 1; i < 10; i++)
+		work_in[i] = 1;
+	work_in[10] = 2;
+
+	if (*ap_id == -1) {
+		if (aes_global[0] != 0x0000) {
+			/* AES present, so it's an error */
+			fprintf(stderr, "appl_init() failed.\n");
+			return SDL_FALSE;
+		}
+
+		/* Open physical VDI workstation */
+		v_opnwk(work_in, vdi_handle, work_out);
+		if (*vdi_handle == 0) {
+			fprintf(stderr, "Can not open VDI physical workstation\n");
+			goto GEM_CommonInit_appl_exit;
+		}
+	} else {
+		short dummy;
+
+		/* Ask VDI physical workstation handle opened by AES */
+		*vdi_handle = graf_handle(&dummy, &dummy, &dummy, &dummy);
+		if (*vdi_handle < 1 ) {
+			fprintf(stderr, "Wrong VDI handle %d returned by AES\n", *vdi_handle);
+			goto GEM_CommonInit_appl_exit;
+		}
+
+		/* Open virtual VDI workstation */
+		v_opnvwk(work_in, vdi_handle, work_out);
+		if (*vdi_handle == 0) {
+			fprintf(stderr, "Can not open VDI virtual workstation\n");
+			goto GEM_CommonInit_appl_exit;
+		}
+	}
+
+	return SDL_TRUE;
+
+GEM_CommonInit_appl_exit:
+	appl_exit();
+	return SDL_FALSE;
+}
+
+void GEM_CommonCreateMenubar(_THIS)
 {
 	int i;
 
-	/* Allow multiple init calls */
-	if (app_id != -1)
-		return app_id;
-
-	app_id = appl_init();
-	aes_present = aes_global[0] != 0x0000;
-
-	if (app_id == -1) {
-		if (aes_present)
-			fprintf(stderr, "appl_init() failed.\n");
-
-		return app_id;
-	}
+	if (GEM_ap_id == -1)
+		return;
 
 	/* Menu bar to force desktop to restore its menu bar when going from fullscreen */
 	for (i = 0; i < sizeof(menu_obj)/sizeof(menu_obj[0]); ++i) {
 		rsrc_obfix(menu_obj, i);
 	}
+	GEM_menubar = &menu_obj[ROOT];
 
+	/* Read desktop size and position */
 	wind_get(DESK, WF_WORKXYWH, &GEM_desk.g_x, &GEM_desk.g_y, &GEM_desk.g_w, &GEM_desk.g_h);
-
-	return app_id;
 }
 
-void GEM_CommonQuit(SDL_bool restore_cursor)
+void GEM_CommonQuit(_THIS, SDL_bool restore_cursor)
 {
-	GEM_UnlockScreen(restore_cursor);
+	GEM_UnlockScreen(this, restore_cursor);
 
-	if (app_id != -1)
+	if (GEM_ap_id == -1) {
+		if (VDI_handle > 0)
+			v_clswk(VDI_handle);
+	} else {
+		if (VDI_handle > 0)
+			v_clsvwk(VDI_handle);
+
 		appl_exit();
+		GEM_ap_id = -1;
+	}
+
+	VDI_handle = -1;
 }
 
-void GEM_LockScreen(SDL_bool hide_cursor)
+void GEM_LockScreen(_THIS, SDL_bool hide_cursor)
 {
-	if (app_id == -1 || GEM_locked)
+	if (GEM_ap_id == -1 || GEM_locked)
 		return;
 
 	/* Install menu bar to keep the application in foreground */
@@ -203,9 +266,9 @@ void GEM_LockScreen(SDL_bool hide_cursor)
 	GEM_locked=SDL_TRUE;
 }
 
-void GEM_UnlockScreen(SDL_bool restore_cursor)
+void GEM_UnlockScreen(_THIS, SDL_bool restore_cursor)
 {
-	if (app_id == -1 || !GEM_locked)
+	if (GEM_ap_id == -1 || !GEM_locked)
 		return;
 
 	/* Restore screen memory, and send REDRAW to all apps */

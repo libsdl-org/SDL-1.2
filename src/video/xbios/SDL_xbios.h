@@ -24,6 +24,8 @@
 #ifndef _SDL_xbios_h
 #define _SDL_xbios_h
 
+#include <gem.h>
+
 #include "SDL_stdinc.h"
 #include "../SDL_sysvideo.h"
 
@@ -47,6 +49,16 @@ typedef struct
 #define NUM_MODELISTS	4		/* 8, 16, 24, and 32 bits-per-pixel */
 
 struct SDL_PrivateVideoData {
+	/* Shared with SDL_geminit_c.h */
+	short vdi_handle;			/* VDI handle */
+
+	short ap_id;
+	GRECT desk;					/* Desktop properties */
+	SDL_bool locked;			/* AES locked for fullscreen ? */
+	OBJECT *menubar;			/* Menu bar to force desktop to restore its menu bar when going from fullscreen */
+
+	/* Exclusive to SDL_xbios.h */
+
 	long old_video_mode;		/* Old video mode before entering SDL */
 	void *old_video_base;		/* Old pointer to screen buffer */
 	void *old_palette;		/* Old palette */
@@ -114,6 +126,9 @@ enum {
 };
 
 /* Hidden structure -> variables names */
+#define VDI_handle			(this->hidden->vdi_handle)
+#define GEM_ap_id			(this->hidden->ap_id)
+
 #define SDL_nummodes		(this->hidden->SDL_nummodes)
 #define SDL_modelist		(this->hidden->SDL_modelist)
 #define SDL_xbiosmode		(this->hidden->SDL_xbiosmode)

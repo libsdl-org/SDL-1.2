@@ -49,12 +49,21 @@ void GEM_AlignWorkArea(_THIS, short windowid);
 #define SDL_NUMMODES	1		/* Fullscreen */
 
 struct SDL_PrivateVideoData {
+	/* Shared with SDL_geminit_c.h */
+	short vdi_handle;			/* VDI handle */
+
+	short ap_id;
+	GRECT desk;					/* Desktop properties */
+	SDL_bool locked;			/* AES locked for fullscreen ? */
+	OBJECT *menubar;			/* Menu bar to force desktop to restore its menu bar when going from fullscreen */
+
+	/* Exclusive to SDL_gemvideo.h */
+
 	Uint16	buf2scr_ops;		/* Operations to get buffer to screen */
 	void *buffer1;				/* Our shadow buffers */
 	void *buffer2;
 
 	/* VDI infos */
-	short vdi_handle;			/* VDI handle */
 	short full_w, full_h;		/* Fullscreen size */
 	short bpp;					/* Colour depth */
 	short pixelsize;			/* Bytes per pixel */
@@ -71,8 +80,6 @@ struct SDL_PrivateVideoData {
 	void (*setpalette)(_THIS, Uint16 newpal[256][3]);
 
 	/* GEM infos */
-	short ap_id;
-	GRECT desk;					/* Desktop properties */
 	short win_handle;			/* Our window handle */
 	int window_type;			/* Window type */
 	GRECT work;					/* Window work area x,y,w,h */
@@ -129,6 +136,7 @@ struct SDL_PrivateVideoData {
 #define GEM_win_fulled		(this->hidden->window_fulled)
 #define GEM_iconified		(this->hidden->iconified)
 #define GEM_mouse_relative	(this->hidden->mouse_relative)
+#define GEM_locked			(this->hidden->locked)
 #define GEM_lock_redraw		(this->hidden->lock_redraw)
 #define GEM_cursor_hidden	(this->hidden->cursor_hidden)
 #define GEM_align_windows	(this->hidden->align_windows)
@@ -136,6 +144,7 @@ struct SDL_PrivateVideoData {
 #define SDL_modelist		(this->hidden->SDL_modelist)
 #define GEM_icon			(this->hidden->icon)
 #define GEM_fullscreen		(this->hidden->fullscreen)
+#define GEM_menubar			(this->hidden->menubar)
 #define GEM_cursor			(this->hidden->cursor)
 #define GEM_prev_cursor		(this->hidden->prev_cursor)
 
