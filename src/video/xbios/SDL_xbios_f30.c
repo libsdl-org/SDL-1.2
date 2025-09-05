@@ -221,16 +221,7 @@ static void listModes(_THIS, int actually_add)
 static void saveMode(_THIS, SDL_PixelFormat *vformat)
 {
 	XBIOS_oldvbase=Physbase();
-
 	XBIOS_oldvmode=VsetMode(-1);
-
-	XBIOS_oldnumcol= 1<< (1 << (XBIOS_oldvmode & NUMCOLS));
-	if (XBIOS_oldnumcol > 256) {
-		XBIOS_oldnumcol = 256;
-	}
-	if (XBIOS_oldnumcol) {
-		VgetRGB(0, XBIOS_oldnumcol, XBIOS_oldpalette);
-	}
 }
 
 static void setMode(_THIS, const xbiosmode_t *new_video_mode)
@@ -249,12 +240,7 @@ static void setMode(_THIS, const xbiosmode_t *new_video_mode)
 static void restoreMode(_THIS)
 {
 	Setscreen(-1,XBIOS_oldvbase,-1);
-
 	(void) VsetMode(XBIOS_oldvmode);
-
-	if (XBIOS_oldnumcol) {
-		VsetRGB(0, XBIOS_oldnumcol, XBIOS_oldpalette);
-	}
 }
 
 static int setColors(_THIS, int firstcolor, int ncolors, SDL_Color *colors)

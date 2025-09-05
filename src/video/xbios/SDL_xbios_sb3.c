@@ -116,8 +116,4 @@ static void restoreMode(_THIS)
 {
 	/* SB3 do not allow changing video mode */
 	Setscreen(-1, XBIOS_oldvbase, -1);
-
-	if (XBIOS_oldnumcol) {
-		VsetRGB(0, XBIOS_oldnumcol, XBIOS_oldpalette);
-	}
 }

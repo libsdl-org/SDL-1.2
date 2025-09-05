@@ -49,8 +49,11 @@ void GEM_AlignWorkArea(_THIS, short windowid);
 #define SDL_NUMMODES	1		/* Fullscreen */
 
 struct SDL_PrivateVideoData {
-	/* Shared with SDL_geminit_c.h */
+	/* Shared with SDL_geminit.c */
 	short vdi_handle;			/* VDI handle */
+	short bpp;					/* Colour depth */
+	short old_numcolors;		/* Number of colors in saved palette */
+	Uint16 old_palette[256][3];	/* Saved current palette */
 
 	short ap_id;
 	GRECT desk;					/* Desktop properties */
@@ -65,16 +68,13 @@ struct SDL_PrivateVideoData {
 
 	/* VDI infos */
 	short full_w, full_h;		/* Fullscreen size */
-	short bpp;					/* Colour depth */
 	short pixelsize;			/* Bytes per pixel */
-	short old_numcolors;		/* Number of colors in saved palette */
 	Uint16 pitch;				/* Line length */
 	Uint16 format;				/* Screen format */
 	void *screen;				/* Screen address */
 	Uint32 red, green, blue, alpha;	/* Screen components */
 	Uint32 screensize;
 	MFDB	dst_mfdb;		/* VDI MFDB for bitblt */
-	Uint16 old_palette[256][3];	/* Saved current palette */
 	Uint16 cur_palette[256][3];	/* SDL application palette */
 								/* Function to set/restore palette */
 	void (*setpalette)(_THIS, Uint16 newpal[256][3]);

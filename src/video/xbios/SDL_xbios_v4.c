@@ -106,20 +106,7 @@ static void listModes(_THIS, int actually_add)
 static void saveMode(_THIS, SDL_PixelFormat *vformat)
 {
 	XBIOS_oldvbase=Physbase();
-
 	XBIOS_oldvmode=VsetMode(-1);
-
-	if(XBIOS_oldvmode & 0x4000)
-		XBIOS_oldnumcol = 256;
-	else
-		XBIOS_oldnumcol = 1<< (1 << (XBIOS_oldvmode & NUMCOLS));
-
-	if (XBIOS_oldnumcol > 256) {
-		XBIOS_oldnumcol = 256;
-	}
-	if (XBIOS_oldnumcol) {
-		VgetRGB(0, XBIOS_oldnumcol, XBIOS_oldpalette);
-	}
 }
 
 static int allocVbuffers_V4(_THIS, const xbiosmode_t *new_video_mode, int num_buffers, int bufsize)

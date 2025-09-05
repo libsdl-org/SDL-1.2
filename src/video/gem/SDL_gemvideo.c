@@ -69,7 +69,6 @@
 
 static short internal_ap_id = -1;
 static short internal_vdi_handle = -1;
-static short internal_bpp = -1;
 static short internal_pixelsize = -1;
 
 static unsigned char vdi_index[256] = {
@@ -118,9 +117,8 @@ static int GEM_Available(void)
 
 	/* Read bit depth */
 	vq_extnd(internal_vdi_handle, 1, work_out);
-	internal_bpp = work_out[4];
 
-	switch(internal_bpp) {
+	switch(work_out[4]) {
 		case 8:
 			internal_pixelsize = 1;
 			break;
@@ -135,7 +133,7 @@ static int GEM_Available(void)
 			internal_pixelsize = 4;
 			break;
 		default:
-			fprintf(stderr, "%d bits colour depth not supported\n", internal_bpp);
+			fprintf(stderr, "%d bits colour depth not supported\n", work_out[4]);
 			return 0;
 	}
 
@@ -411,7 +409,6 @@ static int GEM_VideoInit(_THIS, SDL_PixelFormat *vformat)
 
 	GEM_ap_id = internal_ap_id;
 	VDI_handle = internal_vdi_handle;
-	VDI_bpp = internal_bpp;
 	VDI_pixelsize = internal_pixelsize;
 
 	/* Read version and features */
@@ -441,22 +438,9 @@ static int GEM_VideoInit(_THIS, SDL_PixelFormat *vformat)
 	}
 	vdi_index[255] = 1;
 
-	/* Save current palette */
-	if (VDI_bpp>8) {
-		VDI_oldnumcolors=1<<8;
-	} else {
-		VDI_oldnumcolors=1<<VDI_bpp;
-	}
+	/* Sets also VDI_bpp */
+	GEM_CommonSavePalette(this);
 
-	for(i = 0; i < VDI_oldnumcolors; i++) {
-		short rgb[3];
-
-		vq_color(VDI_handle, i, 0, rgb);
-
-		VDI_oldpalette[i][0] = rgb[0];
-		VDI_oldpalette[i][1] = rgb[1];
-		VDI_oldpalette[i][2] = rgb[2];
-	}
 	VDI_setpalette = GEM_SetNewPalette;
 	SDL_memcpy(VDI_curpalette,VDI_oldpalette,sizeof(VDI_curpalette));
 
@@ -1114,14 +1098,9 @@ static void GEM_VideoQuit(_THIS)
 		GEM_handle=-1;
 	}
 
+	GEM_CommonRestorePalette(this);
+
 	GEM_CommonQuit(this, SDL_FALSE);
-
-	GEM_SetNewPalette(this, VDI_oldpalette);
-
-	/* Close VDI workstation */
-	if (VDI_handle) {
-		v_clsvwk(VDI_handle);
-	}
 
 	/* Free mode list */
 	if (SDL_modelist[0]) {

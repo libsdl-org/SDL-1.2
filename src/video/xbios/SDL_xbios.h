@@ -49,8 +49,11 @@ typedef struct
 #define NUM_MODELISTS	4		/* 8, 16, 24, and 32 bits-per-pixel */
 
 struct SDL_PrivateVideoData {
-	/* Shared with SDL_geminit_c.h */
+	/* Shared with SDL_geminit.c */
 	short vdi_handle;			/* VDI handle */
+	short bpp;					/* Colour depth */
+	short old_numcolors;		/* Number of colors in saved palette */
+	Uint16 old_palette[256][3];	/* Saved current palette */
 
 	short ap_id;
 	GRECT desk;					/* Desktop properties */
@@ -61,8 +64,6 @@ struct SDL_PrivateVideoData {
 
 	long old_video_mode;		/* Old video mode before entering SDL */
 	void *old_video_base;		/* Old pointer to screen buffer */
-	void *old_palette;		/* Old palette */
-	Uint32 old_num_colors;		/* Nb of colors in saved palette */
 
 	void *screens[2];		/* Pointers to aligned screen buffer */
 	void *screensmem[2];		/* Pointers to screen buffer */
@@ -127,13 +128,13 @@ enum {
 
 /* Hidden structure -> variables names */
 #define VDI_handle			(this->hidden->vdi_handle)
+#define VDI_oldnumcolors	(this->hidden->old_numcolors)
+#define VDI_oldpalette		(this->hidden->old_palette)
 #define GEM_ap_id			(this->hidden->ap_id)
 
 #define SDL_nummodes		(this->hidden->SDL_nummodes)
 #define SDL_modelist		(this->hidden->SDL_modelist)
 #define SDL_xbiosmode		(this->hidden->SDL_xbiosmode)
-#define XBIOS_oldpalette	(this->hidden->old_palette)
-#define XBIOS_oldnumcol		(this->hidden->old_num_colors)
 #define XBIOS_oldvbase		(this->hidden->old_video_base)
 #define XBIOS_oldvmode		(this->hidden->old_video_mode)
 #define XBIOS_screens		(this->hidden->screens)

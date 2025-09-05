@@ -29,6 +29,9 @@
 
 struct SDL_PrivateVideoData {
 	short vdi_handle;			/* VDI handle */
+	short bpp;					/* Colour depth */
+	short old_numcolors;		/* Number of colors in saved palette */
+	Uint16 old_palette[256][3];	/* Saved current palette */
 
 	short ap_id;
 	GRECT desk;					/* Desktop properties */
@@ -37,6 +40,9 @@ struct SDL_PrivateVideoData {
 };
 
 #define VDI_handle			(this->hidden->vdi_handle)
+#define VDI_bpp				(this->hidden->bpp)
+#define VDI_oldnumcolors	(this->hidden->old_numcolors)
+#define VDI_oldpalette		(this->hidden->old_palette)
 
 #define GEM_ap_id			(this->hidden->ap_id)
 #define GEM_desk			(this->hidden->desk)
@@ -225,6 +231,48 @@ void GEM_CommonCreateMenubar(_THIS)
 
 	/* Read desktop size and position */
 	wind_get(DESK, WF_WORKXYWH, &GEM_desk.g_x, &GEM_desk.g_y, &GEM_desk.g_w, &GEM_desk.g_h);
+}
+
+void GEM_CommonSavePalette(_THIS)
+{
+	int i;
+	short work_out[57];
+
+	if (VDI_handle == -1)
+		return;
+
+	/* Read bit depth */
+	vq_extnd(VDI_handle, 1, work_out);
+	VDI_bpp = work_out[4];
+
+	/* Save current palette */
+	if (VDI_bpp>8) {
+		VDI_oldnumcolors=1<<8;
+	} else {
+		VDI_oldnumcolors=1<<VDI_bpp;
+	}
+
+	for(i = 0; i < VDI_oldnumcolors; i++) {
+		short rgb[3];
+
+		vq_color(VDI_handle, i, 0, rgb);
+
+		VDI_oldpalette[i][0] = rgb[0];
+		VDI_oldpalette[i][1] = rgb[1];
+		VDI_oldpalette[i][2] = rgb[2];
+	}
+}
+
+void GEM_CommonRestorePalette(_THIS)
+{
+	int i;
+
+	if (VDI_handle == -1)
+		return;
+
+	for(i = 0; i < VDI_oldnumcolors; i++) {
+		vs_color(VDI_handle, i, (short *) VDI_oldpalette[i]);
+	}
 }
 
 void GEM_CommonQuit(_THIS, SDL_bool restore_cursor)

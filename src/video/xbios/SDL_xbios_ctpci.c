@@ -168,16 +168,6 @@ static void saveMode(_THIS, SDL_PixelFormat *vformat)
 	XBIOS_oldvbase = (void*)si.frameadr;
 
 	vformat->BitsPerPixel = si.scrPlanes;
-
-	XBIOS_oldnumcol = 0;
-	if (si.scrFlags & SCRINFO_OK) {
-		if (si.scrPlanes <= 8) {
-			XBIOS_oldnumcol = 1<<si.scrPlanes;
-		}
-	}
-	if (XBIOS_oldnumcol) {
-		VgetRGB(0, XBIOS_oldnumcol, XBIOS_oldpalette);
-	}
 }
 
 static void setMode(_THIS, const xbiosmode_t *new_video_mode)
@@ -197,9 +187,6 @@ static void restoreMode(_THIS)
 {
 	VsetScreen(-1, XBIOS_oldvbase, VN_MAGIC, CMD_SETADR);
 	VsetScreen(-1, XBIOS_oldvmode, VN_MAGIC, CMD_SETMODE);
-	if (XBIOS_oldnumcol) {
-		VsetRGB(0, XBIOS_oldnumcol, XBIOS_oldpalette);
-	}
 }
 
 static void swapVbuffers(_THIS)

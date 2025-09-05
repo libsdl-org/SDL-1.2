@@ -38,7 +38,12 @@
  * - AES or VDI initialization has failed
  */
 SDL_bool GEM_CommonInit(Sint16 *ap_id, Sint16 *vdi_handle);
+
 void GEM_CommonCreateMenubar(_THIS);
+
+void GEM_CommonSavePalette(_THIS);
+void GEM_CommonRestorePalette(_THIS);
+
 void GEM_CommonQuit(_THIS, SDL_bool restore_cursor);
 
 void GEM_LockScreen(_THIS, SDL_bool hide_cursor);

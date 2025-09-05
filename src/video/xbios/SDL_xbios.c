@@ -313,18 +313,13 @@ static int XBIOS_VideoInit(_THIS, SDL_PixelFormat *vformat)
 
 	GEM_CommonCreateMenubar(this);
 
+	GEM_CommonSavePalette(this);
+
 	/* Initialize all variables that we clean on shutdown */
 	for ( i=0; i<NUM_MODELISTS; ++i ) {
 		SDL_nummodes[i] = 0;
 		SDL_modelist[i] = NULL;
 		SDL_xbiosmode[i] = NULL;
-	}
-
-	/* Allocate memory for old palette */
-	XBIOS_oldpalette = (void *)SDL_malloc(256*sizeof(long));
-	if ( !XBIOS_oldpalette ) {
-		SDL_SetError("Unable to allocate memory for old palette\n");
-		return(-1);
 	}
 
 	/* Determine the current screen size */
@@ -761,12 +756,10 @@ static void XBIOS_VideoQuit(_THIS)
 	}
 #endif
 
+	GEM_CommonRestorePalette(this);
+
 	GEM_CommonQuit(this, SDL_TRUE);
 
-	if (XBIOS_oldpalette) {
-		SDL_free(XBIOS_oldpalette);
-		XBIOS_oldpalette=NULL;
-	}
 	XBIOS_FreeBuffers(this);
 
 	/* Free mode list */

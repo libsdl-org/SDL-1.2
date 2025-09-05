@@ -176,8 +176,6 @@ static void saveMode(_THIS, SDL_PixelFormat *vformat)
 	XBIOS_oldvmode = NOVA_xcb->resolution;
 	XBIOS_oldvbase = NOVA_xcb->scr_base;
 
-	/* TODO: save palette ? */
-
 	NOVA_blnk_time = NOVA_xcb->blnk_time;
 	NOVA_xcb->blnk_time = 0;
 }
@@ -192,8 +190,6 @@ static void restoreMode(_THIS)
 	NOVA_SetMode(this, XBIOS_oldvmode);
 	NOVA_SetScreen(this, XBIOS_oldvbase);
 	NOVA_Vsync(this);
-
-	/* TODO: restore palette ? */
 
 	NOVA_xcb->blnk_time = NOVA_blnk_time;
 }
