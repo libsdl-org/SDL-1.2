@@ -417,7 +417,7 @@ static void XBIOS_FreeBuffers(_THIS)
 static SDL_Surface *XBIOS_SetVideoMode(_THIS, SDL_Surface *current,
 				int width, int height, int bpp, Uint32 flags)
 {
-	int mode;
+	int mode, new_depth;
 	int num_buffers;
 	xbiosmode_t *new_video_mode;
 	Uint32 new_screen_size;
@@ -444,7 +444,9 @@ static SDL_Surface *XBIOS_SetVideoMode(_THIS, SDL_Surface *current,
 	modeflags = SDL_FULLSCREEN | SDL_PREALLOC | SDL_HWPALETTE | SDL_HWSURFACE;
 
 	/* Allocate needed buffers: simple/double buffer and shadow surface */
-	lineWidth = (*XBIOS_getLineWidth)(this, new_video_mode, width, 8);
+	new_depth = new_video_mode->depth < 8 ? 8 : new_video_mode->depth;
+
+	lineWidth = (*XBIOS_getLineWidth)(this, new_video_mode, width, new_depth);
 
 	new_screen_size = lineWidth * height;
 	new_screen_size += 255; /* To align on a 256 byte adress */
@@ -494,9 +496,9 @@ static SDL_Surface *XBIOS_SetVideoMode(_THIS, SDL_Surface *current,
 	}
 
 	/* Allocate the new pixel format for the screen */
-	(*XBIOS_getScreenFormat)(this, 8, &rmask, &gmask, &bmask, &amask);
+	(*XBIOS_getScreenFormat)(this, new_depth, &rmask, &gmask, &bmask, &amask);
 
-	if (!SDL_ReallocFormat(current, 8, rmask, gmask, bmask, amask)) {
+	if (!SDL_ReallocFormat(current, new_depth, rmask, gmask, bmask, amask)) {
 		XBIOS_FreeBuffers(this);
 		SDL_SetError("Couldn't allocate new pixel format for requested mode");
 		return(NULL);
