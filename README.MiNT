@@ -189,6 +189,19 @@ Xbios video:
 	Clones and any machine with monochrome monitor:
 		Not supported.
 
+	Beware: As of 2025-09-07, it is solely the developer's responsibility to
+	decide whether SDL_SetVideoMode should be called with SDL_SWSURFACE or
+	SDL_HWSURFACE (including SDL_DOUBLEBUF).
+
+	In the case of SDL_SWSURFACE, a shadow buffer will be created, and all
+	rendering will be done there until SDL_UpdateRect or SDL_UpdateRects is
+	called.
+
+	The decision should depend on how the framebuffer is used. If the SDL
+	application already maintains its own framebuffer and SDL is used merely as
+	a display device, use SDL_HWSURFACE. If the framebuffer is accessed on a
+	per-pixel basis —or if pixels are read multiple times— prefer SDL_SWSURFACE.
+
 Gem video:
 	Automatically used if xbios not available.
 

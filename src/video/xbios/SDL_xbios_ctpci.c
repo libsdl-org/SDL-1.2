@@ -40,14 +40,6 @@
  */
 #define CTPCI_USE_TABLE
 
-/*
- * Blitting directly to screen used to be very slow as TT-RAM->CTPCI
- * burst mode was (?) not working. However speed tests on CTPCI TOS
- * 1.01 Beta 10 and CTPCI_1M firmware shows much better framerates
- * without the shadow buffer.
- */
-/* #define ENABLE_CTPCI_SHADOWBUF */
-
 typedef struct {
 	Uint16 modecode, width, height;
 } predefined_mode_t;
@@ -104,11 +96,8 @@ static unsigned long /*cdecl*/ enumfunc(SCREENINFO *inf, unsigned long flag)
 	modeinfo.width = inf->scrWidth;
 	modeinfo.height = inf->scrHeight;
 	modeinfo.depth = inf->scrPlanes;
-#ifdef ENABLE_CTPCI_SHADOWBUF
-	modeinfo.flags = XBIOSMODE_SHADOWCOPY;
-#else
 	modeinfo.flags = 0;
-#endif
+
 	SDL_XBIOS_AddMode(enum_this, enum_actually_add, &modeinfo);
 
 	return ENUMMODE_CONT;
@@ -133,11 +122,8 @@ static void listModes(_THIS, int actually_add)
 				modeinfo.width = mode_list[i].width;
 				modeinfo.height = mode_list[i].height;
 				modeinfo.depth = mode_bpp[j-3];
-#ifdef ENABLE_CTPCI_SHADOWBUF
-				modeinfo.flags = XBIOSMODE_SHADOWCOPY;
-#else
 				modeinfo.flags = 0;
-#endif
+
 				SDL_XBIOS_AddMode(this, actually_add, &modeinfo);
 			}
 		}

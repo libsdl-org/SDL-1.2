@@ -34,7 +34,6 @@
 
 #define XBIOSMODE_DOUBLELINE (1<<0)
 #define XBIOSMODE_C2P (1<<1)
-#define XBIOSMODE_SHADOWCOPY (1<<2)
 
 typedef struct
 {

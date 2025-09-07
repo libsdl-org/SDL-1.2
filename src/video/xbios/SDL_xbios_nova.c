@@ -45,14 +45,6 @@
 
 #define NOVA_FILENAME	"\\auto\\sta_vdi.bib"
 
-/* Use shadow buffer on Nova */
-#define ENABLE_NOVA_SHADOWBUF
-
-/* Disabe gpu double buffer when using shadow buffer */
-/* This trades some amount of screen tearing for a */
-/* massive increase in performance. */
-#define DISABLE_NOVA_DOUBLEBUF	ENABLE_NOVA_SHADOWBUF
-
 /*--- ---*/
 
 static nova_xcb_t *NOVA_xcb;			/* Pointer to Nova infos */
@@ -151,11 +143,8 @@ static void listModes(_THIS, int actually_add)
 		modeinfo.width = width;
 		modeinfo.height = height;
 		modeinfo.depth = bpp;
-#ifdef ENABLE_NOVA_SHADOWBUF
-		modeinfo.flags = XBIOSMODE_SHADOWCOPY;
-#else
 		modeinfo.flags = 0;
-#endif
+
 		SDL_XBIOS_AddMode(this, actually_add, &modeinfo);
 	}
 }
@@ -259,7 +248,6 @@ static void swapVbuffers(_THIS)
 static int allocVbuffers(_THIS, const xbiosmode_t *new_video_mode, int num_buffers, int bufsize)
 {
 	XBIOS_screens[0] = XBIOS_screens[1] = NOVA_xcb->base;
-#ifndef DISABLE_NOVA_DOUBLEBUF
 	if (num_buffers>1) {
 		/* Allow silent fallback to single buffering on the gpu in case */
 		/* there is not enough vram. It is quite limited on these Nova cards */
@@ -267,7 +255,6 @@ static int allocVbuffers(_THIS, const xbiosmode_t *new_video_mode, int num_buffe
 			XBIOS_screens[1] += NOVA_xcb->scrn_sze;
 		}
 	}
-#endif
 	return(1);
 }
 
