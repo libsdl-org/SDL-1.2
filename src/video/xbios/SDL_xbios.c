@@ -315,6 +315,8 @@ static int XBIOS_VideoInit(_THIS, SDL_PixelFormat *vformat)
 
 	GEM_CommonSavePalette(this);
 
+	GEM_LockScreen(this, SDL_TRUE);
+
 	/* Initialize all variables that we clean on shutdown */
 	for ( i=0; i<NUM_MODELISTS; ++i ) {
 		SDL_nummodes[i] = 0;
@@ -503,8 +505,6 @@ static SDL_Surface *XBIOS_SetVideoMode(_THIS, SDL_Surface *current,
 		SDL_SetError("Couldn't allocate new pixel format for requested mode");
 		return(NULL);
 	}
-
-	GEM_LockScreen(this, SDL_TRUE);
 
 	/* this is for C2P conversion */
 	XBIOS_pitch = (*XBIOS_getLineWidth)(this, new_video_mode, new_video_mode->width, new_video_mode->depth);
