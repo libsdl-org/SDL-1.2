@@ -165,6 +165,13 @@ static void SDL_BlitCopy(SDL_BlitInfo *info)
 	srcskip = w+info->s_skip;
 	dstskip = w+info->d_skip;
 
+	if (srcskip == dstskip && srcskip == w && h > 0) {
+		/* Call SDL_memcpy() only once */
+		w = w * h;
+		h = 1;
+		srcskip = dstskip = 0;
+	}
+
 #ifdef SSE_ASMBLIT
 	if(SDL_HasSSE())
 	{
