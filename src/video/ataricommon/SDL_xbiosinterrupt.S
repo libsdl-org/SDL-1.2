@@ -66,6 +66,11 @@ SYM(SDL_AtariXbios_Install):
 #endif
 	movel	d0,a0
 
+	/* Test kbstate */
+processing_ikbd_packet_install:
+	tst.b	a0@(36)
+	bnes	processing_ikbd_packet_install
+
 	/* Stop interrupts */
 
 	movew	sr,d1
@@ -142,6 +147,11 @@ SYM(SDL_AtariXbios_Restore):
 	moveml	sp@+,d2/a2
 #endif
 	movel	d0,a0
+
+	/* Test kbstate */
+processing_ikbd_packet_restore:
+	tst.b	a0@(36)
+	bnes	processing_ikbd_packet_restore
 
 	/* Stop interrupts */
 
