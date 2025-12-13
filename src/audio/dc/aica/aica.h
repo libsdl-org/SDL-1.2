@@ -22,7 +22,7 @@
     slouken@libsdl.org
 */
 #include "SDL_config.h"
-
+#include <stdint.h>
 #include <arch/irq.h>
 #include <sys/types.h>
 #include <dc/g2bus.h>
@@ -63,14 +63,14 @@
 			irq_restore(OLD); \
 	} while(0)
 
-#define SDL_DC_DMAC_CHCR3 *((vuint32 *)0xffa0003c)
+#define SDL_DC_DMAC_CHCR3 *((volatile uint32_t *)0xffa0003c)
 
 #define SDL_DC_G2_LOCK(OLD1, OLD2) \
 	do { \
 		OLD1 = irq_disable(); \
 		OLD2 = SDL_DC_DMAC_CHCR3; \
 		SDL_DC_DMAC_CHCR3 = OLD2 & ~1; \
-		while((*(vuint32 *)0xa05f688c) & 0x20) \
+		while((*(volatile uint32_t *)0xa05f688c) & 0x20) \
 			; \
 	} while(0)
 
@@ -81,14 +81,14 @@
 	} while(0)
 
 #define SDL_DC_G2_WRITE_32(ADDR,VALUE) \
-	*((vuint32*)ADDR) = VALUE
+	*((volatile uint32_t*)ADDR) = VALUE
 
 #define SDL_DC_G2_READ_32(ADDR) \
-	*((vuint32*)ADDR)
+	*((volatile uint32_t*)ADDR)
 
 #define SDL_DC_G2_FIFO_WAIT() \
 	{ \
-		vuint32 const *g2_fifo = (vuint32*)0xa05f688c; \
+		volatile uint32_t const *g2_fifo = (volatile uint32_t*)0xa05f688c; \
 		int i; \
 		for (i=0; i<0x1800; i++) \
 			if (!(*g2_fifo & 0x11)) break; \
