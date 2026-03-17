@@ -94,5 +94,4 @@ int inv_memcmp_32bit(const void *str1, const void *str2, size_t count);
 // Return value of -1 means the inputs have at least one corresponding byte somewhere
 int inv_memcmp_32bit_eq(const void *str1, const void *str2, size_t count);
 
-
 #endif /* __MEMFUNCS_H_ */

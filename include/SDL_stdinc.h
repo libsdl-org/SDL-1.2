@@ -29,6 +29,7 @@
 
 #include "SDL_config.h"
 
+
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
@@ -87,7 +88,7 @@
 # elif defined(__DMC__)
 #  include <stdlib.h>
 # elif defined(__AIX__)
-  #pragma alloca
+#pragma alloca
 # elif defined(__MRC__)
    void *alloca (unsigned);
 # else
@@ -158,7 +159,7 @@ SDL_COMPILE_TIME_ASSERT(sint64, sizeof(Sint64) == 8);
  *  For both Watcom C/C++ and Borland C/C++ the compiler option that makes
  *  enums having the size of an int must be enabled.
  *  This is "-b" for Borland C/C++ and "-ei" for Watcom C/C++ (v11).
-*/
+ */
 /* Enable enums always int in CodeWarrior (for MPW use "-enum int") */
 #ifdef __MWERKS__
 #pragma enumsalwaysint on
@@ -260,7 +261,7 @@ extern DECLSPEC void * SDLCALL SDL_memset(void *dst, int c, size_t len);
 #if defined(__DREAMCAST__)
 #undef SDL_memset
 #define SDL_memset      memset_
-void * memset_ (void *dest, const uint8_t val, size_t len);
+void * memset_(void *dest, const uint8_t val, size_t len);
 #endif
 #if defined(__GNUC__) && defined(__i386__)
 #define SDL_memset4(dst, val, len)				\
@@ -333,7 +334,7 @@ extern DECLSPEC void * SDLCALL SDL_memcpy(void *dst, const void *src, size_t len
 #if defined(__DREAMCAST__)
 #undef SDL_memcpy
 #define SDL_memcpy      memcpy_
-void * memcpy_ (void *dest, const void *src, size_t len);
+void * memcpy_(void *dest, const void *src, size_t len);
 #endif
 
 /* We can count on memcpy existing on Mac OS X and being well-tuned. */
@@ -410,7 +411,7 @@ do {							\
 #if defined(__DREAMCAST__)
 #undef SDL_memmove
 #define SDL_memmove      memmove_
-void * memmove_ (void *dest, const void *src, size_t len);
+void * memmove_(void *dest, const void *src, size_t len);
 #endif
 
 #ifdef HAVE_MEMCMP
@@ -422,7 +423,7 @@ extern DECLSPEC int SDLCALL SDL_memcmp(const void *s1, const void *s2, size_t le
 #if defined(__DREAMCAST__)
 #undef SDL_memcmp
 #define SDL_memcmp      memcmp_
-int memcmp_ (const void *str1, const void *str2, size_t count);
+int memcmp_(const void *str1, const void *str2, size_t count);
 #endif
 
 #ifdef HAVE_STRLEN
@@ -645,7 +646,7 @@ extern DECLSPEC int SDLCALL SDL_iconv_close(SDL_iconv_t cd);
 extern DECLSPEC size_t SDLCALL SDL_iconv(SDL_iconv_t cd, const char **inbuf, size_t *inbytesleft, char **outbuf, size_t *outbytesleft);
 /** This function converts a string between encodings in one pass, returning a
  *  string that must be freed with SDL_free() or NULL on error.
-*/
+ */
 extern DECLSPEC char * SDLCALL SDL_iconv_string(const char *tocode, const char *fromcode, const char *inbuf, size_t inbytesleft);
 #define SDL_iconv_utf8_locale(S)	SDL_iconv_string("", "UTF-8", S, SDL_strlen(S)+1)
 #define SDL_iconv_utf8_ucs2(S)		(Uint16 *)SDL_iconv_string("UCS-2", "UTF-8", S, SDL_strlen(S)+1)
