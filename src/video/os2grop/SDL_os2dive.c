@@ -27,6 +27,7 @@
 #include "SDL_stdinc.h"
 
 #define INCL_OS2MM
+#define INCL_WIN
 #define INCL_GPI
 #define INCL_DOSERRORS
 #define INCL_DOSMEMMGR

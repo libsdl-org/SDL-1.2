@@ -25,6 +25,7 @@
 
 /* Functions for system-level CD-ROM audio control */
 
+#define INCL_OS2MM
 #define INCL_MCIOS2
 #include <os2.h>
 #include <os2me.h>
