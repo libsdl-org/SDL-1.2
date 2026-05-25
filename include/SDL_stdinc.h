@@ -504,12 +504,7 @@ extern DECLSPEC char * SDLCALL SDL_strstr(const char *haystack, const char *need
 extern DECLSPEC char * SDLCALL SDL_ltoa(long value, char *string, int radix);
 #endif
 
-#ifdef HAVE__UITOA
-#define SDL_uitoa       _uitoa
-#else
 #define SDL_uitoa(value, string, radix)	SDL_ultoa((long)value, string, radix)
-#endif
-
 #ifdef HAVE__ULTOA
 #define SDL_ultoa       _ultoa
 #else
