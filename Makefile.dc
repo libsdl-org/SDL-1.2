@@ -102,7 +102,7 @@ OBJS := $(SRCS:.c=.o)
 
 # ------------------------------ Install locations ------------------------------
 INSTALL_LIB_DIR     := $(KOS_BASE)/addons/lib/$(KOS_ARCH)
-INSTALL_INCLUDE_DIR := $(KOS_BASE)/addons/include/$(KOS_ARCH)/SDL
+INSTALL_INCLUDE_DIR := $(KOS_BASE)/addons/include/SDL
 INSTALL_LIB         := $(INSTALL_LIB_DIR)/$(TARGET)
 
 # ------------------------------ Phony targets ------------------------------
@@ -123,20 +123,20 @@ $(OBJS): include/SDL_config.h include/SDL_config_dreamcast.h
 %.o: %.c
 	$(CC) $(CFLAGS) $(DEPFLAGS) -c $< -o $@
 
-# Single main target: build + install archive to addons/lib
-$(TARGET): copy_headers $(OBJS)
-	@mkdir -p $(INSTALL_LIB_DIR)
-	@rm -f $(INSTALL_LIB)
-	$(AR) $(ARFLAGS) $(INSTALL_LIB) $(OBJS)
-	@touch $@  # local stamp
+# Single main target: build local archive only
+$(TARGET): $(OBJS)
+	@rm -f $@
+	$(AR) $(ARFLAGS) $@ $(OBJS)
 
 # Copy public headers into addons include dir
 copy_headers: include/SDL_config.h
 	@mkdir -p $(INSTALL_INCLUDE_DIR)
 	@cp -R include/*.h $(INSTALL_INCLUDE_DIR)/
 
-# Convenience
-install: $(TARGET)
+# Copy archive and public headers into KOS addons
+install: $(TARGET) copy_headers
+	@mkdir -p $(INSTALL_LIB_DIR)
+	@cp -f $(TARGET) $(INSTALL_LIB)
 
 # Remove installed files under addons (does NOT touch repo files)
 uninstall:
