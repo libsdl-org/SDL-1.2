@@ -51,11 +51,11 @@ void SDL_StartTicks(void)
 
 Uint32 SDL_GetTicks(void)
 {
-    uint32 s, ms;
-	uint64 msec;
+    Uint32 s, ms;
+	Uint64 msec;
 
 	timer_ms_gettime(&s, &ms);
-	msec = (((uint64)s) * ((uint64)1000)) + ((uint64)ms);
+	msec = (((Uint64)s) * ((Uint64)1000)) + ((Uint64)ms);
 
 	return (Uint32)msec;
 }

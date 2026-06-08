@@ -120,9 +120,9 @@ static void DCAUD_WaitAudio(_THIS)
 
 static __inline__ void SDL_DC_spu_memload_stereo8(int leftpos,int rightpos,void *__restrict__ src0,size_t size)
 {
-	uint8 *src = src0;
-	uint32 *left  = (uint32*)(leftpos + SDL_DC_SPU_RAM_BASE);
-	uint32 *right = (uint32*)(rightpos+ SDL_DC_SPU_RAM_BASE);
+	Uint8 *src = src0;
+	Uint32 *left  = (Uint32*)(leftpos + SDL_DC_SPU_RAM_BASE);
+	Uint32 *right = (Uint32*)(rightpos+ SDL_DC_SPU_RAM_BASE);
 	unsigned old1,old2;
 	SDL_DC_G2_LOCK(old1, old2);
 	size >>= 5;
@@ -163,9 +163,9 @@ static __inline__ void SDL_DC_spu_memload_stereo8(int leftpos,int rightpos,void 
 
 static __inline__ void SDL_DC_spu_memload_stereo16(int leftpos,int rightpos,void *__restrict__ src0,size_t size)
 {
-	uint16 *src = src0;
-	uint32 *left  = (uint32*)(leftpos + SDL_DC_SPU_RAM_BASE);
-	uint32 *right = (uint32*)(rightpos+ SDL_DC_SPU_RAM_BASE);
+	Uint16 *src = src0;
+	Uint32 *left  = (Uint32*)(leftpos + SDL_DC_SPU_RAM_BASE);
+	Uint32 *right = (Uint32*)(rightpos+ SDL_DC_SPU_RAM_BASE);
 	unsigned old1,old2;
 	SDL_DC_G2_LOCK(old1, old2);
 	size >>= 5;
@@ -196,9 +196,9 @@ static __inline__ void SDL_DC_spu_memload_stereo16(int leftpos,int rightpos,void
 	SDL_DC_G2_FIFO_WAIT();
 }
 
-static __inline__ void SDL_DC_spu_memload_mono(uint32 dst, uint32 *__restrict__ src,size_t size)
+static __inline__ void SDL_DC_spu_memload_mono(Uint32 dst, Uint32 *__restrict__ src,size_t size)
 {
-	register uint32 *dat  = (uint32*)(dst + SDL_DC_SPU_RAM_BASE);
+	register Uint32 *dat  = (Uint32*)(dst + SDL_DC_SPU_RAM_BASE);
 
 	unsigned old1,old2;
 	SDL_DC_G2_LOCK(old1, old2);
@@ -233,7 +233,7 @@ static void DCAUD_PlayAudio(_THIS)
 	this->hidden->nextbuf^=1;
 	/* Write the audio data, checking for EAGAIN on broken audio drivers */
 	if (spec->channels==1) {
-		SDL_DC_spu_memload_mono(this->hidden->leftpos+offset,(uint32 *__restrict__)this->hidden->mixbuf,this->hidden->mixlen);
+		SDL_DC_spu_memload_mono(this->hidden->leftpos+offset,(Uint32 *__restrict__)this->hidden->mixbuf,this->hidden->mixlen);
 	} else {
 		offset>>=1;
 		if ((this->spec.format&255)==8) {
