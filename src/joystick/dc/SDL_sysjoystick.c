@@ -215,10 +215,10 @@ const char* shiftKeyboardLayout[VK_ROWS][VK_COLS] = {
     {"Z", "X", "C", "V", "B", "N", "M", "<", ">", "?", "SPC", "", "","ENTER"}
 };
 
-void bfont_draw_box(void *buffer, uint32 bufwidth, int x, int y, int width, int height, uint8 opaque, uint32 color) {
+void bfont_draw_box(void *buffer, Uint32 bufwidth, int x, int y, int width, int height, Uint8 opaque, Uint32 color) {
     int i, j;
-    uint32 old_fg = bfont_set_foreground_color(color);
-    uint32 *buf = (uint32*)buffer;
+    Uint32 old_fg = bfont_set_foreground_color(color);
+    Uint32 *buf = (Uint32*)buffer;
 
     // Draw top and bottom edges
     for (i = 0; i < width; ++i) {
@@ -249,9 +249,9 @@ void drawVirtualKeyboard() {
     int line_spacing = 20;
     int width = 640;
     int key_spacing = 15;  // Space between keys
-    uint8 opaque = 1;      // Set opaque to true for drawing the box
-    uint32 normalColor = 0x000FFF; // Color for the highlight box (e.g., white)
-    uint32 highlightColor = 0x000000; // Normal key color (e.g., black)
+    Uint8 opaque = 1;      // Set opaque to true for drawing the box
+    Uint32 normalColor = 0x000FFF; // Color for the highlight box (e.g., white)
+    Uint32 highlightColor = 0x000000; // Normal key color (e.g., black)
 
     for (int i = 0; i < VK_ROWS; ++i) {
         const char **row = (shiftActive) ? shiftKeyboardLayout[i] : keyboardLayout[i];
