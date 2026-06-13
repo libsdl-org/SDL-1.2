@@ -3,9 +3,9 @@
 # DreamHAL memory routines and replacements; threading updates.
 # Set GL=1 to build the GLdc-enabled archive.
 
-CC := sh-elf-gcc
-AR := sh-elf-gcc-ar
-LD := sh-elf-gcc
+CC := kos-cc
+AR := kos-ar
+LD := kos-ld
 ARFLAGS ?= rcs
 
 # ------------------------------ Build variant ------------------------------
@@ -24,7 +24,7 @@ KOS_CFLAGS += -Isrc/video -Isrc/video/dc -DNO_SIGNAL_H -DENABLE_DC
 # Ensure Dreamcast platform config and backend are selected
 KOS_CFLAGS += -D__DREAMCAST__ -DSDL_VIDEO_DRIVER_DREAMCAST
 
-CFLAGS   := $(KOS_CFLAGS) -Wimplicit-function-declaration $(DEFS) -Iinclude
+CFLAGS   := -Wimplicit-function-declaration $(DEFS) -Iinclude
 DEPFLAGS := -MMD -MP
 
 # ------------------------------ Sources ------------------------------
