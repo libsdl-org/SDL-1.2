@@ -9,6 +9,7 @@ extern "C" {
 typedef enum {
     SDL_DC_DMA_VIDEO,
     SDL_DC_TEXTURED_VIDEO,
+    SDL_DC_TEXTURED_STRIDED_VIDEO,
     SDL_DC_DIRECT_VIDEO
 } SDL_DC_driver;
 
