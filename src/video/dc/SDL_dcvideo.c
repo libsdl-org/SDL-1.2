@@ -285,22 +285,28 @@ const static SDL_Rect *tex_modes[]={
 	NULL
 };
 
+
 SDL_Rect **DC_ListModes(_THIS, SDL_PixelFormat *format, Uint32 flags)
 {
-#ifndef SDL_VIDEO_OPENGL
-	if ((!(flags & SDL_FULLSCREEN))&&(SDL_DC_GetVideoDriver()==SDL_DC_TEXTURED_VIDEO))
+	SDL_DC_driver driver = SDL_DC_GetVideoDriver();
+
+	if (!(flags & SDL_OPENGL) && (!(flags & SDL_FULLSCREEN)) &&
+	    (driver == SDL_DC_TEXTURED_VIDEO || driver == SDL_DC_TEXTURED_STRIDED_VIDEO))
 	{
 		switch(format->BitsPerPixel)
 		{
 			case 16:
-				SDL_Rect **thetex_modes = (SDL_Rect **)&tex_modes;
-				return thetex_modes;
+				if (driver == SDL_DC_TEXTURED_STRIDED_VIDEO) {
+					return((SDL_Rect **)-1);
+				} else {
+					SDL_Rect **thetex_modes = (SDL_Rect **)&tex_modes;
+					return thetex_modes;
+				}
 			default:
 				return NULL;	
 		}
 	}
 	else
-#endif
 		switch(format->BitsPerPixel)
 		{
 			case 15:
@@ -315,6 +321,7 @@ SDL_Rect **DC_ListModes(_THIS, SDL_PixelFormat *format, Uint32 flags)
 	return((SDL_Rect **)-1);
 }
 
+
 static int sdl_dc_pvr_inited=0;
 static int sdl_dc_wait_vblank=0;
 
@@ -323,16 +330,26 @@ void SDL_DC_VerticalWait(SDL_bool value)
 	sdl_dc_wait_vblank=value;
 }
 
-#ifndef SDL_VIDEO_OPENGL
 static int sdl_dc_textured=0;
 static int sdl_dc_width=0;
 static int sdl_dc_height=0;
 static int sdl_dc_bpp=0;
 static int sdl_dc_wtex=0;
 static int sdl_dc_htex=0;
+static int sdl_dc_pvr_wtex=0;
+static int sdl_dc_pvr_htex=0;
+static int sdl_dc_tex_bytes=0;
+static int sdl_dc_strided=0;
+static Uint32 sdl_dc_txr_format=0;
 static pvr_ptr_t sdl_dc_memtex;
 static unsigned short *sdl_dc_buftex;
 static void *sdl_dc_memfreed;
+
+#ifdef SDL_VIDEO_OPENGL
+static int sdl_dc_use_gl=0;
+#define SDL_DC_USING_GL() (sdl_dc_use_gl)
+#else
+#define SDL_DC_USING_GL() (0)
 #endif
 
 static void *sdl_dc_dblfreed=NULL;
@@ -341,6 +358,23 @@ static unsigned sdl_dc_dblsize=0;
 
 int __sdl_dc_is_60hz=0;
 
+static int DC_NextPowerOfTwo(int value)
+{
+	int result = 64;
+
+	while (result < value) {
+		result <<= 1;
+	}
+
+	return result;
+}
+
+static int DC_IsTexturedDriver(SDL_DC_driver driver)
+{
+	return (driver == SDL_DC_TEXTURED_VIDEO ||
+	        driver == SDL_DC_TEXTURED_STRIDED_VIDEO);
+}
+
 SDL_Surface *DC_SetVideoMode(_THIS, SDL_Surface *current,
 				int width, int height, int bpp, Uint32 flags)
 {
@@ -348,30 +382,71 @@ SDL_Surface *DC_SetVideoMode(_THIS, SDL_Surface *current,
 	Uint32 Rmask, Gmask, Bmask;
 
 	
-#ifndef SDL_VIDEO_OPENGL
-	if ((!(flags&SDL_FULLSCREEN))&&(SDL_DC_GetVideoDriver()==SDL_DC_TEXTURED_VIDEO))
+#ifdef SDL_VIDEO_OPENGL
+	sdl_dc_use_gl = ((flags & SDL_OPENGL) != 0);
+#else
+	if (flags & SDL_OPENGL) {
+		SDL_SetError("OpenGL support not compiled in");
+		return(NULL);
+	}
+#endif
+
+	if (!SDL_DC_USING_GL() && (!(flags&SDL_FULLSCREEN)) &&
+	    DC_IsTexturedDriver(SDL_DC_GetVideoDriver()))
 	{
-		// fprintf(stderr, "\nWelcome to SDLdc = SDL_DC_TEXTURED_VIDEO");
-		for(sdl_dc_wtex=64;sdl_dc_wtex<width;sdl_dc_wtex<<=1);
-		for(sdl_dc_htex=64;sdl_dc_htex<height;sdl_dc_htex<<=1);
-		if (sdl_dc_wtex!=width || sdl_dc_htex!=height || bpp !=16) 
+		sdl_dc_width=width;
+		sdl_dc_height=height;
+		sdl_dc_bpp=bpp;
+		sdl_dc_strided=(SDL_DC_GetVideoDriver()==SDL_DC_TEXTURED_STRIDED_VIDEO);
+
+		if (bpp != 16) 
 		{
 			sdl_dc_textured=0;
 			SDL_SetError("Couldn't find requested mode in list");
 			return(NULL);
 		}
-		sdl_dc_width=width;
-		sdl_dc_height=height;
-		sdl_dc_bpp=bpp;
+
+		if (sdl_dc_strided) {
+			if ((width & 31) != 0) {
+				sdl_dc_textured = 0;
+				SDL_SetError("Strided textured mode requires width to be a multiple of 32 pixels");
+				return NULL;
+			}
+
+			if (height <= 0) {
+				sdl_dc_textured = 0;
+				SDL_SetError("Strided textured mode requires a positive height");
+				return NULL;
+			}
+
+			sdl_dc_wtex = width;
+			sdl_dc_htex = height;
+			sdl_dc_pvr_wtex = DC_NextPowerOfTwo(width);
+			sdl_dc_pvr_htex = DC_NextPowerOfTwo(height);
+		}
+		else {
+			sdl_dc_wtex=DC_NextPowerOfTwo(width);
+			sdl_dc_htex=DC_NextPowerOfTwo(height);
+			if (sdl_dc_wtex!=width || sdl_dc_htex!=height) 
+			{
+				sdl_dc_textured=0;
+				SDL_SetError("Couldn't find requested mode in list");
+				return(NULL);
+			}
+			sdl_dc_pvr_wtex=sdl_dc_wtex;
+			sdl_dc_pvr_htex=sdl_dc_htex;
+		}
+
 		width=640;
 		height=480;
 		bpp=16;
 		sdl_dc_textured=-1;
-		// fprintf(stderr, "\nBye to SDLdc = SDL_DC_TEXTURED_VIDEO - sdl_dc_width %d ,sdl_dc_height %d ,sdl_dc_bpp %d",sdl_dc_width,sdl_dc_height,sdl_dc_bpp);
 	}
-	else
+	else {
 		sdl_dc_textured=0;
-#endif
+		sdl_dc_strided=0;
+	}
+
 
 	if (!vid_check_cable())
 	{
@@ -435,9 +510,6 @@ SDL_Surface *DC_SetVideoMode(_THIS, SDL_Surface *current,
 		Rmask = 0x00ff0000;
 		Gmask = 0x0000ff00;
 		Bmask = 0x000000ff;
-#ifdef	SDL_VIDEO_OPENGL
-		if (!(flags & SDL_OPENGL))
-#endif
 		break;
 	default:
 		SDL_SetError("Couldn't find requested mode in list");
@@ -451,17 +523,16 @@ SDL_Surface *DC_SetVideoMode(_THIS, SDL_Surface *current,
 
 
 	/* Set up the new mode framebuffer */
-#ifndef SDL_VIDEO_OPENGL
-	if (sdl_dc_textured)
+	if (!SDL_DC_USING_GL() && sdl_dc_textured)
 	{
 		// fprintf(stdout, "\nWelcome to SDLdc3! -sdl_dc_width :%d , sdl_dc_height %d \n",sdl_dc_width,sdl_dc_height);
+		current->flags = SDL_SWSURFACE;
 		current->w=sdl_dc_width;
 		current->h=sdl_dc_height;
-		current->pitch = sdl_dc_width*2; //(bpp>>3);
+		current->pitch = sdl_dc_wtex*2; //(bpp>>3);
 		__sdl_dc_mouse_shift=640/sdl_dc_width;
 	}
 	else
-#endif
 	{
 		current->flags = (SDL_FULLSCREEN|SDL_HWSURFACE);
 		current->w = width;
@@ -476,17 +547,23 @@ SDL_Surface *DC_SetVideoMode(_THIS, SDL_Surface *current,
 	vid_set_mode(disp_mode,pixel_mode);
 	current->pixels = vram_l; //vram_s;
 
-#ifndef SDL_VIDEO_OPENGL
-	if (sdl_dc_textured)
+	if (!SDL_DC_USING_GL() && sdl_dc_textured)
 	{
 		pvr_init_defaults();
 		pvr_dma_init();
 		sdl_dc_pvr_inited = 1;
-		sdl_dc_memtex = pvr_mem_malloc(sdl_dc_wtex*sdl_dc_htex*2);
+		sdl_dc_tex_bytes = sdl_dc_wtex*sdl_dc_htex*(sdl_dc_bpp>>3);
+		sdl_dc_txr_format = PVR_TXRFMT_RGB565|PVR_TXRFMT_NONTWIDDLED;
+		if (sdl_dc_strided) {
+			sdl_dc_txr_format |= (1 << 25); // PVR_TXRFMT_X32_STRIDE;
+		}
+		sdl_dc_memtex = pvr_mem_malloc(sdl_dc_pvr_wtex*sdl_dc_pvr_htex*(sdl_dc_bpp>>3));
+		SDL_DC_SetWindow(sdl_dc_width, sdl_dc_height);
+
 		if (flags & SDL_DOUBLEBUF)
 		{
 			current->flags |= SDL_DOUBLEBUF;
-			sdl_dc_memfreed = calloc(64+(sdl_dc_wtex*sdl_dc_htex*(sdl_dc_bpp>>3)),1);
+			sdl_dc_memfreed = calloc(64+sdl_dc_tex_bytes,1);
 			sdl_dc_buftex = (unsigned short *)(((((unsigned)sdl_dc_memfreed)+32)/32)*32);
 			current->pixels = sdl_dc_buftex;
 		}
@@ -496,25 +573,22 @@ SDL_Surface *DC_SetVideoMode(_THIS, SDL_Surface *current,
 			current->pixels = sdl_dc_memtex;
 		}
 	}
-	else
-#else
-	if (flags & SDL_OPENGL) {
+#ifdef SDL_VIDEO_OPENGL
+	else if (SDL_DC_USING_GL()) {
 		this->gl_config.driver_loaded = 1;
 		current->flags = SDL_FULLSCREEN | SDL_OPENGL;
 		current->pixels = NULL;
 		sdl_dc_pvr_inited = 1;
 		glKosInit();
-	} else
+	}
 #endif
-	if (flags & SDL_DOUBLEBUF) {
+	else if (flags & SDL_DOUBLEBUF) {
 		current->flags |= SDL_DOUBLEBUF;
-#ifndef SDL_VIDEO_OPENGL
 		if (SDL_DC_GetVideoDriver()!=SDL_DC_DIRECT_VIDEO)
 		{
 			pvr_dma_init();
 			sdl_dc_pvr_inited = 1;
 		}
-#endif
 		sdl_dc_dblsize=(width*height*(bpp>>3));
 		sdl_dc_dblfreed = calloc(128+sdl_dc_dblsize,1);
 		sdl_dc_dblmem = (unsigned short *)(((((unsigned)sdl_dc_dblfreed)+64)/64)*64);
@@ -546,29 +620,30 @@ static void DC_UnlockHWSurface(_THIS, SDL_Surface *surface)
 	return;
 }
 
-#ifndef SDL_VIDEO_OPENGL
-
 static float sdl_dc_u1=0.3f;
 static float sdl_dc_u2=0.3f;
 static float sdl_dc_v1=0.9f;
 static float sdl_dc_v2=0.6f;
 
-#endif
-
 void SDL_DC_SetWindow(int width, int height)
 {
-#ifndef SDL_VIDEO_OPENGL
 	// fprintf(stdout, "\nWelcome to SDL_DC_SetWindow width: %d , height : %d, sdl_dc_width: %d , sdl_dc_height: %d \n", width, height, sdl_dc_width, sdl_dc_height);
 	sdl_dc_width=width;
 	sdl_dc_height=height;
-	sdl_dc_u1=0.3f*(1.0f/((float)sdl_dc_wtex));
-	sdl_dc_v1=0.3f*(1.0f/((float)sdl_dc_wtex));
-	sdl_dc_u2=(((float)sdl_dc_width)+0.7f)*(1.0f/((float)sdl_dc_wtex));
-	sdl_dc_v2=(((float)sdl_dc_height)+0.7f)*(1.0f/((float)sdl_dc_htex));
-#endif
+
+	if (sdl_dc_strided) {
+		sdl_dc_u1=0.0f;
+		sdl_dc_v1=0.0f;
+		sdl_dc_u2=((float)sdl_dc_width)*(1.0f/((float)sdl_dc_pvr_wtex));
+		sdl_dc_v2=((float)sdl_dc_height)*(1.0f/((float)sdl_dc_pvr_htex));
+	} else {
+		sdl_dc_u1=0.3f*(1.0f/((float)sdl_dc_pvr_wtex));
+		sdl_dc_v1=0.3f*(1.0f/((float)sdl_dc_pvr_wtex));
+		sdl_dc_u2=(((float)sdl_dc_width)+0.7f)*(1.0f/((float)sdl_dc_pvr_wtex));
+		sdl_dc_v2=(((float)sdl_dc_height)+0.7f)*(1.0f/((float)sdl_dc_pvr_htex));
+	}
 }
 
-#ifndef SDL_VIDEO_OPENGL
 static void sdl_dc_blit_textured(void)
 {
 #define DX1 0.0f
@@ -590,14 +665,17 @@ static void sdl_dc_blit_textured(void)
 
     if (sdl_dc_buftex)
     {
-        dcache_flush_range((unsigned)sdl_dc_buftex, sdl_dc_wtex*sdl_dc_htex*2);
+        dcache_flush_range((unsigned)sdl_dc_buftex, sdl_dc_tex_bytes);
         while (!pvr_dma_ready());
-        pvr_txr_load_dma(sdl_dc_buftex, sdl_dc_memtex, sdl_dc_wtex*sdl_dc_htex*2, -1, NULL, 0);
+        pvr_txr_load_dma(sdl_dc_buftex, sdl_dc_memtex, sdl_dc_tex_bytes, -1, NULL, 0);
         // pvr_txr_load(sdl_dc_buftex, sdl_dc_memtex, sdl_dc_wtex*sdl_dc_htex*2);
     }
 
     pvr_dr_init(&dr_state);
-    pvr_poly_cxt_txr(&cxt, PVR_LIST_OP_POLY, PVR_TXRFMT_RGB565|PVR_TXRFMT_NONTWIDDLED, sdl_dc_wtex, sdl_dc_htex, sdl_dc_memtex, PVR_FILTER_NONE);//any filtering makes fps dip in software rendering
+    if (sdl_dc_strided) {
+        PVR_SET(PVR_TEXTURE_MODULO, sdl_dc_wtex / 32);
+    }
+    pvr_poly_cxt_txr(&cxt, PVR_LIST_OP_POLY, sdl_dc_txr_format, sdl_dc_pvr_wtex, sdl_dc_pvr_htex, sdl_dc_memtex, PVR_FILTER_NONE);//any filtering makes fps dip in software rendering
 
     hdr = (pvr_poly_hdr_t *)pvr_dr_target(dr_state);
     pvr_poly_compile(hdr, &cxt);
@@ -641,16 +719,13 @@ static void sdl_dc_blit_textured(void)
 #undef DWI
 #undef DHE
 }
-#endif
 extern int virtual_keyboard_visible;
 extern void drawVirtualKeyboard(void* fb);
 static int DC_FlipHWSurface(_THIS, SDL_Surface *surface)
 {
-#ifndef SDL_VIDEO_OPENGL
-	if (sdl_dc_textured)
+	if (!SDL_DC_USING_GL() && sdl_dc_textured)
 		sdl_dc_blit_textured();
-	else
-	if (surface->flags & SDL_DOUBLEBUF) {
+	else if (!SDL_DC_USING_GL() && (surface->flags & SDL_DOUBLEBUF)) {
 		if (sdl_dc_wait_vblank)
 			vid_waitvbl();
 		if (SDL_DC_GetVideoDriver()!=SDL_DC_DIRECT_VIDEO)
@@ -662,21 +737,17 @@ static int DC_FlipHWSurface(_THIS, SDL_Surface *surface)
 		else
 			sq_cpy(vram_l,sdl_dc_dblmem,sdl_dc_dblsize);
 	}
-	else
-#endif
-		if (sdl_dc_wait_vblank)
-			vid_waitvbl();
+	else if (sdl_dc_wait_vblank)
+		vid_waitvbl();
 
 	return(0);
 }
 
 static void DC_UpdateRects(_THIS, int numrects, SDL_Rect *rects)
 {
-#ifndef SDL_VIDEO_OPENGL
-	if (sdl_dc_textured){				
+	if (!SDL_DC_USING_GL() && sdl_dc_textured){				
 			sdl_dc_blit_textured();
 	}
-#endif
 }
 
 static int DC_SetColors(_THIS, int firstcolor, int ncolors, SDL_Color *colors)
@@ -697,7 +768,6 @@ static void DC_VideoQuit(_THIS)
 		if (sdl_dc_dblmem)
 			pvr_init_defaults();
 //		pvr_dma_shutdown();
-#ifdef HAVE_DCTEXTURED
 		if (sdl_dc_buftex)
 			free(sdl_dc_memfreed);
 		sdl_dc_buftex=0;
@@ -707,7 +777,17 @@ static void DC_VideoQuit(_THIS)
 			pvr_mem_reset();
 		}
 		sdl_dc_memtex=0;
-#endif
+		sdl_dc_textured=0;
+		sdl_dc_width=0;
+		sdl_dc_height=0;
+		sdl_dc_bpp=0;
+		sdl_dc_wtex=0;
+		sdl_dc_htex=0;
+		sdl_dc_pvr_wtex=0;
+		sdl_dc_pvr_htex=0;
+		sdl_dc_tex_bytes=0;
+		sdl_dc_strided=0;
+		sdl_dc_txr_format=0;
 		if (sdl_dc_dblmem)
 			free(sdl_dc_dblfreed);
 		sdl_dc_dblmem=NULL;

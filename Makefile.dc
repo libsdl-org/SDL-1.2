@@ -1,7 +1,7 @@
 # Custom version by Ian Micheal included fast math built in DreamHAL
 # based on chui's great SDL, now for KOS 2.x fast blit and pixel paths.
 # DreamHAL memory routines and replacements; threading updates.
-# Set GL=1 to build the GLdc-enabled archive.
+# GLdc support is enabled by default; SDL_OPENGL selects it at runtime.
 
 CC := kos-cc
 AR := kos-ar
@@ -9,12 +9,10 @@ LD := kos-ld
 ARFLAGS ?= rcs
 
 # ------------------------------ Build variant ------------------------------
-ifdef GL
-DEFS   += -DSDL_VIDEO_OPENGL=1
-TARGET := libSDL_gl.a
-else
+# Dreamcast SDL now builds with GLdc support enabled by default.
+# Runtime selection happens via SDL_OPENGL in SDL_SetVideoMode().
+DEFS += -DSDL_VIDEO_OPENGL=1
 TARGET := libSDL.a
-endif
 
 # ------------------------------ Flags ------------------------------
 # KOS provides KOS_BASE and KOS_ARCH via environ.sh
@@ -24,7 +22,11 @@ KOS_CFLAGS += -Isrc/video -Isrc/video/dc -DNO_SIGNAL_H -DENABLE_DC
 # Ensure Dreamcast platform config and backend are selected
 KOS_CFLAGS += -D__DREAMCAST__ -DSDL_VIDEO_DRIVER_DREAMCAST
 
-CFLAGS   := -Wimplicit-function-declaration $(DEFS) -Iinclude
+CFLAGS += -Wimplicit-function-declaration
+CFLAGS += $(KOS_CFLAGS)
+CFLAGS += $(DEFS)
+CFLAGS += -Iinclude
+
 DEPFLAGS := -MMD -MP
 
 # ------------------------------ Sources ------------------------------

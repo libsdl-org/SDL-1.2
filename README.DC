@@ -65,7 +65,7 @@ Select a backend via `Makefile.dc` or by API before `SDL_SetVideoMode`.
 
 **Video & display**
 
-* `SDL_DC_SetVideoDriver(SDL_DC_DMA_VIDEO | SDL_DC_TEXTURED_VIDEO | SDL_DC_DIRECT_VIDEO)` — choose backend (call before `SDL_SetVideoMode`).
+* `SDL_DC_SetVideoDriver(SDL_DC_DMA_VIDEO | SDL_DC_TEXTURED_VIDEO | SDL_DC_TEXTURED_STRIDED_VIDEO | SDL_DC_DIRECT_VIDEO)` — choose backend (call before `SDL_SetVideoMode`).
 * `SDL_DC_SetWindow(width, height)` — set virtual window size (textured mode).
 
 **Timing / refresh**
