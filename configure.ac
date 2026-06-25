@@ -689,9 +689,16 @@ CheckAtariAudio()
         if test x$have_mint_falcon_hdr = xyes; then
             mintaudio=yes
             AC_DEFINE(SDL_AUDIO_DRIVER_MINT)
-            SOURCES="$SOURCES $srcdir/src/audio/mint/*.c"
+            SOURCES="$SOURCES $srcdir/src/audio/mint/SDL_mintaudio.c"
+            SOURCES="$SOURCES $srcdir/src/audio/mint/SDL_mintaudio_dma8.c"
             SOURCES="$SOURCES $srcdir/src/audio/mint/*.S"
             have_audio=yes
+
+            AC_CHECK_HEADER(usound.h, have_usound_hdr=yes)
+            if test x$have_usound_hdr = xyes; then
+                AC_DEFINE(SDL_AUDIO_DRIVER_MINT_XBIOS)
+                SOURCES="$SOURCES $srcdir/src/audio/mint/SDL_mintaudio_xbios.c"
+            fi
         fi
     fi
 }

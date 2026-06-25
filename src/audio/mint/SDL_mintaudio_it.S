@@ -30,12 +30,8 @@
 
 	.text
 
-	.globl	SYM(SDL_MintAudio_XbiosInterruptMeasureClock)
-	.globl	SYM(SDL_MintAudio_clocktics)
-
 	.globl	SYM(SDL_MintAudio_XbiosInterrupt)
 	.globl	SYM(SDL_MintAudio_Dma8Interrupt)
-	.globl	SYM(SDL_MintAudio_StfaInterrupt)
 
 	.globl	SYM(SDL_MintAudio_num_its)
 
@@ -43,37 +39,8 @@
 	.globl	SYM(SDL_MintAudio_itbuflen)
 	.globl	SYM(SDL_MintAudio_itsilence)
 
-/*--- Xbios interrupt vector to measure Falcon external clock ---*/
-
-SYM(SDL_MintAudio_XbiosInterruptMeasureClock):          /* 1 mS */
-
-	/* state DMA sound */
-#if defined(__mcoldfire__)
-	movel	d0,sp@-
-	
-	moveql	#0,d0
-	btst	d0,0xFFFF8901:w
-#else
-	btst	#0,0xFFFF8901:w
-#endif
-	beqs	SDL_MintAudio_EndIntMeasure
-	addql	#1,SYM(SDL_MintAudio_clocktics)
-SDL_MintAudio_EndIntMeasure:
-
-	/* Clear service bit */
-#if defined(__mcoldfire__)
-	moveql	#5,d0
-	bclr	d0,0xFFFFFA0F:w
-
-	movel	sp@+,d0
-#else
-	bclr	#5,0xFFFFFA0F:w
-#endif
-	rte
-
 /*--- Interrupt vectors ---*/
 /*    Xbios, DMA 8 bits: need to set ISR on MFP */
-/*    STFA: do not touch MFP */
 
 SYM(SDL_MintAudio_XbiosInterrupt):
 SYM(SDL_MintAudio_Dma8Interrupt):
@@ -92,7 +59,6 @@ SYM(SDL_MintAudio_Dma8Interrupt):
 	bclr	#5,0xfffffa0f:w
 #endif
 
-SYM(SDL_MintAudio_StfaInterrupt):
 	move.l	SYM(SDL_MintAudio_num_its),d0
 	addql	#1,d0
 	move.l	d0,SYM(SDL_MintAudio_num_its)
@@ -123,7 +89,6 @@ nosilence:
 	.bss
 
 	.even
-	.comm	SYM(SDL_MintAudio_clocktics),4
 	.comm	SYM(SDL_MintAudio_num_its),4
 
 	.comm	SYM(SDL_MintAudio_itbuffer),4	/* Audio DMA buffer */

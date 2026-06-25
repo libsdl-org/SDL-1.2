@@ -54,22 +54,11 @@ Mouse (XBIOS, GEM(2), Ikbd)
 Video (XBIOS (Fullscreen), GEM (Windowed and Fullscreen))
 Timer (Timer C interrupt, GNU pth library)
 Joysticks (XBIOS, Ikbd) and joypads (Hardware)
-Audio (Hardware, XBIOS, GSXB, MCSN, STFA, /dev/audio if threads enabled)
+Audio (XBIOS, Hardware)
 Threads (Multitasking OS only via GNU pth library)
 Shared object loader (using LDG library from http://ldg.atari.org/)
 Audio CD (MetaDOS)
 OpenGL (using Mesa offscreen rendering driver)
-
-Audio   O/S     Misc
-dma8    All     Uses MFP Timer A interrupt
-xbios	TOS     Uses MFP Timer A interrupt
-xbios   MiNT    Uses MFP Timer A interrupt
-xbios   Magic   Uses MFP Timer A interrupt
-stfa    All     Uses MFP interrupt
-mcsn	TOS     Uses MFP Timer A interrupt
-mcsn    MiNT    Uses MiNT thread
-mcsn    Magic   Disabled
-gsxb    All     Uses GSXB callback
 
 Joypad driver always uses hardware access.
 OpenGL driver always uses OSMesa.
@@ -94,11 +83,8 @@ SDL_VIDEO_ALIGNED_WINDOWS:
 	(e.g. for speed reasons)
 
 SDL_AUDIODRIVER:
-	Set to 'mint_gsxb' to force Atari GSXB audio driver
-	Set to 'mint_mcsn' to force Atari MCSN audio driver
-	Set to 'mint_stfa' to force Atari STFA audio driver
-	Set to 'mint_xbios' to force Atari Xbios audio driver
-	Set to 'mint_dma8' to force Atari 8 bits DMA audio driver
+	Set to 'xbios' to force Atari Xbios audio driver
+	Set to 'dma8' to force Atari DMA audio driver
 	Set to 'audio' to force Sun /dev/audio audio driver
 	Set to 'disk' to force disk-writing audio driver
 

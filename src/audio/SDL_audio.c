@@ -83,10 +83,9 @@ static AudioBootStrap *bootstrap[] = {
 	&SNDMGR_bootstrap,
 #endif
 #if SDL_AUDIO_DRIVER_MINT
-	&MINTAUDIO_GSXB_bootstrap,
-	&MINTAUDIO_MCSN_bootstrap,
-	&MINTAUDIO_STFA_bootstrap,
+#if SDL_AUDIO_DRIVER_MINT_XBIOS
 	&MINTAUDIO_XBIOS_bootstrap,
+#endif
 	&MINTAUDIO_DMA8_bootstrap,
 #endif
 #if SDL_AUDIO_DRIVER_DISK

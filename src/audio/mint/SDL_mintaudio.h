@@ -31,7 +31,6 @@
 #define _SDL_mintaudio_h
 
 #include "../SDL_sysaudio.h"
-#include "SDL_mintaudio_stfa.h"
 
 /* Hidden "this" pointer for the audio functions */
 #define _THIS	SDL_AudioDevice *this
@@ -96,12 +95,6 @@ enum {
 /* Variables */
 extern SDL_AudioDevice *SDL_MintAudio_device;
 
-/* MiNT thread variables */
-extern SDL_bool	SDL_MintAudio_mint_present;
-extern SDL_bool SDL_MintAudio_quit_thread;
-extern SDL_bool SDL_MintAudio_thread_finished;
-extern long SDL_MintAudio_thread_pid;
-
 /* Functions */
 void SDL_AtariMint_UpdateAudio(void);
 
@@ -111,14 +104,9 @@ void SDL_MintAudio_AddFrequency(_THIS, Uint32 frequency, Uint32 clock,
 	Uint32 prediv, int gpio_bits);
 int SDL_MintAudio_SearchFrequency(_THIS, int desired_freq);
 
-/* MiNT thread functions */
-int SDL_MintAudio_Thread(long param);
-void SDL_MintAudio_WaitThread(void);
-
 /*--- SDL_mintaudio_it.S stuff ---*/
 
 /* Variables */
-extern volatile unsigned long SDL_MintAudio_clocktics;
 extern volatile unsigned long SDL_MintAudio_num_its;
 
 extern volatile void *SDL_MintAudio_itbuffer;
@@ -126,9 +114,7 @@ extern volatile unsigned long SDL_MintAudio_itbuflen;
 extern volatile unsigned long SDL_MintAudio_itsilence;
 
 /* Functions */
-void SDL_MintAudio_XbiosInterruptMeasureClock(void);
 void SDL_MintAudio_XbiosInterrupt(void);
 void SDL_MintAudio_Dma8Interrupt(void);
-void SDL_MintAudio_StfaInterrupt(void);
 
 #endif /* _SDL_mintaudio_h */

@@ -44,7 +44,7 @@
 
 /*--- Defines ---*/
 
-#define MINT_AUDIO_DRIVER_NAME "mint_dma8"
+#define MINT_AUDIO_DRIVER_NAME "dma8"
 
 /* Debug print info */
 #define DEBUG_NAME "audio:dma8: "
@@ -183,6 +183,9 @@ static void Mint_CloseAudio(_THIS)
 	DEBUG_PRINT((DEBUG_NAME "closeaudio: interrupt disabled\n"));
 
 	SDL_MintAudio_FreeBuffers();
+
+	SDL_MintAudio_num_its = 0;
+	SDL_MintAudio_device = NULL;
 }
 
 static int Mint_CheckAudio(_THIS, SDL_AudioSpec *spec)

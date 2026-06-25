@@ -17837,9 +17837,22 @@ fi
             mintaudio=yes
             $as_echo "#define SDL_AUDIO_DRIVER_MINT 1" >>confdefs.h
 
-            SOURCES="$SOURCES $srcdir/src/audio/mint/*.c"
+            SOURCES="$SOURCES $srcdir/src/audio/mint/SDL_mintaudio.c"
+            SOURCES="$SOURCES $srcdir/src/audio/mint/SDL_mintaudio_dma8.c"
             SOURCES="$SOURCES $srcdir/src/audio/mint/*.S"
             have_audio=yes
+
+            ac_fn_c_check_header_mongrel "$LINENO" "usound.h" "ac_cv_header_usound_h" "$ac_includes_default"
+if test "x$ac_cv_header_usound_h" = xyes; then :
+  have_usound_hdr=yes
+fi
+
+
+            if test x$have_usound_hdr = xyes; then
+                $as_echo "#define SDL_AUDIO_DRIVER_MINT_XBIOS 1" >>confdefs.h
+
+                SOURCES="$SOURCES $srcdir/src/audio/mint/SDL_mintaudio_xbios.c"
+            fi
         fi
     fi
 }
