@@ -99,7 +99,7 @@ void SDL_Atari_InitializeConsoleSettings(void)
 	if (!conterm_set) {
 		long ssp = Super(SUP_SET);
 		old_conterm = *conterm;
-		*conterm &= ~((1<<2) | (1<<1) | (1<< 0));	/* disable bell, key-repeat and key-click */
+		*conterm &= ~((1<<2) | (1<< 0));	/* disable bell and key-click */
 		Super(ssp);
 
 		conterm_set = SDL_TRUE;
