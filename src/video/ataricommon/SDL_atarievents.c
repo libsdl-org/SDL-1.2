@@ -233,6 +233,27 @@ SDL_keysym *SDL_Atari_TranslateKey(int scancode, SDL_keysym *keysym,
 		keysym->sym = (unsigned char) keytab_normal[scancode];
 
 		asciicode = (unsigned char) keytab[scancode];
+
+		if (kstate & K_CTRL) {
+			/* This is what TOS does */
+			switch (asciicode) {
+				case '\r':
+					asciicode = 0x0a;	/* ^J */
+					break;
+				case '2':
+					asciicode = 0x00;	/* ^@ */
+					break;
+				case '6':
+					asciicode = 0x1e;	/* ^^ */
+					break;
+				case '-':
+					asciicode = 0x1f;	/* ^_ */
+					break;
+				default:
+					asciicode &= 0x1f;
+					break;
+			}
+		}
 	}
 
 	if (SDL_TranslateUNICODE && pressed) {
