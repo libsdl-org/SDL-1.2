@@ -207,23 +207,38 @@ void SDL_AtariXbios_LockMousePosition(SDL_bool lockPosition)
 
 void SDL_AtariXbios_PostKeyboardEvents(_THIS)
 {
-	short i, kstate;
+	short i;
 	SDL_keysym keysym;
+	static short kstate;
 
 	if (!SDL_AtariXbios_enabled) {
 		return;
 	}
 
-	kstate  = (SDL_AtariXbios_keyboard[SCANCODE_LEFTSHIFT] == KEY_PRESSED) ? K_LSHIFT : 0;
-	kstate |= (SDL_AtariXbios_keyboard[SCANCODE_RIGHTSHIFT] == KEY_PRESSED) ? K_RSHIFT : 0;
-	kstate |= (SDL_AtariXbios_keyboard[SCANCODE_LEFTCONTROL] == KEY_PRESSED) ? K_CTRL : 0;
-	kstate |= (SDL_AtariXbios_keyboard[SCANCODE_LEFTALT] == KEY_PRESSED) ? K_ALT : 0;
-	kstate |= (SDL_AtariXbios_keyboard[SCANCODE_CAPSLOCK] == KEY_PRESSED) ? K_CAPSLOCK : 0;
-	kstate |= (SDL_AtariXbios_keyboard[SCANCODE_ALTGR] == KEY_PRESSED) ? 0x80 : 0;
-
 	for (i=0; i<sizeof(SDL_AtariXbios_keyboard); i++) {
 		/* Key pressed ? */
 		if (SDL_AtariXbios_keyboard[i]==KEY_PRESSED) {
+			switch (i) {
+			case SCANCODE_LEFTSHIFT:
+				kstate |= K_LSHIFT;
+				break;
+			case SCANCODE_RIGHTSHIFT:
+				kstate |= K_RSHIFT;
+				break;
+			case SCANCODE_LEFTCONTROL:
+				kstate |= K_CTRL;
+				break;
+			case SCANCODE_LEFTALT:
+				kstate |= K_ALT;
+				break;
+			case SCANCODE_CAPSLOCK:
+				kstate |= K_CAPSLOCK;
+				break;
+			case SCANCODE_ALTGR:
+				kstate |= 0x80;
+				break;
+			}
+
 			SDL_PrivateKeyboard(SDL_PRESSED,
 				SDL_Atari_TranslateKey(i, &keysym, SDL_TRUE, kstate));
 			if (i == SCANCODE_CAPSLOCK) {
@@ -238,6 +253,27 @@ void SDL_AtariXbios_PostKeyboardEvents(_THIS)
 
 		/* Key released ? */
 		if (SDL_AtariXbios_keyboard[i]==KEY_RELEASED) {
+			switch (i) {
+			case SCANCODE_LEFTSHIFT:
+				kstate &= ~K_LSHIFT;
+				break;
+			case SCANCODE_RIGHTSHIFT:
+				kstate &= ~K_RSHIFT;
+				break;
+			case SCANCODE_LEFTCONTROL:
+				kstate &= ~K_CTRL;
+				break;
+			case SCANCODE_LEFTALT:
+				kstate &= ~K_ALT;
+				break;
+			case SCANCODE_CAPSLOCK:
+				kstate &= ~K_CAPSLOCK;
+				break;
+			case SCANCODE_ALTGR:
+				kstate &= ~0x80;
+				break;
+			}
+
 			if (i == SCANCODE_CAPSLOCK) {
 				/* Released capslock: generate a pressed event, too because this
 				 * is what SDL expects; it handles locking by itself.
