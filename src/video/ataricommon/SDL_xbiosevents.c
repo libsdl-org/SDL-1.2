@@ -51,8 +51,9 @@ SDL_bool SDL_AtariXbios_enabled=SDL_FALSE;
 
 /* Local variables */
 
-static Uint16 atari_prevmouseb;	/* buttons */
+static Uint16 atari_prevmouseb;	/* save state of mouse buttons */
 static void (*old_procterm)(void);
+static short kstate;
 
 /* Functions */
 
@@ -127,6 +128,8 @@ void SDL_AtariXbios_InstallVectors(int vectors_mask)
 		atari_prevmouseb = 0;
 
 	SDL_memset((void*)SDL_AtariXbios_keyboard, KEY_UNDEFINED, 128);
+
+	kstate = Kbshift(-1) & K_CAPSLOCK;
 
 	if (vectors_mask==0)
 		return;
@@ -209,7 +212,6 @@ void SDL_AtariXbios_PostKeyboardEvents(_THIS)
 {
 	short i;
 	SDL_keysym keysym;
-	static short kstate;
 
 	if (!SDL_AtariXbios_enabled) {
 		return;
@@ -232,7 +234,7 @@ void SDL_AtariXbios_PostKeyboardEvents(_THIS)
 				kstate |= K_ALT;
 				break;
 			case SCANCODE_CAPSLOCK:
-				kstate |= K_CAPSLOCK;
+				kstate ^= K_CAPSLOCK;
 				break;
 			case SCANCODE_ALTGR:
 				kstate |= 0x80;
@@ -241,13 +243,6 @@ void SDL_AtariXbios_PostKeyboardEvents(_THIS)
 
 			SDL_PrivateKeyboard(SDL_PRESSED,
 				SDL_Atari_TranslateKey(i, &keysym, SDL_TRUE, kstate));
-			if (i == SCANCODE_CAPSLOCK) {
-				/* Pressed capslock: generate a release event, too because this
-				 * is what SDL expects; it handles locking by itself.
-				 */
-				SDL_PrivateKeyboard(SDL_RELEASED,
-					SDL_Atari_TranslateKey(i, &keysym, SDL_FALSE, kstate & ~K_CAPSLOCK));
-			}
 			SDL_AtariXbios_keyboard[i]=KEY_UNDEFINED;
 		}
 
@@ -266,23 +261,15 @@ void SDL_AtariXbios_PostKeyboardEvents(_THIS)
 			case SCANCODE_LEFTALT:
 				kstate &= ~K_ALT;
 				break;
-			case SCANCODE_CAPSLOCK:
-				kstate &= ~K_CAPSLOCK;
-				break;
 			case SCANCODE_ALTGR:
 				kstate &= ~0x80;
 				break;
 			}
 
-			if (i == SCANCODE_CAPSLOCK) {
-				/* Released capslock: generate a pressed event, too because this
-				 * is what SDL expects; it handles locking by itself.
-				 */
-				SDL_PrivateKeyboard(SDL_PRESSED,
-					SDL_Atari_TranslateKey(i, &keysym, SDL_TRUE, kstate | K_CAPSLOCK));
+			if (i != SCANCODE_CAPSLOCK) {
+				SDL_PrivateKeyboard(SDL_RELEASED,
+					SDL_Atari_TranslateKey(i, &keysym, SDL_FALSE, kstate));
 			}
-			SDL_PrivateKeyboard(SDL_RELEASED,
-				SDL_Atari_TranslateKey(i, &keysym, SDL_FALSE, kstate));
 			SDL_AtariXbios_keyboard[i]=KEY_UNDEFINED;
 		}
 	}

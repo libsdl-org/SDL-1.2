@@ -54,6 +54,7 @@ void SDL_AtariMint_CheckTimer(void);
 static SDLKey keymap[ATARIBIOS_MAXKEYS];
 static const char *keytab_normal;
 static const char *keytab_shift;
+static const char *keytab_caps;
 
 static SDL_bool conterm_set;
 static char old_conterm;
@@ -126,6 +127,7 @@ void SDL_Atari_InitInternalKeymap(_THIS)
 	key_tables = (_KEYTAB *) Keytbl(KT_NOCHANGE, KT_NOCHANGE, KT_NOCHANGE);
 	keytab_normal = key_tables->unshift;
 	keytab_shift = key_tables->shift;
+	keytab_caps = key_tables->caps;
 
 	/* Initialize keymap */
 	for ( i=0; i<ATARIBIOS_MAXKEYS; i++ )
@@ -219,8 +221,14 @@ SDL_keysym *SDL_Atari_TranslateKey(int scancode, SDL_keysym *keysym,
 	keysym->unicode = 0;
 
 	if (keysym->sym == SDLK_UNKNOWN) {
-		const char *keytab = (kstate & (K_LSHIFT | K_RSHIFT))
-			? keytab_shift : keytab_normal;
+		const char *keytab;
+
+		if (kstate & (K_LSHIFT | K_RSHIFT))
+			keytab = keytab_shift;
+		else if (kstate & K_CAPSLOCK)
+			keytab = keytab_caps;
+		else
+			keytab = keytab_normal;
 
 		keysym->sym = (unsigned char) keytab_normal[scancode];
 
