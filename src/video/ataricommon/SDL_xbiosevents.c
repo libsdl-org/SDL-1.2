@@ -52,6 +52,7 @@ SDL_bool SDL_AtariXbios_enabled=SDL_FALSE;
 /* Local variables */
 
 static Uint16 atari_prevmouseb;	/* buttons */
+static void (*old_procterm)(void);
 
 /* Functions */
 
@@ -150,19 +151,20 @@ void SDL_AtariXbios_InstallVectors(int vectors_mask)
 
 	Supexec(SDL_AtariXbios_Install);
 	/* SDL_AtariXbios_Restore() doesn't need SDL_AtariXbios_enabled */
-	Setexc(VEC_PROCTERM, SDL_AtariXbios_Restore);
+	old_procterm = Setexc(VEC_PROCTERM, SDL_AtariXbios_Restore);
 
 	SDL_AtariXbios_enabled=SDL_TRUE;
 }
 
 void SDL_AtariXbios_RestoreVectors(void)
 {
-	if (!SDL_AtariXbios_enabled) {
-		return;
-	}
+	if (SDL_AtariXbios_enabled)
+		Supexec(SDL_AtariXbios_Restore);
 
-	/* Reinstall system vector */
-	Supexec(SDL_AtariXbios_Restore);
+	if (old_procterm != NULL) {
+		Setexc(VEC_PROCTERM, old_procterm);
+		old_procterm = NULL;
+	}
 }
 
 void SDL_AtariXbios_PostMouseEvents(_THIS, SDL_bool buttonEvents)

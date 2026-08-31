@@ -44,6 +44,7 @@
 #define KEY_RELEASED	0x00
 
 static Uint16 atari_prevmouseb;	/* save state of mouse buttons */
+static void (*old_procterm)(void);
 
 static int GetButton(int button)
 {
@@ -89,7 +90,7 @@ void AtariIkbd_InitOSKeymap(_THIS)
 	}
 
 	Supexec(SDL_AtariIkbd_Install);
-	Setexc(VEC_PROCTERM, SDL_AtariIkbd_Restore);
+	old_procterm = Setexc(VEC_PROCTERM, SDL_AtariIkbd_Restore);
 }
 
 void AtariIkbd_PumpEvents(_THIS)
@@ -206,8 +207,11 @@ void AtariIkbd_PumpEvents(_THIS)
 
 void AtariIkbd_ShutdownEvents(_THIS)
 {
-	if (!SDL_AtariIkbd_enabled)
-		return;
+	if (SDL_AtariIkbd_enabled)
+		Supexec(SDL_AtariIkbd_Restore);
 
-	Supexec(SDL_AtariIkbd_Restore);
+	if (old_procterm != NULL) {
+		Setexc(VEC_PROCTERM, old_procterm);
+		old_procterm = NULL;
+	}
 }
