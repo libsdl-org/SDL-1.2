@@ -219,10 +219,12 @@ SDL_keysym *SDL_Atari_TranslateKey(int scancode, SDL_keysym *keysym,
 	keysym->unicode = 0;
 
 	if (keysym->sym == SDLK_UNKNOWN) {
-		if (kstate & (K_LSHIFT | K_RSHIFT))
-			keysym->sym = asciicode = keytab_shift[scancode];
-		else
-			keysym->sym = asciicode = keytab_normal[scancode];
+		const char *keytab = (kstate & (K_LSHIFT | K_RSHIFT))
+			? keytab_shift : keytab_normal;
+
+		keysym->sym = (unsigned char) keytab_normal[scancode];
+
+		asciicode = (unsigned char) keytab[scancode];
 	}
 
 	if (SDL_TranslateUNICODE && pressed) {
