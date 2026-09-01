@@ -46,6 +46,8 @@
 #include "../ataricommon/SDL_atarigl_c.h"
 #include "../ataricommon/SDL_atarimxalloc_c.h"
 #include "../ataricommon/SDL_geminit_c.h"
+#include "../ataricommon/SDL_ikbdevents_c.h"
+#include "../ataricommon/SDL_xbiosevents_c.h"
 
 #include "SDL_xbios.h"
 #include "SDL_xbios_milan.h"
@@ -68,6 +70,8 @@
 
 /* Initialization/Query functions */
 static int XBIOS_VideoInit(_THIS, SDL_PixelFormat *vformat);
+static int XBIOS_InitEvents(_THIS);
+static void XBIOS_PumpEvents(_THIS);
 static SDL_Rect **XBIOS_ListModes(_THIS, SDL_PixelFormat *format, Uint32 flags);
 static SDL_Surface *XBIOS_SetVideoMode(_THIS, SDL_Surface *current, int width, int height, int bpp, Uint32 flags);
 static void XBIOS_VideoQuit(_THIS);
@@ -210,9 +214,6 @@ static SDL_VideoDevice *XBIOS_CreateDevice(int devindex)
 	device->GL_SwapBuffers = XBIOS_GL_SwapBuffers;
 #endif
 
-	/* Events (XBIOS/IKBD driver) */
-	SDL_Atari_InitializeEvents(device);
-
 	device->free = XBIOS_DeleteDevice;
 
 	device->hidden->updRects = XBIOS_UpdateRects;
@@ -305,10 +306,42 @@ void SDL_XBIOS_AddMode(_THIS, int actually_add, const xbiosmode_t *modeinfo)
 	}
 }
 
+/* Keyboard, mouse and joystick from the XBIOS vectors or straight from the
+   IKBD, see SDL_ATARI_EVENTSDRIVER in README.MiNT */
+static int XBIOS_InitEvents(_THIS)
+{
+	SDL_Atari_InitInternalKeymap(this);
+
+	switch (SDL_Atari_GetEventsDriver()) {
+		case ATARI_EVENTS_IKBD:
+			this->InitOSKeymap = AtariIkbd_InitOSKeymap;
+			break;
+		case ATARI_EVENTS_XBIOS:
+			this->InitOSKeymap = AtariXbios_InitOSKeymap;
+			break;
+		default:
+			return(-1);
+	}
+	this->PumpEvents = XBIOS_PumpEvents;
+
+	return(0);
+}
+
+static void XBIOS_PumpEvents(_THIS)
+{
+	SDL_AtariMint_BackgroundTasks();
+
+	SDL_Atari_PostKeyboardEvents(this);
+	SDL_Atari_PostMouseEvents(this, SDL_TRUE);
+}
+
 /* Called after XBIOS_CreateDevice, and SDL_XBIOS_VideoInit_ST (and its follow-ups) */
 static int XBIOS_VideoInit(_THIS, SDL_PixelFormat *vformat)
 {
 	int i;
+
+	if (XBIOS_InitEvents(this) < 0)
+		return(-1);
 
 	if (!GEM_CommonInit(&GEM_ap_id, &VDI_handle))
 		return(-1);
@@ -709,7 +742,7 @@ static void XBIOS_VideoQuit(_THIS)
 	/* Restore CON: */
 	SDL_Atari_RestoreConsoleSettings();
 
-	(*XBIOS_ShutdownEvents)(this);
+	SDL_Atari_RestoreVectors();
 
 	/* Restore video mode and palette. XBIOS_saveMode() sets XBIOS_oldvbase
 	 * so it is a good test whether at least that ran. */

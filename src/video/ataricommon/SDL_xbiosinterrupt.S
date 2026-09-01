@@ -34,14 +34,15 @@
 	.globl	SYM(SDL_AtariXbios_Restore)
 
 	.globl	SYM(SDL_AtariXbios_installmousevector)
-	.globl	SYM(SDL_AtariXbios_mouselock)
-	.globl	SYM(SDL_AtariXbios_mouseb)
-	.globl	SYM(SDL_AtariXbios_mousex)
-	.globl	SYM(SDL_AtariXbios_mousey)
 	.globl	SYM(SDL_AtariXbios_installjoystickvector)
-	.globl	SYM(SDL_AtariXbios_joystick)
 	.globl	SYM(SDL_AtariXbios_installkeyboardvector)
-	.globl	SYM(SDL_AtariXbios_keyboard)
+	.globl	SYM(SDL_AtariXbios_mouselock)
+
+	.globl	SYM(SDL_Atari_keyboard)
+	.globl	SYM(SDL_Atari_mouseb)
+	.globl	SYM(SDL_Atari_mousex)
+	.globl	SYM(SDL_Atari_mousey)
+	.globl	SYM(SDL_Atari_joystick)
 
 	.globl	SYM(Atari_UnhookXbra)
 
@@ -258,28 +259,28 @@ newmousevector:
 #else
 	andw	#3,d0
 #endif
-	movew	d0,SYM(SDL_AtariXbios_mouseb)
+	movew	d0,SYM(SDL_Atari_mouseb)
 
 	/* X movement */
 	moveb	a0@(1),d0
 	extw	d0
 #if defined(__mcoldfire__)
-	movew	SYM(SDL_AtariXbios_mousex),d1
+	movew	SYM(SDL_Atari_mousex),d1
 	addl	d1,d0
-	movew	d0,SYM(SDL_AtariXbios_mousex)
+	movew	d0,SYM(SDL_Atari_mousex)
 #else
-	addw	d0,SYM(SDL_AtariXbios_mousex)
+	addw	d0,SYM(SDL_Atari_mousex)
 #endif
 
 	/* Y movement */
 	moveb	a0@(2),d0
 	extw	d0
 #if defined(__mcoldfire__)
-	movew	SYM(SDL_AtariXbios_mousey),d1
+	movew	SYM(SDL_Atari_mousey),d1
 	addl	d1,d0
-	movew	d0,SYM(SDL_AtariXbios_mousey)
+	movew	d0,SYM(SDL_Atari_mousey)
 #else
-	addw	d0,SYM(SDL_AtariXbios_mousey)
+	addw	d0,SYM(SDL_Atari_mousey)
 #endif
 
 	/* Lock mouse position ? */
@@ -307,12 +308,6 @@ SYM(SDL_AtariXbios_installmousevector):
 	.dc.w	0
 SYM(SDL_AtariXbios_mouselock):
 	.dc.w	0
-SYM(SDL_AtariXbios_mousex):
-	.dc.w	0
-SYM(SDL_AtariXbios_mousey):
-	.dc.w	0
-SYM(SDL_AtariXbios_mouseb):
-	.dc.w	0
 
 /*--- Our joystick vector ---*/
 
@@ -331,9 +326,9 @@ newjoystickvector:
 #if defined(__mcoldfire__)
 	andl	#0x8f,d0
 #else
-	andw	#0x8f,d0
+	andb	#0x8f,d0
 #endif
-	movew	d0,SYM(SDL_AtariXbios_joystick)
+	moveb	d0,SYM(SDL_Atari_joystick)
 
 	/* Jump through old vector */
 	movel	sp@+,d0
@@ -345,8 +340,6 @@ newjoystickvector:
 
 	.even
 SYM(SDL_AtariXbios_installjoystickvector):
-	.dc.w	0
-SYM(SDL_AtariXbios_joystick):
 	.dc.w	0
 
 
@@ -369,7 +362,7 @@ newkeyboardvector:
 #endif
 
 	moveb	d0,d1
-	lea		SYM(SDL_AtariXbios_keyboard),a0
+	lea		SYM(SDL_Atari_keyboard),a0
 #if defined(__mcoldfire__)
 	andl	#0x7f,d1
 	btst	#7,d0
@@ -397,5 +390,3 @@ newkeyboardvector:
 	.even
 SYM(SDL_AtariXbios_installkeyboardvector):
 	.dc.w	0
-SYM(SDL_AtariXbios_keyboard):
-	.ds.b	128

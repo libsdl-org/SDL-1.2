@@ -35,14 +35,9 @@
 /* Variables */
 
 extern Uint16 SDL_AtariXbios_installmousevector;	/* flag for SDL_AtariXbios_Install() */
-extern volatile Uint16 SDL_AtariXbios_mouselock;	/* mouse lock position */
-extern volatile Uint16 SDL_AtariXbios_mouseb;	/* buttons */
-extern volatile Sint16 SDL_AtariXbios_mousex;	/* X relative motion */
-extern volatile Sint16 SDL_AtariXbios_mousey;	/* Y relative motion */
 extern Uint16 SDL_AtariXbios_installjoystickvector;	/* flag for SDL_AtariXbios_Install() */
-extern volatile Uint16 SDL_AtariXbios_joystick;	/* Joystick */
 extern Uint16 SDL_AtariXbios_installkeyboardvector;	/* flag for SDL_AtariXbios_Install() */
-extern volatile Uint8 SDL_AtariXbios_keyboard[128];	/* Keyboard table */
+extern volatile Uint16 SDL_AtariXbios_mouselock;	/* mouse lock position */
 
 /* Functions */ 
 

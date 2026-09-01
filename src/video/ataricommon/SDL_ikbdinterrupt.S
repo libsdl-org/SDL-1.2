@@ -33,13 +33,11 @@
 	.globl	SYM(SDL_AtariIkbd_Install)
 	.globl	SYM(SDL_AtariIkbd_Restore)
 
-	.globl	SYM(SDL_AtariIkbd_keyboard)
-	.globl	SYM(SDL_AtariIkbd_mouseb)
-	.globl	SYM(SDL_AtariIkbd_mousex)
-	.globl	SYM(SDL_AtariIkbd_mousey)
-	.globl	SYM(SDL_AtariIkbd_joystick)
-
-	.globl	SYM(SDL_AtariIkbd_enabled)
+	.globl	SYM(SDL_Atari_keyboard)
+	.globl	SYM(SDL_Atari_mouseb)
+	.globl	SYM(SDL_Atari_mousex)
+	.globl	SYM(SDL_Atari_mousey)
+	.globl	SYM(SDL_Atari_joystick)
 
 	.globl	SYM(Atari_UnhookXbra)
 
@@ -130,18 +128,12 @@ no_ikbd_packet_install:
 
 	| Interrupts done
 
-#if defined(__mcoldfire__)
-	movel	#0xffff,d0
-	movew	d0,SYM(SDL_AtariIkbd_enabled)
-#else
-	movew	#0xffff,SYM(SDL_AtariIkbd_enabled)
-#endif
 	rts
 
 /*--- Uninstall our IKBD vector ---*/
 
 SYM(SDL_AtariIkbd_Restore):
-	tstw	SYM(SDL_AtariIkbd_enabled)
+	tstl	old_ikbd
 	bnes	ikbd_installed
 	rts
 
@@ -200,7 +192,7 @@ ikbd_finbuffer:
 
 	| Interrupts done
 
-	clrw	SYM(SDL_AtariIkbd_enabled)
+	clrl	old_ikbd
 	rts
 
 	.bss
@@ -258,7 +250,7 @@ ikbd_yes_mouse:
 #else
 	andw	#3,d0
 #endif
-	movew	d0,SYM(SDL_AtariIkbd_mouseb)
+	movew	d0,SYM(SDL_Atari_mouseb)
 
 #if defined(__mcoldfire__)
 	movel	#ikbd_mousex,d0
@@ -283,7 +275,7 @@ ikbd_yes_joystick:
 
 ikbd_no_mouse:
 	moveb	d0,d1
-	lea		SYM(SDL_AtariIkbd_keyboard),a0
+	lea		SYM(SDL_Atari_keyboard),a0
 #if defined(__mcoldfire__)
 	andl	#0x7f,d1
 	btst	#7,d0
@@ -346,14 +338,14 @@ ikbd_mousex:
 	moveb	0xfffffc02:w,d0
 	extw	d0
 #if defined(__mcoldfire__)
-	movew	SYM(SDL_AtariIkbd_mousex),d1
+	movew	SYM(SDL_Atari_mousex),d1
 	addl	d1,d0
-	movew	d0,SYM(SDL_AtariIkbd_mousex)
+	movew	d0,SYM(SDL_Atari_mousex)
 
 	movel	#ikbd_mousey,d0
 	movel	d0,0x118:w
 #else
-	addw	d0,SYM(SDL_AtariIkbd_mousex)
+	addw	d0,SYM(SDL_Atari_mousex)
 
 	movel	#ikbd_mousey,0x118:w
 #endif
@@ -381,14 +373,14 @@ ikbd_mousey:
 	moveb	0xfffffc02:w,d0
 	extw	d0
 #if defined(__mcoldfire__)
-	movew	SYM(SDL_AtariIkbd_mousey),d1
+	movew	SYM(SDL_Atari_mousey),d1
 	addl	d1,d0
-	movew	d0,SYM(SDL_AtariIkbd_mousey)
+	movew	d0,SYM(SDL_Atari_mousey)
 
 	movel	#ikbd,d0
 	movel	d0,0x118:w
 #else
-	addw	d0,SYM(SDL_AtariIkbd_mousey)
+	addw	d0,SYM(SDL_Atari_mousey)
 
 	movel	#ikbd,0x118:w
 #endif
@@ -415,36 +407,16 @@ ikbd_joystick:
 
 #if defined(__mcoldfire__)
 	moveb	0xfffffc02:w,d0
-	moveb	d0,SYM(SDL_AtariIkbd_joystick)+1
+	moveb	d0,SYM(SDL_Atari_joystick)
 
 	movel	#ikbd,d0
 	movel	d0,0x118:w
 
 	bra	ikbd_endit_stack
 #else
-	moveb	0xfffffc02:w,SYM(SDL_AtariIkbd_joystick)+1
+	moveb	0xfffffc02:w,SYM(SDL_Atari_joystick)
 
 	movel	#ikbd,0x118:w
 
 	bras	ikbd_endit_stack
 #endif
-
-	.data
-
-	.even
-SYM(SDL_AtariIkbd_enabled):
-	.dc.w	0
-
-	.bss
-
-	.even
-SYM(SDL_AtariIkbd_keyboard):
-	.ds.b	128
-SYM(SDL_AtariIkbd_mousex):
-	.ds.w	1
-SYM(SDL_AtariIkbd_mousey):
-	.ds.w	1
-SYM(SDL_AtariIkbd_mouseb):
-	.ds.w	1
-SYM(SDL_AtariIkbd_joystick):
-	.ds.w	1

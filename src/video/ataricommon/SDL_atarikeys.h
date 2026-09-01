@@ -96,6 +96,9 @@
 #define SCANCODE_CAPSLOCK	0x3a
 #define SCANCODE_ALTGR		0x4c	/* Milan's AltGr */
 
+/* Kbshift() bit for AltGr, missing from the system headers */
+#define K_ALTGR			0x80
+
 /* Functions keys */
 #define SCANCODE_F1		0x3b
 #define SCANCODE_F2		0x3c

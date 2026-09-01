@@ -28,63 +28,12 @@
  */
 
 #include <mint/cookie.h>
-#include <mint/mintbind.h>
 #include <mint/osbind.h>
 #include <mint/sysvars.h>
 
-#include "../../events/SDL_sysevents.h"
-#include "../../events/SDL_events_c.h"
-
-#include "SDL_atarisuper.h"
-#include "SDL_atarikeys.h"
 #include "SDL_atarievents_c.h"
 #include "SDL_xbiosevents_c.h"
 #include "SDL_xbiosinterrupt_s.h"
-
-#define KEY_PRESSED		0xff
-#define KEY_UNDEFINED	0x80
-#define KEY_RELEASED	0x00
-
-/* Variables */
-
-SDL_bool SDL_AtariXbios_enabled=SDL_FALSE;
-
-/* Local variables */
-
-static Uint16 atari_prevmouseb;	/* save state of mouse buttons */
-static void (*old_procterm)(void);
-static short kstate;
-
-/* Functions */
-
-static int GetButton(int button)
-{
-	switch(button) {
-		case 0:
-			return SDL_BUTTON_RIGHT;
-			break;
-		case 1:
-		default:
-			return SDL_BUTTON_LEFT;
-			break;
-	}
-}
-
-static SDL_bool CheckAccess(const void *addr, size_t length)
-{
-	Uint32 flags;
-
-	if (Getcookie(C_MiNT, NULL) != C_FOUND)
-		return SDL_TRUE;
-
-	if (Mvalidate(0, addr, length, &flags) < 0)
-		return SDL_FALSE;
-
-	if (((flags+0x10)&0xf0) != MX_SUPERVISOR && ((flags+0x10)&0xf0) != MX_GLOBAL)
-		return SDL_FALSE;
-
-	return SDL_TRUE;
-}
 
 SDL_bool SDL_AtariXbios_IsKeyboardVectorSupported()
 {
@@ -96,6 +45,9 @@ SDL_bool SDL_AtariXbios_IsKeyboardVectorSupported()
 
 void AtariXbios_InitOSKeymap(_THIS)
 {
+	/* All three vectors must be installed together. Only GEM video+events
+	 * driver (they are coupled together) has the luxury of being able to
+	 * poll keyboard events via GEM and mouse/joystick via XBIOS. */
 	int vectors_mask;
 	vectors_mask  = ATARI_XBIOS_JOYSTICKEVENTS;	/* XBIOS joystick events */
 	vectors_mask |= ATARI_XBIOS_MOUSEEVENTS;	/* XBIOS mouse events */
@@ -104,173 +56,21 @@ void AtariXbios_InitOSKeymap(_THIS)
 	SDL_AtariXbios_InstallVectors(vectors_mask);
 }
 
-void AtariXbios_PumpEvents(_THIS)
-{
-	SDL_AtariMint_BackgroundTasks();
-
-	SDL_AtariXbios_PostKeyboardEvents(this);
-	SDL_AtariXbios_PostMouseEvents(this, SDL_TRUE);
-}
-
-void AtariXbios_ShutdownEvents(_THIS)
-{
-	SDL_AtariXbios_RestoreVectors();
-}
-
 void SDL_AtariXbios_InstallVectors(int vectors_mask)
 {
-	/* Clear variables */
-	SDL_AtariXbios_mouselock =
-		SDL_AtariXbios_mouseb =
-		SDL_AtariXbios_mousex =
-		SDL_AtariXbios_mousey =
-		SDL_AtariXbios_joystick =
-		atari_prevmouseb = 0;
-
-	SDL_memset((void*)SDL_AtariXbios_keyboard, KEY_UNDEFINED, 128);
-
-	kstate = Kbshift(-1) & K_CAPSLOCK;
+	SDL_AtariXbios_mouselock = 0;
 
 	if (vectors_mask==0)
 		return;
 
-	/* Install our vectors */
 	SDL_AtariXbios_installmousevector = (vectors_mask & ATARI_XBIOS_MOUSEEVENTS) != 0;
 	SDL_AtariXbios_installjoystickvector = (vectors_mask & ATARI_XBIOS_JOYSTICKEVENTS) != 0;
 	SDL_AtariXbios_installkeyboardvector = (vectors_mask & ATARI_XBIOS_KEYBOARDEVENTS) != 0;
 
-	if (SDL_AtariXbios_installmousevector && !CheckAccess((void *)&SDL_AtariXbios_mouseb, sizeof(SDL_AtariXbios_mouseb))) {
-		fprintf(stderr, "Insufficient privileges to install XBIOS mouse vector. Set application's PRGFLAGS to Super.\n");
-		SDL_AtariXbios_installmousevector = SDL_FALSE;
-	}
-	if (SDL_AtariXbios_installjoystickvector && !CheckAccess((void *)&SDL_AtariXbios_joystick, sizeof(SDL_AtariXbios_joystick))) {
-		fprintf(stderr, "Insufficient privileges to install XBIOS joystick vector. Set application's PRGFLAGS to Super.\n");
-		SDL_AtariXbios_installjoystickvector = SDL_FALSE;
-	}
-	if (SDL_AtariXbios_installkeyboardvector && !CheckAccess((void *)&SDL_AtariXbios_keyboard, sizeof(SDL_AtariXbios_keyboard))) {
-		fprintf(stderr, "Insufficient privileges to install XBIOS keyboard vector. Set application's PRGFLAGS to Super.\n");
-		SDL_AtariXbios_installkeyboardvector = SDL_FALSE;
-	}
-
-	Supexec(SDL_AtariXbios_Install);
-	/* SDL_AtariXbios_Restore() doesn't need SDL_AtariXbios_enabled */
-	old_procterm = Setexc(VEC_PROCTERM, SDL_AtariXbios_Restore);
-
-	SDL_AtariXbios_enabled=SDL_TRUE;
-}
-
-void SDL_AtariXbios_RestoreVectors(void)
-{
-	if (SDL_AtariXbios_enabled)
-		Supexec(SDL_AtariXbios_Restore);
-
-	if (old_procterm != NULL) {
-		Setexc(VEC_PROCTERM, old_procterm);
-		old_procterm = NULL;
-	}
-}
-
-void SDL_AtariXbios_PostMouseEvents(_THIS, SDL_bool buttonEvents)
-{
-	if (!SDL_AtariXbios_enabled) {
-		return;
-	}
-
-	/* Mouse motion ? */
-	if (SDL_AtariXbios_mousex || SDL_AtariXbios_mousey) {
-		SDL_PrivateMouseMotion(0, 1, SDL_AtariXbios_mousex, SDL_AtariXbios_mousey);
-		SDL_AtariXbios_mousex = SDL_AtariXbios_mousey = 0;
-	}
-	
-	/* Mouse button ? */
-	if (buttonEvents && (SDL_AtariXbios_mouseb != atari_prevmouseb)) {
-		int i;
-
-		for (i=0;i<2;i++) {
-			int curbutton, prevbutton;
-
-			curbutton = SDL_AtariXbios_mouseb & (1<<i);
-			prevbutton = atari_prevmouseb & (1<<i);
-
-			if (curbutton && !prevbutton) {
-				SDL_PrivateMouseButton(SDL_PRESSED, GetButton(i), 0, 0);
-			}
-			if (!curbutton && prevbutton) {
-				SDL_PrivateMouseButton(SDL_RELEASED, GetButton(i), 0, 0);
-			}
-		}
-		atari_prevmouseb = SDL_AtariXbios_mouseb;
-	}
+	SDL_Atari_InstallVectors(SDL_AtariXbios_Install, SDL_AtariXbios_Restore);
 }
 
 void SDL_AtariXbios_LockMousePosition(SDL_bool lockPosition)
 {
 	SDL_AtariXbios_mouselock = lockPosition;
-}
-
-void SDL_AtariXbios_PostKeyboardEvents(_THIS)
-{
-	short i;
-	SDL_keysym keysym;
-
-	if (!SDL_AtariXbios_enabled) {
-		return;
-	}
-
-	for (i=0; i<sizeof(SDL_AtariXbios_keyboard); i++) {
-		/* Key pressed ? */
-		if (SDL_AtariXbios_keyboard[i]==KEY_PRESSED) {
-			switch (i) {
-			case SCANCODE_LEFTSHIFT:
-				kstate |= K_LSHIFT;
-				break;
-			case SCANCODE_RIGHTSHIFT:
-				kstate |= K_RSHIFT;
-				break;
-			case SCANCODE_LEFTCONTROL:
-				kstate |= K_CTRL;
-				break;
-			case SCANCODE_LEFTALT:
-				kstate |= K_ALT;
-				break;
-			case SCANCODE_CAPSLOCK:
-				kstate ^= K_CAPSLOCK;
-				break;
-			case SCANCODE_ALTGR:
-				kstate |= 0x80;
-				break;
-			}
-
-			SDL_PrivateKeyboard(SDL_PRESSED,
-				SDL_Atari_TranslateKey(i, &keysym, SDL_TRUE, kstate));
-			SDL_AtariXbios_keyboard[i]=KEY_UNDEFINED;
-		}
-
-		/* Key released ? */
-		if (SDL_AtariXbios_keyboard[i]==KEY_RELEASED) {
-			switch (i) {
-			case SCANCODE_LEFTSHIFT:
-				kstate &= ~K_LSHIFT;
-				break;
-			case SCANCODE_RIGHTSHIFT:
-				kstate &= ~K_RSHIFT;
-				break;
-			case SCANCODE_LEFTCONTROL:
-				kstate &= ~K_CTRL;
-				break;
-			case SCANCODE_LEFTALT:
-				kstate &= ~K_ALT;
-				break;
-			case SCANCODE_ALTGR:
-				kstate &= ~0x80;
-				break;
-			}
-
-			if (i != SCANCODE_CAPSLOCK) {
-				SDL_PrivateKeyboard(SDL_RELEASED,
-					SDL_Atari_TranslateKey(i, &keysym, SDL_FALSE, kstate));
-			}
-			SDL_AtariXbios_keyboard[i]=KEY_UNDEFINED;
-		}
-	}
 }

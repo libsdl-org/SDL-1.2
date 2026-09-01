@@ -97,8 +97,8 @@ SDL_JOYSTICK_ATARI:
 	Use any of these strings in the environment variable to enable or
 	disable a joystick:
 
-	'ikbd-joy1-[on|off]' for IKBD joystick on port 1 (hardware access)
-	'xbios-joy1-[on|off]' for IKBD joystick on port 1 (XBIOS access)
+	'atari-joy1-[on|off]' for joystick on IKBD port 1 (read by whichever
+	    events driver is active; 'ikbd-joy1' and 'xbios-joy1' still work)
 	'porta-pad-[on|off]' for joypad and/or teamtap on port A
 	'porta-joy0-[on|off]' for joystick 0 on port A
 	'porta-joy1-[on|off]' for joystick 1 on port A
@@ -110,8 +110,7 @@ SDL_JOYSTICK_ATARI:
 	'portb-anpad-[on|off]' for analog paddle on port B
 
 	Default configuration is:
-		'ikbd-joy1-on' (if IKBD events driver enabled)
-		'xbios-joy1-on' (if xbios/gem events driver enabled)
+		'atari-joy1-on'
 		'porta-pad-on portb-pad-on' (if available on the machine)
 
 	port[a|b]-[pad|joy?|lp|anpad]-* strings are mutually exclusives.

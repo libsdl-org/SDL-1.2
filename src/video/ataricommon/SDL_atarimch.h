@@ -24,6 +24,8 @@
 #ifndef _ATARI_MCH_h
 #define _ATARI_MCH_h
 
+#include <mint/cookie.h>
+
 /* Machine type, i.e. the high word of the _MCH cookie. The low word tells
    the model apart within one type (Mega STE is MCH_STE with 0x0010). */
 enum {
@@ -35,5 +37,16 @@ enum {
 	MCH_ARANYM,
 	MCH_V4
 };
+
+/* No cookie jar means TOS 1.0x, i.e. an ST */
+static __inline__ long SDL_Atari_GetMch(void)
+{
+	long cookie_mch;
+
+	if (Getcookie(C__MCH, &cookie_mch) != C_FOUND)
+		cookie_mch = MCH_ST << 16;
+
+	return cookie_mch;
+}
 
 #endif /* _ATARI_MCH_h */

@@ -36,7 +36,5 @@
 #define _THIS	SDL_VideoDevice *this
 
 extern void AtariIkbd_InitOSKeymap(_THIS);
-extern void AtariIkbd_PumpEvents(_THIS);
-extern void AtariIkbd_ShutdownEvents(_THIS);
 
 #endif /* _SDL_ATARI_IKBDEVENTS_H_ */

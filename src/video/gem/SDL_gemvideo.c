@@ -1084,7 +1084,7 @@ static void GEM_VideoQuit(_THIS)
 	}
 	graf_mouse(ARROW, NULL);
 
-	SDL_AtariXbios_RestoreVectors();
+	SDL_Atari_RestoreVectors();
 
 	GEM_FreeBuffers(this);
 

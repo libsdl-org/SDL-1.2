@@ -89,10 +89,7 @@ static int Audio_Available(void)
 		return 0;
 	}
 
-	/* Cookie _MCH present ? if not, assume ST machine */
-	if (Getcookie(C__MCH, &cookie_mch) == C_NOTFOUND) {
-		cookie_mch = MCH_ST;
-	}
+	cookie_mch = SDL_Atari_GetMch();
 
 	/* Cookie _SND present ? if not, assume ST machine */
 	if (Getcookie(C__SND, &cookie_snd) == C_NOTFOUND) {

@@ -130,7 +130,7 @@ void GEM_PumpEvents(_THIS)
 
 		/* Keyboard event ? */
 		if (resultat & MU_KEYBD) {
-			em_out.emo_kmeta |= (Kbshift(-1) & (0x80 | K_CAPSLOCK));	/* MU_KEYBD is not aware of AltGr and CAPSLOCK */
+			em_out.emo_kmeta |= (Kbshift(-1) & (K_ALTGR | K_CAPSLOCK));	/* MU_KEYBD is not aware of AltGr and CAPSLOCK */
 			do_keyboard_special(em_out.emo_kmeta, cur_tick);
 			if (prevkc != em_out.emo_kreturn) {
 				do_keyboard(em_out.emo_kreturn, cur_tick);
@@ -148,7 +148,7 @@ void GEM_PumpEvents(_THIS)
 
 	/* Update mouse state */
 	graf_mkstate(&mousex, &mousey, &mouseb, &em_out.emo_kmeta);
-	em_out.emo_kmeta |= (Kbshift(-1) & (0x80 | K_CAPSLOCK));	/* MU_KEYBD is not aware of AltGr and CAPSLOCK */
+	em_out.emo_kmeta |= (Kbshift(-1) & (K_ALTGR | K_CAPSLOCK));	/* MU_KEYBD is not aware of AltGr and CAPSLOCK */
 	do_keyboard_special(em_out.emo_kmeta, cur_tick);
 	do_mouse_motion(this, mousex, mousey);
 	do_mouse_buttons(this, mouseb);
@@ -333,7 +333,7 @@ static void do_keyboard_special(short ks, Uint32 tick)
 	UPDATE_SPECIAL_KEYS(K_CTRL, SCANCODE_LEFTCONTROL);
 	UPDATE_SPECIAL_KEYS(K_ALT, SCANCODE_LEFTALT);
 	UPDATE_SPECIAL_KEYS(K_CAPSLOCK, SCANCODE_CAPSLOCK);
-	UPDATE_SPECIAL_KEYS(0x80, SCANCODE_ALTGR);
+	UPDATE_SPECIAL_KEYS(K_ALTGR, SCANCODE_ALTGR);
 }
 
 static void do_mouse_motion(_THIS, short mx, short my)
@@ -357,7 +357,7 @@ static void do_mouse_motion(_THIS, short mx, short my)
 
 	/* Relative mouse motion ? */
 	if (GEM_mouse_relative) {
-		SDL_AtariXbios_PostMouseEvents(this, SDL_FALSE);
+		SDL_Atari_PostMouseEvents(this, SDL_FALSE);
 		return;
 	}
 

@@ -93,8 +93,6 @@ struct SDL_PrivateVideoData {
 	void (*freeVbuffers)(_THIS);	/* Free video buffers */
 
 	void (*updRects)(_THIS, int numrects, SDL_Rect *rects);	/* updateRects to use when video ready */
-
-	void (*ShutdownEvents)(_THIS);	/* Shut down related XBIOS/IKBD events driver */
 };
 
 /* _VDO cookie values */
@@ -148,7 +146,6 @@ enum {
 #define XBIOS_freeVbuffers	(this->hidden->freeVbuffers)
 
 #define XBIOS_updRects		(this->hidden->updRects)
-#define XBIOS_ShutdownEvents	(this->hidden->ShutdownEvents)
 
 /*--- Functions prototypes ---*/
 
