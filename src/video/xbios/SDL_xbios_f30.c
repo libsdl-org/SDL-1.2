@@ -31,6 +31,7 @@
 #include <mint/osbind.h>
 #include <mint/falcon.h>
 
+#include "../ataricommon/SDL_atarimch.h"
 #include "../ataricommon/SDL_atarimxalloc_c.h"
 
 #include "SDL_xbios.h"

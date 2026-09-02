@@ -67,16 +67,6 @@ struct SDL_PrivateAudioData {
 #define MINTAUDIO_fastrambuf	(this->hidden->fastrambuf)
 #define MINTAUDIO_audiosize	(this->hidden->audiosize)
 
-/* _MCH cookie (values>>16) */
-enum {
-	MCH_ST=0,
-	MCH_STE,
-	MCH_TT,
-	MCH_F30,
-	MCH_CLONE,
-	MCH_ARANYM
-};
-
 /* Master clocks for replay frequencies */
 #define MASTERCLOCK_STE		8010666		/* Not sure of this one */
 #define MASTERCLOCK_TT		16107953	/* Not sure of this one */

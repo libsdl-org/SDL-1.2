@@ -106,17 +106,6 @@ enum {
 	VDO_MILAN
 };
 
-/* _MCH cookie values */
-enum {
-	MCH_ST=0,
-	MCH_STE,
-	MCH_TT,
-	MCH_F30,
-	MCH_MILAN,
-	MCH_ARANYM,
-	MCH_V4
-};
-
 /* Monitor types */
 enum {
 	MONITOR_MONO=0,

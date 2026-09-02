@@ -37,6 +37,7 @@
 #include "../SDL_audio_c.h"
 #include "../SDL_sysaudio.h"
 
+#include "../../video/ataricommon/SDL_atarimch.h"
 #include "../../video/ataricommon/SDL_atarisuper.h"
 
 #include "SDL_mintaudio.h"
