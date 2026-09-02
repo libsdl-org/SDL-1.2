@@ -184,6 +184,8 @@ static SDL_VideoDevice *XBIOS_CreateDevice(int devindex)
 		return(0);
 	}
 	SDL_memset(device->hidden, 0, (sizeof *device->hidden));
+	device->hidden->ap_id = -1;
+	device->hidden->vdi_handle = -1;
 	SDL_memset(device->gl_data, 0, sizeof(*device->gl_data));
 
 	/* Video functions */
@@ -709,11 +711,14 @@ static void XBIOS_VideoQuit(_THIS)
 
 	(*XBIOS_ShutdownEvents)(this);
 
-	/* Restore video mode and palette */
+	/* Restore video mode and palette. XBIOS_saveMode() sets XBIOS_oldvbase
+	 * so it is a good test whether at least that ran. */
 #ifndef DEBUG_VIDEO_XBIOS
-	(*XBIOS_restoreMode)(this);
+	if (XBIOS_oldvbase != NULL) {
+		(*XBIOS_restoreMode)(this);
 
-	(*XBIOS_vsync)(this);
+		(*XBIOS_vsync)(this);
+	}
 #endif
 
 #if SDL_VIDEO_OPENGL
@@ -744,7 +749,9 @@ static void XBIOS_VideoQuit(_THIS)
 		}
 	}
 
-	this->screen->pixels = NULL;
+	if (this->screen != NULL) {
+		this->screen->pixels = NULL;
+	}
 
 	/* Restore screensavers */
 	if (SDL_XBIOS_TveillePresent(this)) {

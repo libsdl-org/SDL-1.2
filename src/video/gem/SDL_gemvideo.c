@@ -169,6 +169,9 @@ static SDL_VideoDevice *GEM_CreateDevice(int devindex)
 		return(0);
 	}
 	SDL_memset(device->hidden, 0, (sizeof *device->hidden));
+	device->hidden->ap_id = -1;
+	device->hidden->vdi_handle = -1;
+	device->hidden->win_handle = -1;
 	SDL_memset(device->gl_data, 0, sizeof(*device->gl_data));
 
 	/* Set the function pointers */
@@ -1108,7 +1111,9 @@ static void GEM_VideoQuit(_THIS)
 		SDL_modelist[0]=NULL;
 	}
 
-	this->screen->pixels = NULL;
+	if (this->screen != NULL) {
+		this->screen->pixels = NULL;
+	}
 }
 
 static void GEM_RefreshWindow(_THIS, int winhandle, GRECT *rect)
