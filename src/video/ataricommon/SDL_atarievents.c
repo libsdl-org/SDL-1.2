@@ -54,11 +54,11 @@ void SDL_AtariMint_CheckTimer(void);
 
 SDL_bool SDL_Atari_vectors_installed;
 
-volatile Uint8  SDL_Atari_keyboard[ATARIBIOS_MAXKEYS];
+/* Written by the interrupt handlers, see SDL_atariqueue.h */
 volatile Uint16 SDL_Atari_mouseb;
-volatile Sint16 SDL_Atari_mousex;
-volatile Sint16 SDL_Atari_mousey;
 volatile Uint8  SDL_Atari_joystick;
+volatile Uint32 SDL_Atari_queue[ATARI_QUEUE_SIZE];
+volatile Uint32 SDL_Atari_queue_head;
 
 /* Local variables */
 
@@ -71,8 +71,14 @@ static const char *keytab_caps;
 static SDL_bool conterm_set;
 static char old_conterm;
 
-static Uint16 atari_prevmouseb;	/* save state of mouse buttons */
+static Uint32 queue_tail;
+static Uint16 prev_mouseb;	/* buttons of the previous packet */
+static int pending_mousex, pending_mousey;
 static short kstate;
+
+static SDL_VideoDevice *pump_device;
+static SDL_bool pump_relative_motion;
+static SDL_bool (*pump_mouse_focus)(_THIS);
 static void (*old_procterm)(void);
 static void (*restore_vectors)(void);
 
@@ -171,17 +177,18 @@ SDL_AtariEventsDriver SDL_Atari_GetEventsDriver(SDL_bool gemVideo)
 
 void SDL_Atari_InstallVectors(void (*install)(void), void (*restore)(void))
 {
-	SDL_memset((void *) SDL_Atari_keyboard, ATARI_KEY_UNDEFINED, sizeof(SDL_Atari_keyboard));
-
 	SDL_Atari_mouseb = 0;
-	SDL_Atari_mousex = SDL_Atari_mousey = 0;
 	SDL_Atari_joystick = 0;
-	atari_prevmouseb = 0;
+	SDL_Atari_queue_head = 0;
 
-	kstate = Kbshift(-1) & K_CAPSLOCK;
+	queue_tail = 0;
+	prev_mouseb = 0;
+	pending_mousex = pending_mousey = 0;
+
+	kstate = Kbshift(-1) & (K_RSHIFT | K_LSHIFT | K_CTRL | K_ALT | K_CAPSLOCK | K_ALTGR);
 
 	/* All the vectors write into this module's variables */
-	if (!CheckAccess((void *) SDL_Atari_keyboard, sizeof(SDL_Atari_keyboard))) {
+	if (!CheckAccess((void *) SDL_Atari_queue, sizeof(SDL_Atari_queue))) {
 		fprintf(stderr, "Insufficient privileges to install interrupt vectors. Set application's PRGFLAGS to Super.\n");
 		return;
 	}
@@ -207,114 +214,167 @@ void SDL_Atari_RestoreVectors(void)
 	}
 }
 
-static SDL_bool MouseInFocus(_THIS, SDL_bool (*mouseFocus)(_THIS))
+/* Motion is posted before the next button or key event so ordering holds */
+static void FlushMotion(void)
 {
-	if (mouseFocus) {
-		return mouseFocus(this);
+	if (pending_mousex == 0 && pending_mousey == 0) {
+		return;
+	}
+
+	if (pump_relative_motion && (SDL_GetAppState() & SDL_APPMOUSEFOCUS)) {
+		SDL_PrivateMouseMotion(0, 1, pending_mousex, pending_mousey);
+	}
+	pending_mousex = pending_mousey = 0;
+}
+
+static void UpdateModifiers(int scancode, SDL_bool pressed)
+{
+	short bit;
+
+	switch (scancode) {
+		case SCANCODE_LEFTSHIFT:
+			bit = K_LSHIFT;
+			break;
+		case SCANCODE_RIGHTSHIFT:
+			bit = K_RSHIFT;
+			break;
+		case SCANCODE_LEFTCONTROL:
+			bit = K_CTRL;
+			break;
+		case SCANCODE_LEFTALT:
+			bit = K_ALT;
+			break;
+		case SCANCODE_ALTGR:
+			bit = K_ALTGR;
+			break;
+		case SCANCODE_CAPSLOCK:
+			if (pressed) {
+				kstate ^= K_CAPSLOCK;
+			}
+			return;
+		default:
+			return;
+	}
+
+	if (pressed) {
+		kstate |= bit;
+	} else {
+		kstate &= ~bit;
+	}
+}
+
+static void PostKey(int scancode, SDL_bool pressed)
+{
+	SDL_keysym keysym;
+
+	/* Presses belong to the focused application; a release for a press
+	   SDL never saw is dropped by SDL itself */
+	if (pressed && !(SDL_GetAppState() & SDL_APPINPUTFOCUS)) {
+		return;
+	}
+
+	FlushMotion();
+
+	UpdateModifiers(scancode, pressed);
+	SDL_PrivateKeyboard(pressed ? SDL_PRESSED : SDL_RELEASED,
+		SDL_Atari_TranslateKey(scancode, &keysym, pressed, kstate));
+}
+
+static SDL_bool MouseInFocus(void)
+{
+	if (pump_mouse_focus) {
+		return pump_mouse_focus(pump_device);
 	}
 	return (SDL_GetAppState() & SDL_APPMOUSEFOCUS) != 0;
 }
 
+/* Transitions are found against the previous packet but posted against
+   what SDL believes: a press skipped for focus produces no release later,
+   and a release lost to a queue overrun is caught up on the next change */
+static void PostButtons(Uint16 buttons)
+{
+	Uint8 sdl_buttons;
+	int i;
+
+	if (buttons == prev_mouseb) {
+		return;
+	}
+
+	FlushMotion();
+
+	sdl_buttons = SDL_GetMouseState(NULL, NULL);
+	for (i=0; i<3; i++) {
+		Uint16 bit = 1<<i;
+		int button = GetButton(i);
+
+		if ((buttons & bit) && !(prev_mouseb & bit)) {
+			if (!(sdl_buttons & SDL_BUTTON(button)) && MouseInFocus()) {
+				SDL_PrivateMouseButton(SDL_PRESSED, button, 0, 0);
+			}
+		} else if (!(buttons & bit) && (sdl_buttons & SDL_BUTTON(button))) {
+			SDL_PrivateMouseButton(SDL_RELEASED, button, 0, 0);
+		}
+	}
+
+	prev_mouseb = buttons;
+}
+
+static void ProcessMouse(Uint32 entry)
+{
+	Sint8 dx = (Sint8) ((entry >> 8) & 0xff);
+	Sint8 dy = (Sint8) (entry & 0xff);
+
+	/* Keep the sum within what a motion event carries */
+	if (pending_mousex > 32000 || pending_mousex < -32000
+	    || pending_mousey > 32000 || pending_mousey < -32000) {
+		FlushMotion();
+	}
+	pending_mousex += dx;
+	pending_mousey += dy;
+
+	PostButtons((entry >> 16) & 0xff);
+}
+
 void SDL_Atari_PostEvents(_THIS, SDL_bool relativeMotion, SDL_bool (*mouseFocus)(_THIS))
 {
-	size_t i;
-	SDL_keysym keysym;
-	Uint16 buttons;
-
 	if (!SDL_Atari_vectors_installed) {
 		return;
 	}
 
-	for (i=0; i<sizeof(SDL_Atari_keyboard); i++) {
-		/* Key pressed ? */
-		if (SDL_Atari_keyboard[i]==ATARI_KEY_PRESSED) {
-			switch (i) {
-			case SCANCODE_LEFTSHIFT:
-				kstate |= K_LSHIFT;
-				break;
-			case SCANCODE_RIGHTSHIFT:
-				kstate |= K_RSHIFT;
-				break;
-			case SCANCODE_LEFTCONTROL:
-				kstate |= K_CTRL;
-				break;
-			case SCANCODE_LEFTALT:
-				kstate |= K_ALT;
-				break;
-			case SCANCODE_CAPSLOCK:
-				kstate ^= K_CAPSLOCK;
-				break;
-			case SCANCODE_ALTGR:
-				kstate |= K_ALTGR;
-				break;
-			}
+	pump_device = this;
+	pump_relative_motion = relativeMotion;
+	pump_mouse_focus = mouseFocus;
 
-			/* Presses belong to the focused application, releases to
-			   whoever saw the press */
-			if (SDL_GetAppState() & SDL_APPINPUTFOCUS) {
-				SDL_PrivateKeyboard(SDL_PRESSED,
-					SDL_Atari_TranslateKey(i, &keysym, SDL_TRUE, kstate));
-			}
-			SDL_Atari_keyboard[i]=ATARI_KEY_UNDEFINED;
+	for (;;) {
+		Uint32 head = SDL_Atari_queue_head;
+		Uint32 entry;
+
+		if (head == queue_tail) {
+			break;
+		}
+		/* The handlers overwrote what was not consumed in time */
+		if (head - queue_tail > ATARI_QUEUE_SIZE) {
+			queue_tail = head - ATARI_QUEUE_SIZE;
 		}
 
-		/* Key released ? */
-		if (SDL_Atari_keyboard[i]==ATARI_KEY_RELEASED) {
-			switch (i) {
-			case SCANCODE_LEFTSHIFT:
-				kstate &= ~K_LSHIFT;
-				break;
-			case SCANCODE_RIGHTSHIFT:
-				kstate &= ~K_RSHIFT;
-				break;
-			case SCANCODE_LEFTCONTROL:
-				kstate &= ~K_CTRL;
-				break;
-			case SCANCODE_LEFTALT:
-				kstate &= ~K_ALT;
-				break;
-			case SCANCODE_ALTGR:
-				kstate &= ~K_ALTGR;
-				break;
-			}
+		entry = SDL_Atari_queue[queue_tail & ATARI_QUEUE_MASK];
+		/* The slot may have been overwritten while being read */
+		if (SDL_Atari_queue_head - queue_tail > ATARI_QUEUE_SIZE) {
+			continue;
+		}
+		queue_tail++;
 
-			if (i != SCANCODE_CAPSLOCK) {
-				SDL_PrivateKeyboard(SDL_RELEASED,
-					SDL_Atari_TranslateKey(i, &keysym, SDL_FALSE, kstate));
-			}
-			SDL_Atari_keyboard[i]=ATARI_KEY_UNDEFINED;
+		switch (entry >> 24) {
+			case ATARI_QUEUE_KEY:
+				PostKey((entry >> 16) & 0x7f, (entry & (1<<23)) == 0);
+				break;
+			case ATARI_QUEUE_MOUSE:
+				ProcessMouse(entry);
+				break;
 		}
 	}
 
-	/* Mouse motion ? */
-	if (SDL_Atari_mousex || SDL_Atari_mousey) {
-		if (relativeMotion && (SDL_GetAppState() & SDL_APPMOUSEFOCUS)) {
-			SDL_PrivateMouseMotion(0, 1, SDL_Atari_mousex, SDL_Atari_mousey);
-		}
-		SDL_Atari_mousex = SDL_Atari_mousey = 0;
-	}
-
-	/* Mouse buttons ? Transitions are found against the previous sample but
-	   posted against what SDL believes, so a press skipped for focus
-	   produces no release later */
-	buttons = SDL_Atari_mouseb;
-	if (buttons != atari_prevmouseb) {
-		Uint8 sdl_buttons = SDL_GetMouseState(NULL, NULL);
-
-		for (i=0; i<3; i++) {
-			Uint16 bit = 1<<i;
-			int button = GetButton(i);
-
-			if ((buttons & bit) && !(atari_prevmouseb & bit)) {
-				if (!(sdl_buttons & SDL_BUTTON(button)) && MouseInFocus(this, mouseFocus)) {
-					SDL_PrivateMouseButton(SDL_PRESSED, button, 0, 0);
-				}
-			} else if (!(buttons & bit) && (sdl_buttons & SDL_BUTTON(button))) {
-				SDL_PrivateMouseButton(SDL_RELEASED, button, 0, 0);
-			}
-		}
-		atari_prevmouseb = buttons;
-	}
+	FlushMotion();
 }
 
 void SDL_Atari_InitializeConsoleSettings(void)

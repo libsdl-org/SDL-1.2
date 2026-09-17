@@ -32,15 +32,12 @@
 
 #include "SDL_keyboard.h"
 #include "../SDL_sysvideo.h"
+#include "SDL_atariqueue.h"
 
 /* Hidden "this" pointer for the video functions */
 #define _THIS	SDL_VideoDevice *this
 
 #define ATARIBIOS_MAXKEYS 128
-
-#define ATARI_KEY_PRESSED	0xff
-#define ATARI_KEY_UNDEFINED	0x80
-#define ATARI_KEY_RELEASED	0x00
 
 #define ATARI_JOY_UP	(1<<0)
 #define ATARI_JOY_DOWN	(1<<1)
@@ -52,11 +49,10 @@
    two drivers can be installed at a time */
 extern SDL_bool SDL_Atari_vectors_installed;
 
-extern volatile Uint8  SDL_Atari_keyboard[ATARIBIOS_MAXKEYS];
-extern volatile Uint16 SDL_Atari_mouseb;
-extern volatile Sint16 SDL_Atari_mousex;
-extern volatile Sint16 SDL_Atari_mousey;
+extern volatile Uint16 SDL_Atari_mouseb;			/* live button state, for the joystick */
 extern volatile Uint8  SDL_Atari_joystick;
+extern volatile Uint32 SDL_Atari_queue[ATARI_QUEUE_SIZE];	/* key and mouse events in order */
+extern volatile Uint32 SDL_Atari_queue_head;
 
 typedef enum {
 	ATARI_EVENTS_INVALID = -1,
@@ -83,8 +79,8 @@ SDL_keysym *SDL_Atari_TranslateKey(int scancode, SDL_keysym *keysym,
 extern void SDL_Atari_InstallVectors(void (*install)(void), void (*restore)(void));
 extern void SDL_Atari_RestoreVectors(void);
 
-/* Post what the handlers collected. Motion is posted only when relativeMotion
-   is set, mouseFocus (if given) is asked right before a button press is posted */
+/* Drain the queue. Queued motion is posted only when relativeMotion is set,
+   mouseFocus (if given) is asked right before a button press is posted */
 extern void SDL_Atari_PostEvents(_THIS, SDL_bool relativeMotion, SDL_bool (*mouseFocus)(_THIS));
 
 #endif /* _SDL_ATARI_EVENTS_H_ */

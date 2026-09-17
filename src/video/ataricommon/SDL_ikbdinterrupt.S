@@ -21,6 +21,7 @@
 */
 
 #include "symbols.h"
+#include "SDL_atariqueue.h"
 
 /*
  *	IKBD 6301 interrupt routine
@@ -33,11 +34,10 @@
 	.globl	SYM(SDL_AtariIkbd_Install)
 	.globl	SYM(SDL_AtariIkbd_Restore)
 
-	.globl	SYM(SDL_Atari_keyboard)
 	.globl	SYM(SDL_Atari_mouseb)
-	.globl	SYM(SDL_Atari_mousex)
-	.globl	SYM(SDL_Atari_mousey)
 	.globl	SYM(SDL_Atari_joystick)
+	.globl	SYM(SDL_Atari_queue)
+	.globl	SYM(SDL_Atari_queue_head)
 
 	.globl	SYM(Atari_UnhookXbra)
 
@@ -226,7 +226,7 @@ ikbd:
 #else
 	btst	#0,0xfffffc00.w
 #endif
-	beqs	ikbd_oldmidi
+	beq	ikbd_oldmidi
 
 	moveb	0xfffffc02:w,d0
 
@@ -245,12 +245,16 @@ ikbd:
 	| Mouse packet, byte #1
 
 ikbd_yes_mouse:
-#if defined(__mcoldfire__)
 	andl	#3,d0
-#else
-	andw	#3,d0
-#endif
 	movew	d0,SYM(SDL_Atari_mouseb)
+
+	| Start the queue entry, dx and dy follow in the next two packets
+
+	moveql	#ATARI_QUEUE_MOUSE,d1
+	lsll	#8,d1
+	moveb	d0,d1
+	swap	d1
+	movel	d1,ikbd_mouse_entry
 
 #if defined(__mcoldfire__)
 	movel	#ikbd_mousex,d0
@@ -275,17 +279,11 @@ ikbd_yes_joystick:
 
 ikbd_no_mouse:
 	moveb	d0,d1
-	lea		SYM(SDL_Atari_keyboard),a0
-#if defined(__mcoldfire__)
-	andl	#0x7f,d1
-	btst	#7,d0
-	seq	d0
-	moveb	d0,a0@(0,d1:l)
-#else
-	andw	#0x7f,d1
-	btst	#7,d0
-	seq	a0@(0,d1:w)
-#endif
+	moveql	#ATARI_QUEUE_KEY,d0
+	lsll	#8,d0
+	moveb	d1,d0
+	swap	d0
+	ATARI_QUEUE_PUSH
 
 	| End of interrupt
 
@@ -333,23 +331,17 @@ ikbd_mousex:
 #else
 	btst	#0,0xfffffc00.w
 #endif
-	beqs	ikbd_oldmidi
+	beq	ikbd_oldmidi
 
 	moveb	0xfffffc02:w,d0
-	extw	d0
+	moveb	d0,ikbd_mouse_entry+2
 #if defined(__mcoldfire__)
-	movew	SYM(SDL_Atari_mousex),d1
-	addl	d1,d0
-	movew	d0,SYM(SDL_Atari_mousex)
-
 	movel	#ikbd_mousey,d0
 	movel	d0,0x118:w
 #else
-	addw	d0,SYM(SDL_Atari_mousex)
-
 	movel	#ikbd_mousey,0x118:w
 #endif
-	bras	ikbd_endit_stack
+	bra	ikbd_endit_stack
 
 	| Mouse packet, byte #3
 
@@ -368,23 +360,21 @@ ikbd_mousey:
 #else
 	btst	#0,0xfffffc00.w
 #endif
-	beqs	ikbd_oldmidi
+	beq	ikbd_oldmidi
 
 	moveb	0xfffffc02:w,d0
-	extw	d0
-#if defined(__mcoldfire__)
-	movew	SYM(SDL_Atari_mousey),d1
-	addl	d1,d0
-	movew	d0,SYM(SDL_Atari_mousey)
+	moveb	d0,ikbd_mouse_entry+3
 
+	movel	ikbd_mouse_entry,d0
+	ATARI_QUEUE_PUSH
+
+#if defined(__mcoldfire__)
 	movel	#ikbd,d0
 	movel	d0,0x118:w
 #else
-	addw	d0,SYM(SDL_Atari_mousey)
-
 	movel	#ikbd,0x118:w
 #endif
-	bras	ikbd_endit_stack
+	bra	ikbd_endit_stack
 
 	| Joystick packet, byte #2
 
@@ -403,7 +393,7 @@ ikbd_joystick:
 #else
 	btst	#0,0xfffffc00.w
 #endif
-	beqs	ikbd_oldmidi
+	beq	ikbd_oldmidi
 
 #if defined(__mcoldfire__)
 	moveb	0xfffffc02:w,d0
@@ -411,12 +401,15 @@ ikbd_joystick:
 
 	movel	#ikbd,d0
 	movel	d0,0x118:w
-
-	bra	ikbd_endit_stack
 #else
 	moveb	0xfffffc02:w,SYM(SDL_Atari_joystick)
 
 	movel	#ikbd,0x118:w
-
-	bras	ikbd_endit_stack
 #endif
+	bra	ikbd_endit_stack
+
+	.bss
+
+	.even
+ikbd_mouse_entry:
+	.ds.l	1

@@ -21,6 +21,7 @@
 */
 
 #include "symbols.h"
+#include "SDL_atariqueue.h"
 
 /*
  *	XBIOS mouse & joystick vectors
@@ -38,11 +39,10 @@
 	.globl	SYM(SDL_AtariXbios_installkeyboardvector)
 	.globl	SYM(SDL_AtariXbios_mouselock)
 
-	.globl	SYM(SDL_Atari_keyboard)
 	.globl	SYM(SDL_Atari_mouseb)
-	.globl	SYM(SDL_Atari_mousex)
-	.globl	SYM(SDL_Atari_mousey)
 	.globl	SYM(SDL_Atari_joystick)
+	.globl	SYM(SDL_Atari_queue)
+	.globl	SYM(SDL_Atari_queue_head)
 
 	.globl	SYM(Atari_UnhookXbra)
 
@@ -246,42 +246,25 @@ oldmousevector:
 	.dc.l	0
 newmousevector:
 #if defined(__mcoldfire__)
-	lea	sp@(-8),sp
-	moveml	d0-d1,sp@
+	lea	sp@(-12),sp
+	moveml	d0-d1/a0,sp@
 #else
-	movel	d0,sp@-
+	moveml	d0-d1/a0,sp@-
 #endif
 
 	/* Mouse buttons */
-	moveb	(a0),d0
-#if defined(__mcoldfire__)
-	andl	#7,d0
-#else
-	andw	#7,d0
-#endif
-	movew	d0,SYM(SDL_Atari_mouseb)
+	moveb	a0@,d1
+	andl	#7,d1
+	movew	d1,SYM(SDL_Atari_mouseb)
 
-	/* X movement */
+	/* Queue entry: type, buttons, dx, dy */
+	moveql	#ATARI_QUEUE_MOUSE,d0
+	lsll	#8,d0
+	moveb	d1,d0
+	lsll	#8,d0
 	moveb	a0@(1),d0
-	extw	d0
-#if defined(__mcoldfire__)
-	movew	SYM(SDL_Atari_mousex),d1
-	addl	d1,d0
-	movew	d0,SYM(SDL_Atari_mousex)
-#else
-	addw	d0,SYM(SDL_Atari_mousex)
-#endif
-
-	/* Y movement */
+	lsll	#8,d0
 	moveb	a0@(2),d0
-	extw	d0
-#if defined(__mcoldfire__)
-	movew	SYM(SDL_Atari_mousey),d1
-	addl	d1,d0
-	movew	d0,SYM(SDL_Atari_mousey)
-#else
-	addw	d0,SYM(SDL_Atari_mousey)
-#endif
 
 	/* Lock mouse position ? */
 	tstw	SYM(SDL_AtariXbios_mouselock)
@@ -290,12 +273,14 @@ newmousevector:
 	clrb	a0@(2)
 no_mouse_lock:
 
+	ATARI_QUEUE_PUSH
+
 	/* Jump through old vector */
 #if defined(__mcoldfire__)
-	moveml	sp@,d0-d1
-	lea	sp@(8),sp
+	moveml	sp@,d0-d1/a0
+	lea	sp@(12),sp
 #else
-	movel	sp@+,d0
+	moveml	sp@+,d0-d1/a0
 #endif
 
 	movel	oldmousevector,sp@-
@@ -362,17 +347,11 @@ newkeyboardvector:
 #endif
 
 	moveb	d0,d1
-	lea		SYM(SDL_Atari_keyboard),a0
-#if defined(__mcoldfire__)
-	andl	#0x7f,d1
-	btst	#7,d0
-	seq	d0
-	moveb	d0,a0@(0,d1:l)
-#else
-	andw	#0x7f,d1
-	btst	#7,d0
-	seq	a0@(0,d1:w)
-#endif
+	moveql	#ATARI_QUEUE_KEY,d0
+	lsll	#8,d0
+	moveb	d1,d0
+	swap	d0
+	ATARI_QUEUE_PUSH
 
 	/* Jump through old vector */
 #if defined(__mcoldfire__)
