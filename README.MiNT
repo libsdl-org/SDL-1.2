@@ -206,6 +206,12 @@ Keyboard, mouse and joystick driver:
 	events). Mouse buttons, relative motion and the joystick always come from the
 	XBIOS vectors (which are available on every machine).
 
+	The AES reports key presses and their repeats but no releases, so the GEM
+	driver considers a key released once its next repeat is overdue, using
+	the delay and rate set in the Control Panel. Only the last pressed key
+	repeats, so keys held together are released early; use
+	SDL_ATARI_EVENTSDRIVER=xbios where available.
+
 	As XBIOS video driver is not available on Hades, it is forced to use the
 	implicit GEM driver despite the fact that it has both IKBD and XBIOS
 	features available.

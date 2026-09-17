@@ -43,9 +43,10 @@
 #include "../ataricommon/SDL_atarievents_c.h"
 #include "../ataricommon/SDL_xbiosevents_c.h"
 
-/* Duration after which we consider key released */
+/* Added to the system key repeat delay and rate when deciding that a key
+   without a new repeat has been released, in ms; covers the pump interval */
 
-#define KEY_PRESS_DURATION 100
+#define KEY_TIMEOUT_MARGIN 60
 
 #define MSG_SDL_ID	(('S'<<8)|'D')
 
@@ -53,7 +54,9 @@
 
 static unsigned char gem_currentkeyboard[ATARIBIOS_MAXKEYS];
 static unsigned char gem_previouskeyboard[ATARIBIOS_MAXKEYS];
+static unsigned char gem_repeatedkeyboard[ATARIBIOS_MAXKEYS];
 static Uint32 keyboard_ticks[ATARIBIOS_MAXKEYS];
+static Uint32 key_initial_timeout, key_repeat_timeout;
 
 static short prevmx=0,prevmy=0;
 static short dummy_msgbuf[8] = {MSG_SDL_ID,0,0,0, 0,0,0,0};
@@ -73,9 +76,18 @@ static void clearKeyboardState(Uint32 tick);
 
 void GEM_InitOSKeymap(_THIS)
 {
+	long kbrate;
+
 	SDL_memset(gem_currentkeyboard, 0, sizeof(gem_currentkeyboard));
 	SDL_memset(gem_previouskeyboard, 0, sizeof(gem_previouskeyboard));
+	SDL_memset(gem_repeatedkeyboard, 0, sizeof(gem_repeatedkeyboard));
 	SDL_memset(keyboard_ticks, 0, sizeof(keyboard_ticks));
+
+	/* The AES reports presses and repeats but no releases, so a key is
+	   released once its next repeat is overdue. Kbrate() is in 20 ms units */
+	kbrate = Kbrate(-1, -1);
+	key_initial_timeout = ((kbrate >> 8) & 0xff) * 20 + KEY_TIMEOUT_MARGIN;
+	key_repeat_timeout = (kbrate & 0xff) * 20 + KEY_TIMEOUT_MARGIN;
 
 	/* Mouse init */
 	GEM_mouse_relative = SDL_FALSE;
@@ -286,6 +298,9 @@ static void do_keyboard(short kc, Uint32 tick)
 
 	if (kc) {
 		scancode=(kc>>8) & (ATARIBIOS_MAXKEYS-1);
+		if (gem_currentkeyboard[scancode]) {
+			gem_repeatedkeyboard[scancode]=0xFF;
+		}
 		gem_currentkeyboard[scancode]=0xFF;
 		keyboard_ticks[scancode]=tick;
 	}
@@ -439,6 +454,22 @@ static int mouse_in_work_area(int winhandle, short mx, short my)
 	return 0;
 }
 
+static Uint32 key_timeout(int scancode)
+{
+	switch (scancode) {
+		case SCANCODE_RIGHTSHIFT:
+		case SCANCODE_LEFTSHIFT:
+		case SCANCODE_LEFTCONTROL:
+		case SCANCODE_LEFTALT:
+		case SCANCODE_CAPSLOCK:
+		case SCANCODE_ALTGR:
+			/* Sampled as state on every pump, so gone as soon as unseen */
+			return 0;
+	}
+
+	return gem_repeatedkeyboard[scancode] ? key_repeat_timeout : key_initial_timeout;
+}
+
 /* Clear key state for which we did not receive events for a while */
 
 static void clearKeyboardState(Uint32 tick)
@@ -447,8 +478,9 @@ static void clearKeyboardState(Uint32 tick)
 
 	for (i=0; i<ATARIBIOS_MAXKEYS; i++) {
 		if (keyboard_ticks[i]) {
-			if (tick-keyboard_ticks[i] > KEY_PRESS_DURATION) {
+			if (tick-keyboard_ticks[i] > key_timeout(i)) {
 				gem_currentkeyboard[i]=0;
+				gem_repeatedkeyboard[i]=0;
 				keyboard_ticks[i]=0;
 			}
 		}
