@@ -149,8 +149,6 @@ static void GEM_DeleteDevice(SDL_VideoDevice *device)
 static SDL_VideoDevice *GEM_CreateDevice(int devindex)
 {
 	SDL_VideoDevice *device;
-	int vectors_mask;
-/*	unsigned long dummy;*/
 
 	/* Initialize all variables that we clean on shutdown */
 	device = (SDL_VideoDevice *)SDL_malloc(sizeof(SDL_VideoDevice));
@@ -213,11 +211,6 @@ static SDL_VideoDevice *GEM_CreateDevice(int devindex)
 	device->GL_MakeCurrent = SDL_AtariGL_MakeCurrent;
 	device->GL_SwapBuffers = GEM_GL_SwapBuffers;
 #endif
-
-	vectors_mask = ATARI_XBIOS_JOYSTICKEVENTS;	/* XBIOS joystick events */
-	vectors_mask |= ATARI_XBIOS_MOUSEEVENTS;	/* XBIOS mouse events */
-
-	SDL_AtariXbios_InstallVectors(vectors_mask);
 
 	device->free = GEM_DeleteDevice;
 
@@ -409,10 +402,25 @@ static int GEM_VideoInit(_THIS, SDL_PixelFormat *vformat)
 	 * and copies 273 values here
 	 */
 	short work_out[273];
+	SDL_AtariEventsDriver events_driver;
+	int vectors_mask;
 
 	GEM_ap_id = internal_ap_id;
 	VDI_handle = internal_vdi_handle;
 	VDI_pixelsize = internal_pixelsize;
+
+	/* Events: mouse and joystick from the XBIOS vectors, keyboard from the
+	   AES unless asked otherwise */
+	events_driver = SDL_Atari_GetEventsDriver(SDL_TRUE);
+	if (events_driver == ATARI_EVENTS_INVALID) {
+		return -1;
+	}
+	vectors_mask = ATARI_XBIOS_JOYSTICKEVENTS | ATARI_XBIOS_MOUSEEVENTS;
+	if (events_driver == ATARI_EVENTS_XBIOS) {
+		vectors_mask |= ATARI_XBIOS_KEYBOARDEVENTS;
+	}
+	SDL_AtariXbios_InstallVectors(vectors_mask);
+	GEM_xbios_keyboard = SDL_Atari_vectors_installed && events_driver == ATARI_EVENTS_XBIOS;
 
 	/* Read version and features */
 	GEM_version = aes_global[0];

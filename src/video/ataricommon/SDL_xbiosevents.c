@@ -45,9 +45,7 @@ SDL_bool SDL_AtariXbios_IsKeyboardVectorSupported()
 
 void AtariXbios_InitOSKeymap(_THIS)
 {
-	/* All three vectors must be installed together. Only GEM video+events
-	 * driver (they are coupled together) has the luxury of being able to
-	 * poll keyboard events via GEM and mouse/joystick via XBIOS. */
+	/* The GEM driver installs its own selection of these */
 	int vectors_mask;
 	vectors_mask  = ATARI_XBIOS_JOYSTICKEVENTS;	/* XBIOS joystick events */
 	vectors_mask |= ATARI_XBIOS_MOUSEEVENTS;	/* XBIOS mouse events */

@@ -312,7 +312,7 @@ static int XBIOS_InitEvents(_THIS)
 {
 	SDL_Atari_InitInternalKeymap(this);
 
-	switch (SDL_Atari_GetEventsDriver()) {
+	switch (SDL_Atari_GetEventsDriver(SDL_FALSE)) {
 		case ATARI_EVENTS_IKBD:
 			this->InitOSKeymap = AtariIkbd_InitOSKeymap;
 			break;
@@ -331,8 +331,7 @@ static void XBIOS_PumpEvents(_THIS)
 {
 	SDL_AtariMint_BackgroundTasks();
 
-	SDL_Atari_PostKeyboardEvents(this);
-	SDL_Atari_PostMouseEvents(this, SDL_TRUE);
+	SDL_Atari_PostEvents(this, SDL_TRUE, NULL);
 }
 
 /* Called after XBIOS_CreateDevice, and SDL_XBIOS_VideoInit_ST (and its follow-ups) */

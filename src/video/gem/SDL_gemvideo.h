@@ -91,6 +91,7 @@ struct SDL_PrivateVideoData {
 	SDL_bool window_fulled;		/* Window maximized ? */
 	SDL_bool iconified;			/* Window iconified ? */
 	SDL_bool mouse_relative;	/* Report relative mouse movement */
+	SDL_bool xbios_keyboard;	/* Keyboard from the XBIOS vector, not the AES */
 	SDL_bool lock_redraw;		/* Prevent redraw till buffers are setup */
 	SDL_bool cursor_hidden;		/* Mouse cursor hidden flag */
 	SDL_bool align_windows;		/* align windows to 16-pixel boundary */
@@ -136,6 +137,7 @@ struct SDL_PrivateVideoData {
 #define GEM_win_fulled		(this->hidden->window_fulled)
 #define GEM_iconified		(this->hidden->iconified)
 #define GEM_mouse_relative	(this->hidden->mouse_relative)
+#define GEM_xbios_keyboard	(this->hidden->xbios_keyboard)
 #define GEM_locked			(this->hidden->locked)
 #define GEM_lock_redraw		(this->hidden->lock_redraw)
 #define GEM_cursor_hidden	(this->hidden->cursor_hidden)

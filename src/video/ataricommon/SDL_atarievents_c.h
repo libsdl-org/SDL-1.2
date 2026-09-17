@@ -61,12 +61,14 @@ extern volatile Uint8  SDL_Atari_joystick;
 typedef enum {
 	ATARI_EVENTS_INVALID = -1,
 	ATARI_EVENTS_IKBD,
-	ATARI_EVENTS_XBIOS
+	ATARI_EVENTS_XBIOS,
+	ATARI_EVENTS_GEM
 } SDL_AtariEventsDriver;
 
-/* The driver SDL_ATARI_EVENTSDRIVER asks for, or the default for the
-   machine; sets the SDL error when the machine cannot provide it */
-extern SDL_AtariEventsDriver SDL_Atari_GetEventsDriver(void);
+/* The driver SDL_ATARI_EVENTSDRIVER asks for, or the default for the video
+   driver; sets the SDL error when the machine or the video driver cannot
+   provide it */
+extern SDL_AtariEventsDriver SDL_Atari_GetEventsDriver(SDL_bool gemVideo);
 
 extern void SDL_Atari_InitializeConsoleSettings(void);
 extern void SDL_Atari_RestoreConsoleSettings(void);
@@ -81,7 +83,8 @@ SDL_keysym *SDL_Atari_TranslateKey(int scancode, SDL_keysym *keysym,
 extern void SDL_Atari_InstallVectors(void (*install)(void), void (*restore)(void));
 extern void SDL_Atari_RestoreVectors(void);
 
-extern void SDL_Atari_PostKeyboardEvents(_THIS);
-extern void SDL_Atari_PostMouseEvents(_THIS, SDL_bool buttonEvents);
+/* Post what the handlers collected. Motion is posted only when relativeMotion
+   is set, mouseFocus (if given) is asked right before a button press is posted */
+extern void SDL_Atari_PostEvents(_THIS, SDL_bool relativeMotion, SDL_bool (*mouseFocus)(_THIS));
 
 #endif /* _SDL_ATARI_EVENTS_H_ */

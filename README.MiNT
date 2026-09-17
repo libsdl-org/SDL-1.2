@@ -89,9 +89,9 @@ SDL_AUDIODRIVER:
 	Set to 'disk' to force disk-writing audio driver
 
 SDL_ATARI_EVENTSDRIVER
-	Set to 'ikbd' to force IKBD 6301 events driver
-	Set to 'xbios' to force XBIOS events driver
-	GEM events driver is used implicitly if 'gem' video driver is used.
+	Set to 'ikbd' to force IKBD 6301 events driver (xbios video only)
+	Set to 'xbios' to force XBIOS events driver (TOS >= 2.x or MagiC)
+	Set to 'gem' to force GEM events driver (gem video only)
 
 SDL_JOYSTICK_ATARI:
 	Use any of these strings in the environment variable to enable or
@@ -194,8 +194,17 @@ Gem video:
 		Only the current resolution, if 8 bits or higher depth.
 
 Keyboard, mouse and joystick driver:
-	XBIOS driver is automatically used in TOS >= 2.x and/or in MagiC. Otherwise
-	IKBD driver is used.
+	When unset, XBIOS video uses XBIOS where available (TOS >= 2.x and/or in
+	MagiC) and IKBD otherwise, GEM video uses GEM.
+
+	In ideal circumstances, XBIOS video supports selection of XBIOS and IKBD
+	events while GEM video supports selection of XBIOS and GEM events. Otherwise
+	XBIOS video is stuck with IKBD events and GEM video with GEM events.
+
+	With GEM video the choice only decides where keyboard events come from:
+	AES message loop or XBIOS keyboard vector (which reports key press/release
+	events). Mouse buttons, relative motion and the joystick always come from the
+	XBIOS vectors (which are available on every machine).
 
 	As XBIOS video driver is not available on Hades, it is forced to use the
 	implicit GEM driver despite the fact that it has both IKBD and XBIOS

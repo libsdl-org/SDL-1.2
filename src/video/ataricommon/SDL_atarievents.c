@@ -83,6 +83,8 @@ static int GetButton(int button)
 	switch(button) {
 		case 0:
 			return SDL_BUTTON_RIGHT;
+		case 2:
+			return SDL_BUTTON_MIDDLE;
 		case 1:
 		default:
 			return SDL_BUTTON_LEFT;
@@ -116,11 +118,30 @@ static SDL_bool IsIkbdSupported(void)
 	       (cookie_mch == MCH_ARANYM<<16);
 }
 
-SDL_AtariEventsDriver SDL_Atari_GetEventsDriver(void)
+SDL_AtariEventsDriver SDL_Atari_GetEventsDriver(SDL_bool gemVideo)
 {
 	const char *envr = SDL_getenv("SDL_ATARI_EVENTSDRIVER");
 
-	if (envr && SDL_strcmp(envr, "ikbd") == 0) {
+	if (!envr) {
+		if (gemVideo) {
+			return ATARI_EVENTS_GEM;
+		}
+		if (SDL_AtariXbios_IsKeyboardVectorSupported()) {
+			return ATARI_EVENTS_XBIOS;
+		}
+		if (IsIkbdSupported()) {
+			/* TOS 1.x */
+			return ATARI_EVENTS_IKBD;
+		}
+		SDL_SetError("No keyboard driver available for this machine");
+		return ATARI_EVENTS_INVALID;
+	}
+
+	if (SDL_strcmp(envr, "ikbd") == 0) {
+		if (gemVideo) {
+			SDL_SetError("IKBD events driver requires the XBIOS video driver");
+			return ATARI_EVENTS_INVALID;
+		}
 		if (!IsIkbdSupported()) {
 			SDL_SetError("IKBD events driver requires Atari hardware");
 			return ATARI_EVENTS_INVALID;
@@ -128,7 +149,7 @@ SDL_AtariEventsDriver SDL_Atari_GetEventsDriver(void)
 		return ATARI_EVENTS_IKBD;
 	}
 
-	if (envr && SDL_strcmp(envr, "xbios") == 0) {
+	if (SDL_strcmp(envr, "xbios") == 0) {
 		if (!SDL_AtariXbios_IsKeyboardVectorSupported()) {
 			SDL_SetError("XBIOS events driver requires TOS 2.0 or MagiC");
 			return ATARI_EVENTS_INVALID;
@@ -136,15 +157,15 @@ SDL_AtariEventsDriver SDL_Atari_GetEventsDriver(void)
 		return ATARI_EVENTS_XBIOS;
 	}
 
-	if (SDL_AtariXbios_IsKeyboardVectorSupported()) {
-		return ATARI_EVENTS_XBIOS;
-	}
-	if (IsIkbdSupported()) {
-		/* TOS 1.x */
-		return ATARI_EVENTS_IKBD;
+	if (SDL_strcmp(envr, "gem") == 0) {
+		if (!gemVideo) {
+			SDL_SetError("GEM events driver requires the GEM video driver");
+			return ATARI_EVENTS_INVALID;
+		}
+		return ATARI_EVENTS_GEM;
 	}
 
-	SDL_SetError("No keyboard driver available for this machine");
+	SDL_SetError("Unknown events driver '%s'", envr);
 	return ATARI_EVENTS_INVALID;
 }
 
@@ -186,10 +207,19 @@ void SDL_Atari_RestoreVectors(void)
 	}
 }
 
-void SDL_Atari_PostKeyboardEvents(_THIS)
+static SDL_bool MouseInFocus(_THIS, SDL_bool (*mouseFocus)(_THIS))
+{
+	if (mouseFocus) {
+		return mouseFocus(this);
+	}
+	return (SDL_GetAppState() & SDL_APPMOUSEFOCUS) != 0;
+}
+
+void SDL_Atari_PostEvents(_THIS, SDL_bool relativeMotion, SDL_bool (*mouseFocus)(_THIS))
 {
 	size_t i;
 	SDL_keysym keysym;
+	Uint16 buttons;
 
 	if (!SDL_Atari_vectors_installed) {
 		return;
@@ -219,8 +249,12 @@ void SDL_Atari_PostKeyboardEvents(_THIS)
 				break;
 			}
 
-			SDL_PrivateKeyboard(SDL_PRESSED,
-				SDL_Atari_TranslateKey(i, &keysym, SDL_TRUE, kstate));
+			/* Presses belong to the focused application, releases to
+			   whoever saw the press */
+			if (SDL_GetAppState() & SDL_APPINPUTFOCUS) {
+				SDL_PrivateKeyboard(SDL_PRESSED,
+					SDL_Atari_TranslateKey(i, &keysym, SDL_TRUE, kstate));
+			}
 			SDL_Atari_keyboard[i]=ATARI_KEY_UNDEFINED;
 		}
 
@@ -251,38 +285,35 @@ void SDL_Atari_PostKeyboardEvents(_THIS)
 			SDL_Atari_keyboard[i]=ATARI_KEY_UNDEFINED;
 		}
 	}
-}
-
-void SDL_Atari_PostMouseEvents(_THIS, SDL_bool buttonEvents)
-{
-	if (!SDL_Atari_vectors_installed) {
-		return;
-	}
 
 	/* Mouse motion ? */
 	if (SDL_Atari_mousex || SDL_Atari_mousey) {
-		SDL_PrivateMouseMotion(0, 1, SDL_Atari_mousex, SDL_Atari_mousey);
+		if (relativeMotion && (SDL_GetAppState() & SDL_APPMOUSEFOCUS)) {
+			SDL_PrivateMouseMotion(0, 1, SDL_Atari_mousex, SDL_Atari_mousey);
+		}
 		SDL_Atari_mousex = SDL_Atari_mousey = 0;
 	}
 
-	/* Mouse button ? */
-	if (buttonEvents && (SDL_Atari_mouseb != atari_prevmouseb)) {
-		int i;
+	/* Mouse buttons ? Transitions are found against the previous sample but
+	   posted against what SDL believes, so a press skipped for focus
+	   produces no release later */
+	buttons = SDL_Atari_mouseb;
+	if (buttons != atari_prevmouseb) {
+		Uint8 sdl_buttons = SDL_GetMouseState(NULL, NULL);
 
-		for (i=0;i<2;i++) {
-			int curbutton, prevbutton;
+		for (i=0; i<3; i++) {
+			Uint16 bit = 1<<i;
+			int button = GetButton(i);
 
-			curbutton = SDL_Atari_mouseb & (1<<i);
-			prevbutton = atari_prevmouseb & (1<<i);
-
-			if (curbutton && !prevbutton) {
-				SDL_PrivateMouseButton(SDL_PRESSED, GetButton(i), 0, 0);
-			}
-			if (!curbutton && prevbutton) {
-				SDL_PrivateMouseButton(SDL_RELEASED, GetButton(i), 0, 0);
+			if ((buttons & bit) && !(atari_prevmouseb & bit)) {
+				if (!(sdl_buttons & SDL_BUTTON(button)) && MouseInFocus(this, mouseFocus)) {
+					SDL_PrivateMouseButton(SDL_PRESSED, button, 0, 0);
+				}
+			} else if (!(buttons & bit) && (sdl_buttons & SDL_BUTTON(button))) {
+				SDL_PrivateMouseButton(SDL_RELEASED, button, 0, 0);
 			}
 		}
-		atari_prevmouseb = SDL_Atari_mouseb;
+		atari_prevmouseb = buttons;
 	}
 }
 

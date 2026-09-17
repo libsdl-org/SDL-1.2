@@ -255,9 +255,9 @@ newmousevector:
 	/* Mouse buttons */
 	moveb	(a0),d0
 #if defined(__mcoldfire__)
-	andl	#3,d0
+	andl	#7,d0
 #else
-	andw	#3,d0
+	andw	#7,d0
 #endif
 	movew	d0,SYM(SDL_Atari_mouseb)
 
