@@ -362,8 +362,11 @@ static void VDI_ReadExtInfo(_THIS, short *work_out)
 	 * so we can directly write to screen without using vro_cpyfm
 	 */
 	if (EdDI_version >= EDDI_11) {
+		unsigned long screen_address;
+
 		VDI_pitch = work_out[5];
-		VDI_screen = (void *) *((unsigned long *) &work_out[6]);
+		SDL_memcpy(&screen_address, &work_out[6], sizeof(screen_address));
+		VDI_screen = (void *) screen_address;
 	}
 
 	switch(clut_type) {
