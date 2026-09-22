@@ -43,6 +43,7 @@ extern void AtariXbios_InitOSKeymap(_THIS);
 
 extern void SDL_AtariXbios_InstallVectors(int vectors_mask);
 extern void SDL_AtariXbios_LockMousePosition(SDL_bool lockPosition);
+extern void SDL_AtariXbios_MoveMousePosition(int dx, int dy);
 
 extern SDL_bool SDL_AtariXbios_IsKeyboardVectorSupported();
 

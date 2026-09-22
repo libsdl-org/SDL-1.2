@@ -371,13 +371,41 @@ static void do_mouse_motion(_THIS, short mx, short my)
 {
 	short x2, y2, w2, h2;
 
-	if (this->input_grab == SDL_GRAB_OFF) {
-		/* Switch mouse focus state */
-		if (!GEM_fullscreen && (GEM_handle>=0)) {
-			SDL_PrivateAppActive(
-				mouse_in_work_area(GEM_handle, mx,my),
-				SDL_APPMOUSEFOCUS);
+	/* Retrieve window coords */
+	x2 = y2 = 0;
+	w2 = VDI_w;
+	h2 = VDI_h;
+	if ((!GEM_fullscreen) && (GEM_handle>=0)) {
+		x2 = GEM_work.g_x;
+		y2 = GEM_work.g_y;
+		w2 = GEM_work.g_w;
+		h2 = GEM_work.g_h;
+	}
+
+	if (GEM_MouseGrabbed(this)) {
+		/* Confine the pointer to the window, it is ours */
+		short gx = mx, gy = my;
+
+		if (gx < x2) gx = x2;
+		if (gx >= x2+w2) gx = x2+w2-1;
+		if (gy < y2) gy = y2;
+		if (gy >= y2+h2) gy = y2+h2-1;
+
+		if ((gx!=mx) || (gy!=my)) {
+			GEM_SetMousePosition(gx, gy);
+			mx = gx;
+			my = gy;
 		}
+
+		SDL_PrivateAppActive(1, SDL_APPMOUSEFOCUS);
+	} else if (!GEM_fullscreen && (GEM_handle>=0)) {
+		/* Switch mouse focus state. The pointer covers the window only
+		   while the window is the active one: the AES hands the input to
+		   whoever is on top, so a window below must not act on it */
+		SDL_PrivateAppActive(
+			(SDL_GetAppState() & SDL_APPINPUTFOCUS)
+				&& mouse_in_work_area(GEM_handle, mx,my),
+			SDL_APPMOUSEFOCUS);
 	}
 	GEM_CheckMouseMode(this);
 
@@ -391,27 +419,16 @@ static void do_mouse_motion(_THIS, short mx, short my)
 		return;
 	}
 
-	/* Retrieve window coords, and generate mouse events accordingly */
-	x2 = y2 = 0;
-	w2 = VDI_w;
-	h2 = VDI_h;
-	if ((!GEM_fullscreen) && (GEM_handle>=0)) {
-		x2 = GEM_work.g_x;
-		y2 = GEM_work.g_y;
-		w2 = GEM_work.g_w;
-		h2 = GEM_work.g_h;
-	}
-
 	if ((prevmx!=mx) || (prevmy!=my)) {
 		int posx, posy;
 
 		/* Give mouse position relative to window position */
 		posx = mx - x2;
 		if (posx<0) posx = 0;
-		if (posx>w2) posx = w2-1;
+		if (posx>=w2) posx = w2-1;
 		posy = my - y2;
 		if (posy<0) posy = 0;
-		if (posy>h2) posy = h2-1;
+		if (posy>=h2) posy = h2-1;
 
 		SDL_PrivateMouseMotion(0, 0, posx, posy);
 	}

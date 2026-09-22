@@ -38,6 +38,9 @@
 	.globl	SYM(SDL_AtariXbios_installjoystickvector)
 	.globl	SYM(SDL_AtariXbios_installkeyboardvector)
 	.globl	SYM(SDL_AtariXbios_mouselock)
+	.globl	SYM(SDL_AtariXbios_MoveMouse)
+	.globl	SYM(SDL_AtariXbios_mousedx)
+	.globl	SYM(SDL_AtariXbios_mousedy)
 
 	.globl	SYM(SDL_Atari_mouseb)
 	.globl	SYM(SDL_Atari_joystick)
@@ -293,6 +296,63 @@ SYM(SDL_AtariXbios_installmousevector):
 	.dc.w	0
 SYM(SDL_AtariXbios_mouselock):
 	.dc.w	0
+
+/*--- Mouse position setter ---*/
+
+/* Reports SDL_AtariXbios_mousedx/dy through the saved mouse vector, as the
+   IKBD interrupt would; run it with Supexec() */
+
+	.text
+
+	.even
+SYM(SDL_AtariXbios_MoveMouse):
+	movel	oldmousevector,d0
+	beqs	no_move_mouse
+
+#if defined(__mcoldfire__)
+	lea	sp@(-20),sp
+	moveml	d1-d2/a0-a2,sp@
+#else
+	moveml	d1-d2/a0-a2,sp@-
+#endif
+
+	movel	d0,a1
+	lea	mousepacket,a0
+
+	/* Relative mouse packet: header 0xf8 plus the buttons, then dx, dy */
+	movew	SYM(SDL_Atari_mouseb),d0
+	orl	#0xf8,d0
+	moveb	d0,a0@
+	movew	SYM(SDL_AtariXbios_mousedx),d0
+	moveb	d0,a0@(1)
+	movew	SYM(SDL_AtariXbios_mousedy),d0
+	moveb	d0,a0@(2)
+
+	movew	sr,d2
+	movew	#0x2700,sr
+	jsr	a1@
+	movew	d2,sr
+
+#if defined(__mcoldfire__)
+	moveml	sp@,d1-d2/a0-a2
+	lea	sp@(20),sp
+#else
+	moveml	sp@+,d1-d2/a0-a2
+#endif
+
+no_move_mouse:
+	rts
+
+	.data
+
+	.even
+SYM(SDL_AtariXbios_mousedx):
+	.dc.w	0
+SYM(SDL_AtariXbios_mousedy):
+	.dc.w	0
+mousepacket:
+	.dc.b	0,0,0
+	.even
 
 /*--- Our joystick vector ---*/
 

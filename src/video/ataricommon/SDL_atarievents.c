@@ -221,7 +221,7 @@ static void FlushMotion(void)
 		return;
 	}
 
-	if (pump_relative_motion && (SDL_GetAppState() & SDL_APPMOUSEFOCUS)) {
+	if (pump_relative_motion && (SDL_GetAppState() & SDL_APPINPUTFOCUS)) {
 		SDL_PrivateMouseMotion(0, 1, pending_mousex, pending_mousey);
 	}
 	pending_mousex = pending_mousey = 0;

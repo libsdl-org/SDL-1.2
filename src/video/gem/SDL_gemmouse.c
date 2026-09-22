@@ -152,19 +152,58 @@ int GEM_ShowWMCursor(_THIS, WMcursor *cursor)
 	return 1;
 }
 
-#if 0
+/* The pointer belongs to the application as long as it asked for the input
+   and its window is the active one */
+SDL_bool GEM_MouseGrabbed(_THIS)
+{
+	const Uint8 focus = (SDL_APPACTIVE|SDL_APPINPUTFOCUS);
+
+	return (this->input_grab != SDL_GRAB_OFF)
+		&& ((SDL_GetAppState() & focus) == focus);
+}
+
+/* The AES offers no way to place the pointer (appl_tplay() works on AES 3.4
+   only), so report the movement to it as the IKBD would. It may scale the
+   deltas, therefore approach the target and give up if it stops getting
+   closer */
+void GEM_SetMousePosition(short x, short y)
+{
+	int prev_distance = -1;
+	int i;
+
+	for (i=0; i<8; i++) {
+		short mx, my, mb, ks;
+		int distance;
+
+		graf_mkstate(&mx, &my, &mb, &ks);
+
+		distance = SDL_abs(x-mx) + SDL_abs(y-my);
+		if (distance == 0 || (prev_distance >= 0 && distance >= prev_distance)) {
+			break;
+		}
+		prev_distance = distance;
+
+		SDL_AtariXbios_MoveMousePosition(x-mx, y-my);
+	}
+}
+
 void GEM_WarpWMCursor(_THIS, Uint16 x, Uint16 y)
 {
-	/* This seems to work only on AES 3.4 (Falcon) */
+	/* The pointer is the AES's unless our window is the active one, and in
+	   relative mode it stays parked: only SDL's idea of it moves */
+	if (!GEM_mouse_relative && (SDL_GetAppState() & SDL_APPINPUTFOCUS)) {
+		short x2 = 0, y2 = 0;
 
-	EVNTREC	warpevent;
+		if ((!GEM_fullscreen) && (GEM_handle>=0)) {
+			x2 = GEM_work.g_x;
+			y2 = GEM_work.g_y;
+		}
 
-	warpevent.ap_event = APPEVNT_MOUSE;
-	warpevent.ap_value = (x << 16) | y;
+		GEM_SetMousePosition(x2+x, y2+y);
+	}
 
-	appl_tplay(&warpevent, 1, 1000);
+	SDL_PrivateMouseMotion(0, 0, x, y);
 }
-#endif
 
 void GEM_CheckMouseMode(_THIS)
 {
@@ -176,10 +215,9 @@ void GEM_CheckMouseMode(_THIS)
 	printf("sdl:video:gem: check mouse mode\n");
 #endif
 
-	/* If the mouse is hidden and input is grabbed, we use relative mode */
+	/* If the mouse is hidden and the pointer is ours, we use relative mode */
 	GEM_mouse_relative = (!(SDL_cursorstate & CURSOR_VISIBLE))
-		&& (this->input_grab != SDL_GRAB_OFF)
-		&& (SDL_GetAppState() & SDL_APPACTIVE);
+		&& GEM_MouseGrabbed(this);
 	SDL_AtariXbios_LockMousePosition(GEM_mouse_relative);
 
 	if (SDL_cursorstate & CURSOR_VISIBLE) {

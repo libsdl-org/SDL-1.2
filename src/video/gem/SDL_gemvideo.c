@@ -200,7 +200,7 @@ static SDL_VideoDevice *GEM_CreateDevice(int devindex)
 	device->FreeWMCursor = GEM_FreeWMCursor;
 	device->CreateWMCursor = GEM_CreateWMCursor;
 	device->ShowWMCursor = GEM_ShowWMCursor;
-	device->WarpWMCursor = NULL /*GEM_WarpWMCursor*/;
+	device->WarpWMCursor = GEM_WarpWMCursor;
 	device->CheckMouseMode = GEM_CheckMouseMode;
 
 #if SDL_VIDEO_OPENGL
@@ -241,14 +241,40 @@ void GEM_AlignWorkArea(_THIS, short windowid)
 	}
 }
 
+/* A mouse cursor is at most 16x16 and its hot spot can sit anywhere in the
+   shape, so it covers this much around the reported position */
+
+#define MOUSE_CURSOR_SIZE 16
+
+static SDL_bool cursor_over_rect(const GRECT *rect)
+{
+	short mx, my, mb, ks;
+	GRECT cursor;
+
+	graf_mkstate(&mx, &my, &mb, &ks);
+
+	cursor.g_x = mx - MOUSE_CURSOR_SIZE;
+	cursor.g_y = my - MOUSE_CURSOR_SIZE;
+	cursor.g_w = cursor.g_h = 2 * MOUSE_CURSOR_SIZE;
+
+	return rc_intersect(rect, &cursor) != 0;
+}
+
 void GEM_RedrawWindow(_THIS, int winhandle, const GRECT *inside)
 {
 	GRECT todo;
+	SDL_bool hide_cursor;
 
 	/* Tell AES we are going to update */
 	wind_update(BEG_UPDATE);
 
-	v_hide_c(VDI_handle);
+	/* Drawing over the mouse cursor would leave its remains on screen, but
+	   taking it away on every update makes it blink at the rate the
+	   application redraws, so only do it when it is in the way */
+	hide_cursor = !GEM_cursor_hidden && cursor_over_rect(inside);
+	if (hide_cursor) {
+		v_hide_c(VDI_handle);
+	}
 
 	/* Browse the rectangle list to redraw */
 	if (wind_get_grect(winhandle, WF_FIRSTXYWH, &todo)!=0) {
@@ -269,7 +295,9 @@ void GEM_RedrawWindow(_THIS, int winhandle, const GRECT *inside)
 	/* Update finished */
 	wind_update(END_UPDATE);
 
-	v_show_c(VDI_handle,1);
+	if (hide_cursor) {
+		v_show_c(VDI_handle,1);
+	}
 }
 
 static void VDI_ReadNOVAInfo(_THIS, short *work_out)

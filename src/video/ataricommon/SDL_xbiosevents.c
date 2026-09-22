@@ -72,3 +72,23 @@ void SDL_AtariXbios_LockMousePosition(SDL_bool lockPosition)
 {
 	SDL_AtariXbios_mouselock = lockPosition;
 }
+
+void SDL_AtariXbios_MoveMousePosition(int dx, int dy)
+{
+	if (!SDL_Atari_vectors_installed) {
+		return;
+	}
+
+	/* An IKBD packet carries one signed byte per axis */
+	while (dx != 0 || dy != 0) {
+		int stepx = dx > 127 ? 127 : (dx < -127 ? -127 : dx);
+		int stepy = dy > 127 ? 127 : (dy < -127 ? -127 : dy);
+
+		SDL_AtariXbios_mousedx = stepx;
+		SDL_AtariXbios_mousedy = stepy;
+		Supexec(SDL_AtariXbios_MoveMouse);
+
+		dx -= stepx;
+		dy -= stepy;
+	}
+}

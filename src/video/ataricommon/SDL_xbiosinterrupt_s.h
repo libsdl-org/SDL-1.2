@@ -38,11 +38,14 @@ extern Uint16 SDL_AtariXbios_installmousevector;	/* flag for SDL_AtariXbios_Inst
 extern Uint16 SDL_AtariXbios_installjoystickvector;	/* flag for SDL_AtariXbios_Install() */
 extern Uint16 SDL_AtariXbios_installkeyboardvector;	/* flag for SDL_AtariXbios_Install() */
 extern volatile Uint16 SDL_AtariXbios_mouselock;	/* mouse lock position */
+extern Sint16 SDL_AtariXbios_mousedx;	/* deltas for SDL_AtariXbios_MoveMouse() */
+extern Sint16 SDL_AtariXbios_mousedy;
 
 /* Functions */ 
 
 extern void SDL_AtariXbios_Install(void);
 extern void SDL_AtariXbios_Restore(void);
+extern void SDL_AtariXbios_MoveMouse(void);
 extern void SDL_AtariXbios_MouseVector(void *buf);
 extern void SDL_AtariXbios_JoystickVector(void *buf);
 extern void SDL_AtariXbios_KeyboardVector(void *buf);
