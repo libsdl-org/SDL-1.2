@@ -275,22 +275,27 @@ void GEM_CommonRestorePalette(_THIS)
 	}
 }
 
+void GEM_CommonDeinit(Sint16 *ap_id, Sint16 *vdi_handle)
+{
+	if (*ap_id == -1) {
+		if (*vdi_handle > 0)
+			v_clswk(*vdi_handle);
+	} else {
+		if (*vdi_handle > 0)
+			v_clsvwk(*vdi_handle);
+
+		appl_exit();
+		*ap_id = -1;
+	}
+
+	*vdi_handle = -1;
+}
+
 void GEM_CommonQuit(_THIS, SDL_bool restore_cursor)
 {
 	GEM_UnlockScreen(this, restore_cursor);
 
-	if (GEM_ap_id == -1) {
-		if (VDI_handle > 0)
-			v_clswk(VDI_handle);
-	} else {
-		if (VDI_handle > 0)
-			v_clsvwk(VDI_handle);
-
-		appl_exit();
-		GEM_ap_id = -1;
-	}
-
-	VDI_handle = -1;
+	GEM_CommonDeinit(&GEM_ap_id, &VDI_handle);
 }
 
 void GEM_LockScreen(_THIS, SDL_bool hide_cursor)

@@ -112,32 +112,35 @@ static int GEM_Available(void)
 {
 	short work_out[57];
 
-	if (!GEM_CommonInit(&internal_ap_id, &internal_vdi_handle) || internal_ap_id == -1)
+	if (!GEM_CommonInit(&internal_ap_id, &internal_vdi_handle))
 		return 0;
 
-	/* Read bit depth */
-	vq_extnd(internal_vdi_handle, 1, work_out);
+	if (internal_ap_id != -1) {
+		/* Read bit depth */
+		vq_extnd(internal_vdi_handle, 1, work_out);
 
-	switch(work_out[4]) {
-		case 8:
-			internal_pixelsize = 1;
-			break;
-		case 15:
-		case 16:
-			internal_pixelsize = 2;
-			break;
-		case 24:
-			internal_pixelsize = 3;
-			break;
-		case 32:
-			internal_pixelsize = 4;
-			break;
-		default:
-			fprintf(stderr, "%d bits colour depth not supported\n", work_out[4]);
-			return 0;
+		switch(work_out[4]) {
+			case 8:
+				internal_pixelsize = 1;
+				return 1;
+			case 15:
+			case 16:
+				internal_pixelsize = 2;
+				return 1;
+			case 24:
+				internal_pixelsize = 3;
+				return 1;
+			case 32:
+				internal_pixelsize = 4;
+				return 1;
+			default:
+				fprintf(stderr, "%d bits colour depth not supported\n", work_out[4]);
+				break;
+		}
 	}
 
-	return 1;
+	GEM_CommonDeinit(&internal_ap_id, &internal_vdi_handle);
+	return 0;
 }
 
 static void GEM_DeleteDevice(SDL_VideoDevice *device)
