@@ -553,10 +553,6 @@ static int GEM_VideoInit(_THIS, SDL_PixelFormat *vformat)
 
 	SDL_modelist[1] = NULL;
 
-#if SDL_VIDEO_OPENGL
-	SDL_AtariGL_InitPointers(this);
-#endif
-
 	this->info.wm_available = 1;
 
 	/* Save & init CON: */
@@ -1182,7 +1178,7 @@ static void GEM_VideoQuit(_THIS)
 
 #if SDL_VIDEO_OPENGL
 	if (gl_active) {
-		SDL_AtariGL_Quit(this, SDL_TRUE);
+		SDL_AtariGL_Quit(this);
 	}
 #endif
 

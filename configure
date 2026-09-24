@@ -790,7 +790,6 @@ SDL_STATIC_LIBS
 SDL_LIBS
 SDL_CFLAGS
 PTH_CONFIG
-OSMESA_CONFIG
 CACACONFIG
 DIRECTFB_LIBS
 DIRECTFB_CFLAGS
@@ -990,7 +989,6 @@ enable_xbios
 enable_gem
 enable_video_dummy
 enable_video_opengl
-enable_osmesa_shared
 enable_screensaver
 enable_input_events
 enable_input_tslib
@@ -1724,7 +1722,6 @@ Optional Features:
   --enable-video-gem      use Atari Gem video driver [default=yes]
   --enable-video-dummy    use dummy video driver [default=yes]
   --enable-video-opengl   include OpenGL context creation [default=yes]
-  --enable-osmesa-shared  dynamically load OSMesa OpenGL support [default=yes]
   --enable-screensaver    enable screensaver by default while any SDL
                           application is running [default=no]
   --enable-input-events   use Linux 2.4 unified input interface [default=yes]
@@ -4839,13 +4836,13 @@ if ${lt_cv_nm_interface+:} false; then :
 else
   lt_cv_nm_interface="BSD nm"
   echo "int some_variable = 0;" > conftest.$ac_ext
-  (eval echo "\"\$as_me:4842: $ac_compile\"" >&5)
+  (eval echo "\"\$as_me:4839: $ac_compile\"" >&5)
   (eval "$ac_compile" 2>conftest.err)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:4845: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
+  (eval echo "\"\$as_me:4842: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
   (eval "$NM \"conftest.$ac_objext\"" 2>conftest.err > conftest.out)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:4848: output\"" >&5)
+  (eval echo "\"\$as_me:4845: output\"" >&5)
   cat conftest.out >&5
   if $GREP 'External.*some_variable' conftest.out > /dev/null; then
     lt_cv_nm_interface="MS dumpbin"
@@ -6058,7 +6055,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 6061 "configure"' > conftest.$ac_ext
+  echo '#line 6058 "configure"' > conftest.$ac_ext
   if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -7653,11 +7650,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7656: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7653: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:7660: \$? = $ac_status" >&5
+   echo "$as_me:7657: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -8002,11 +7999,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8005: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8002: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:8009: \$? = $ac_status" >&5
+   echo "$as_me:8006: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -8107,11 +8104,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8110: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8107: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:8114: \$? = $ac_status" >&5
+   echo "$as_me:8111: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -8162,11 +8159,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8165: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8162: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:8169: \$? = $ac_status" >&5
+   echo "$as_me:8166: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -10595,7 +10592,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10598 "configure"
+#line 10595 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10691,7 +10688,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10694 "configure"
+#line 10691 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14141,11 +14138,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:14144: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:14141: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:14148: \$? = $ac_status" >&5
+   echo "$as_me:14145: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -14240,11 +14237,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:14243: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:14240: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:14247: \$? = $ac_status" >&5
+   echo "$as_me:14244: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -14292,11 +14289,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:14295: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:14292: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:14299: \$? = $ac_status" >&5
+   echo "$as_me:14296: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -20564,78 +20561,12 @@ else
 fi
 
 
-        # Static linking to -lOSMesa
-        # Extract the first word of "osmesa-config", so it can be a program name with args.
-set dummy osmesa-config; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_path_OSMESA_CONFIG+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  case $OSMESA_CONFIG in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_OSMESA_CONFIG="$OSMESA_CONFIG" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_path_OSMESA_CONFIG="$as_dir/$ac_word$ac_exec_ext"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
+        if test "x$have_osmesa_hdr" = "xyes" -a "x$have_osmesa_lib" = "xyes"; then
+            $as_echo "#define SDL_VIDEO_OPENGL 1" >>confdefs.h
 
-  test -z "$ac_cv_path_OSMESA_CONFIG" && ac_cv_path_OSMESA_CONFIG="no"
-  ;;
-esac
-fi
-OSMESA_CONFIG=$ac_cv_path_OSMESA_CONFIG
-if test -n "$OSMESA_CONFIG"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $OSMESA_CONFIG" >&5
-$as_echo "$OSMESA_CONFIG" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
+            $as_echo "#define SDL_VIDEO_OPENGL_OSMESA 1" >>confdefs.h
 
-
-        if test "x$OSMESA_CONFIG" = "xno" -o "x$enable_atari_ldg" = "xno"; then
-            # -lOSMesa is really the static library
-            if test "x$have_osmesa_hdr" = "xyes" -a "x$have_osmesa_lib" = "xyes"; then
-                OSMESA_LIBS="-lOSMesa"
-            fi
-        else
-            # -lOSMesa is a loader for OSMesa.ldg
-            OSMESA_CFLAGS=`$OSMESA_CONFIG --cflags`
-            OSMESA_LIBS=`$OSMESA_CONFIG --libs`
-        fi
-        $as_echo "#define SDL_VIDEO_OPENGL 1" >>confdefs.h
-
-        $as_echo "#define SDL_VIDEO_OPENGL_OSMESA 1" >>confdefs.h
-
-        SDL_CFLAGS="$SDL_CFLAGS $OSMESA_CFLAGS"
-        SDL_LIBS="$SDL_LIBS $OSMESA_LIBS"
-
-        # Check whether --enable-osmesa-shared was given.
-if test "${enable_osmesa_shared+set}" = set; then :
-  enableval=$enable_osmesa_shared;
-else
-  enable_osmesa_shared=yes
-fi
-
-        if test "x$enable_osmesa_shared" = "xyes" -a "x$enable_atari_ldg" = "xyes"; then
-            # Dynamic linking
-            if test "x$have_osmesa_hdr" = "xyes"; then
-                $as_echo "#define SDL_VIDEO_OPENGL_OSMESA_DYNAMIC 1" >>confdefs.h
-
-            fi
+            SDL_LIBS="$SDL_LIBS -lOSMesa"
         fi
     fi
 }

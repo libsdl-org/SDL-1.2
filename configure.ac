@@ -1768,31 +1768,10 @@ CheckAtariOSMesa()
         AC_CHECK_HEADER(GL/osmesa.h, have_osmesa_hdr=yes)
         AC_CHECK_LIB(OSMesa, OSMesaCreateContext, have_osmesa_lib=yes, have_osmesa_lib=no, -lm)
 
-        # Static linking to -lOSMesa
-        AC_PATH_PROG(OSMESA_CONFIG, osmesa-config, no)
-        if test "x$OSMESA_CONFIG" = "xno" -o "x$enable_atari_ldg" = "xno"; then
-            # -lOSMesa is really the static library
-            if test "x$have_osmesa_hdr" = "xyes" -a "x$have_osmesa_lib" = "xyes"; then
-                OSMESA_LIBS="-lOSMesa"
-            fi
-        else
-            # -lOSMesa is a loader for OSMesa.ldg
-            OSMESA_CFLAGS=`$OSMESA_CONFIG --cflags`
-            OSMESA_LIBS=`$OSMESA_CONFIG --libs`
-        fi
-        AC_DEFINE(SDL_VIDEO_OPENGL)
-        AC_DEFINE(SDL_VIDEO_OPENGL_OSMESA)
-        SDL_CFLAGS="$SDL_CFLAGS $OSMESA_CFLAGS"
-        SDL_LIBS="$SDL_LIBS $OSMESA_LIBS"
-
-        AC_ARG_ENABLE(osmesa-shared,
-[AS_HELP_STRING([--enable-osmesa-shared], [dynamically load OSMesa OpenGL support [default=yes]])],
-                              , enable_osmesa_shared=yes)
-        if test "x$enable_osmesa_shared" = "xyes" -a "x$enable_atari_ldg" = "xyes"; then
-            # Dynamic linking
-            if test "x$have_osmesa_hdr" = "xyes"; then
-                AC_DEFINE(SDL_VIDEO_OPENGL_OSMESA_DYNAMIC)
-            fi
+        if test "x$have_osmesa_hdr" = "xyes" -a "x$have_osmesa_lib" = "xyes"; then
+            AC_DEFINE(SDL_VIDEO_OPENGL)
+            AC_DEFINE(SDL_VIDEO_OPENGL_OSMESA)
+            SDL_LIBS="$SDL_LIBS -lOSMesa"
         fi
     fi
 }

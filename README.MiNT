@@ -75,9 +75,6 @@ SDL_VIDEODRIVER:
 	Set to 'xbios' to force xbios video driver. Uses XBIOS/Ikbd events driver.
 	Set to 'gem' to force gem video driver. Uses an internal events driver.
 
-SDL_VIDEO_GL_DRIVER:
-	Set to filename to load as OpenGL library, if you use SDL_GL_LoadLibrary()
-
 SDL_VIDEO_ALIGNED_WINDOWS:
 	Set to force aligning of the window's x coordinate to a 16-pixel boundary
 	(e.g. for speed reasons)
@@ -135,19 +132,10 @@ SDL_JOYSTICK_ATARI:
 VI.  More informations about drivers:
 
 OpenGL:
-	The default is to use the Mesa offscreen driver (osmesa.ldg). If you want
-	to use an older OpenGL implementation, like mesa_gl.ldg or tiny_gl.ldg,
-	your program must use SDL_GL_LoadLibrary() to do so, and retrieve the
-	needed function pointers with SDL_LoadFunction(). In all cases, the OpenGL
-	context is taken care of by SDL itself, you just have to use gl* functions.
-
-	However, there is one OpenGL call that has a different prototype in the old
-	implementations: glOrtho(). In the old implementations, it has 6 float as
-	parameters, in the standard one, it has 6 double parameters. If you want
-	to compile testdyngl, or any other SDL program that loads its OpenGL
-	library, you must change the glOrtho() prototype used in this program. In
-	osmesa.ldg, you can retrieve a glOrtho() with double parameters, by
-	searching for the function "glOrtho6d".
+	OpenGL is provided by a statically linked OSMesa (libOSMesa.a), the
+	OpenGL context is taken care of by SDL itself, you just have to use gl*
+	functions. Programs not calling any gl* function don't link OSMesa at all.
+	SDL_GL_LoadLibrary() accepts only NULL, i.e. the linked OSMesa.
 
 Xbios video:
 	Video chip is detected using the _VDO cookie.

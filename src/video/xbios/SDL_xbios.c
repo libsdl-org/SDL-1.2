@@ -418,10 +418,6 @@ static int XBIOS_VideoInit(_THIS, SDL_PixelFormat *vformat)
 	this->info.hw_available = 1;
 	this->info.video_mem = (Uint32) Atari_SysMalloc(-1L, MX_STRAM) / 1024;
 
-#if SDL_VIDEO_OPENGL
-	SDL_AtariGL_InitPointers(this);
-#endif
-
 	/* Disable screensavers */
 	if (SDL_XBIOS_TveillePresent(this)) {
 		SDL_XBIOS_TveilleDisable(this);
@@ -760,7 +756,7 @@ static void XBIOS_VideoQuit(_THIS)
 
 #if SDL_VIDEO_OPENGL
 	if (gl_active) {
-		SDL_AtariGL_Quit(this, SDL_TRUE);
+		SDL_AtariGL_Quit(this);
 	}
 #endif
 
