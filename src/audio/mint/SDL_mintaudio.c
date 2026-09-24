@@ -173,43 +173,55 @@ void SDL_AtariMint_UpdateAudio(void)
 static void SDL_MintAudio_Callback(void)
 {
 	SDL_AudioDevice *this = SDL_MintAudio_device;
+	Uint8 *dmabuf = MINTAUDIO_audiobuf[SDL_MintAudio_numbuf];
+	int len = this->spec.size * SDL_MintAudio_max_buf;
 	Uint8 *buffer;
 	int i;
 
- 	buffer = (MINTAUDIO_fastrambuf ?
-		MINTAUDIO_fastrambuf :
-		MINTAUDIO_audiobuf[SDL_MintAudio_numbuf]);
-	SDL_memset(buffer, this->spec.silence, this->spec.size * SDL_MintAudio_max_buf);
+	if (this->paused) {
+		SDL_memset(dmabuf, this->spec.silence, len);
+		return;
+	}
 
-	if (!this->paused) {
-		for (i=0; i<SDL_MintAudio_max_buf; i++) {
-			if (this->convert.needed) {
-				int silence;
+	if (this->convert.needed) {
+		int silence;
 
-				if ( this->convert.src_format == AUDIO_U8 ) {
-					silence = 0x80;
-				} else {
-					silence = 0;
-				}
-				SDL_memset(this->convert.buf, silence, this->convert.len);
-				this->spec.callback(this->spec.userdata,
-					(Uint8 *)this->convert.buf,this->convert.len);
-				SDL_ConvertAudio(&this->convert);
-				SDL_memcpy(buffer, this->convert.buf, this->convert.len_cvt);
-
-				buffer += this->convert.len_cvt;
-			} else {
-				this->spec.callback(this->spec.userdata, buffer,
-					this->spec.size);
-
-				buffer += this->spec.size;
-			}
+		if ( this->convert.src_format == AUDIO_U8 ) {
+			silence = 0x80;
+		} else {
+			silence = 0;
 		}
+
+		buffer = dmabuf;
+
+		for (i=0; i<SDL_MintAudio_max_buf; i++) {
+			SDL_memset(this->convert.buf, silence, this->convert.len);
+			this->spec.callback(this->spec.userdata,
+				(Uint8 *)this->convert.buf,this->convert.len);
+			SDL_ConvertAudio(&this->convert);
+			SDL_memcpy(buffer, this->convert.buf, this->convert.len_cvt);
+
+			buffer += this->convert.len_cvt;
+		}
+
+		/* len_cvt may be rounded down below spec.size */
+		if (buffer < dmabuf + len) {
+			SDL_memset(buffer, this->spec.silence, dmabuf + len - buffer);
+		}
+
+		return;
+	}
+
+	buffer = (MINTAUDIO_fastrambuf ? MINTAUDIO_fastrambuf : dmabuf);
+	SDL_memset(buffer, this->spec.silence, len);
+
+	for (i=0; i<SDL_MintAudio_max_buf; i++) {
+		this->spec.callback(this->spec.userdata, buffer + i * this->spec.size,
+			this->spec.size);
 	}
 
 	if (MINTAUDIO_fastrambuf) {
-		SDL_memcpy(MINTAUDIO_audiobuf[SDL_MintAudio_numbuf], MINTAUDIO_fastrambuf,
-			this->spec.size * SDL_MintAudio_max_buf);
+		SDL_memcpy(dmabuf, MINTAUDIO_fastrambuf, len);
 	}
 }
 
