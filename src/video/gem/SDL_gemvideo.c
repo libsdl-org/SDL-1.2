@@ -189,6 +189,11 @@ static SDL_VideoDevice *GEM_CreateDevice(int devindex)
 	device->FreeHWSurface = GEM_FreeHWSurface;
 	device->ToggleFullScreen = NULL;
 
+	/* A fullscreen surface smaller than the desktop is supported, it is
+	 * placed inside a screen sized surface by SDL_SetVideoMode()
+	 */
+	device->handles_any_size = 1;
+
 	/* Window manager */
 	device->SetCaption = GEM_SetCaption;
 	device->SetIcon = GEM_SetIcon;
@@ -667,6 +672,12 @@ static SDL_Surface *GEM_SetVideoMode(_THIS, SDL_Surface *current,
 			SDL_SetError("%dx%d mode is too large", width, height);
 			return(NULL);
 		}
+
+		/* Hand back a screen sized surface, SDL_SetVideoMode() shrinks it to
+		 * the asked dimensions and centers it using surface->offset
+		 */
+		width = VDI_w;
+		height = VDI_h;
 	}
 
 	/*--- Allocate the new pixel format for the screen ---*/
@@ -744,6 +755,11 @@ static SDL_Surface *GEM_SetVideoMode(_THIS, SDL_Surface *current,
 		}
 
 		GEM_fullscreen = SDL_TRUE;
+
+		/* We own the screen, so we own the input as well: the AES sends
+		 * no WM_TOPPED to tell us so
+		 */
+		SDL_PrivateAppActive(1, SDL_APPINPUTFOCUS);
 	} else {
 		int old_win_type;
 		GRECT gr;
@@ -838,6 +854,9 @@ static SDL_Surface *GEM_SetVideoMode(_THIS, SDL_Surface *current,
 	/* Set up the new mode framebuffer */
 	current->w = width;
 	current->h = height;
+	current->offset = 0;
+	this->offset_x = 0;
+	this->offset_y = 0;
 	if (use_shadow1) {
 		current->pixels = GEM_buffer1;
 		current->pitch = width * VDI_pixelsize;
@@ -934,15 +953,18 @@ static void GEM_UpdateRectsFullscreen(_THIS, int numrects, SDL_Rect *rects)
 		short blitcoords[8];
 		int surf_width;
 
+		/* The buffer covers the whole screen, the rectangles are given in
+		 * screen coordinates
+		 */
 		/* Need to be a multiple of 16 pixels */
-		surf_width=surface->w;
+		surf_width=VDI_w;
 		if ((surf_width & 15) != 0) {
 			surf_width = (surf_width | 15) + 1;
 		}
 
 		mfdb_src.fd_addr=surface->pixels;
 		mfdb_src.fd_w=surf_width;
-		mfdb_src.fd_h=surface->h;
+		mfdb_src.fd_h=VDI_h;
 		mfdb_src.fd_wdwidth= (surface->pitch/VDI_pixelsize) >> 4;
 		mfdb_src.fd_nplanes=surface->format->BitsPerPixel;
 		mfdb_src.fd_stand=
@@ -1000,8 +1022,11 @@ static int GEM_FlipHWSurfaceFullscreen(_THIS, SDL_Surface *surface)
 {
 	int surf_width;
 
+	/* The buffer covers the whole screen and the surface is centered inside
+	 * it, so source and destination share the same coordinates
+	 */
 	/* Need to be a multiple of 16 pixels */
-	surf_width=surface->w;
+	surf_width=VDI_w;
 	if ((surf_width & 15) != 0) {
 		surf_width = (surf_width | 15) + 1;
 	}
@@ -1009,6 +1034,7 @@ static int GEM_FlipHWSurfaceFullscreen(_THIS, SDL_Surface *surface)
 	if (GEM_bufops & (B2S_C2P_1TO2|B2S_C2P_1TOS)) {
 		void *destscr;
 		int destpitch;
+		int x1,x2;
 
 		if (GEM_bufops & B2S_C2P_1TOS) {
 			destscr = VDI_screen;
@@ -1018,10 +1044,17 @@ static int GEM_FlipHWSurfaceFullscreen(_THIS, SDL_Surface *surface)
 			destpitch = surface->pitch;
 		}
 
+		/* c2p writes whole groups of 16 pixels */
+		x1 = this->offset_x & ~15;
+		x2 = this->offset_x + surface->w;
+		if (x2 & 15) {
+			x2 = (x2 | 15) +1;
+		}
+
 		SDL_Atari_C2pConvert(
 			surface->pixels, destscr,
-			0, 0,
-			surf_width, surface->h,
+			x1, this->offset_y,
+			x2-x1, surface->h,
 			SDL_FALSE, 8,
 			surface->pitch, destpitch
 		);
@@ -1032,7 +1065,7 @@ static int GEM_FlipHWSurfaceFullscreen(_THIS, SDL_Surface *surface)
 		short blitcoords[8];
 
 		mfdb_src.fd_w=surf_width;
-		mfdb_src.fd_h=surface->h;
+		mfdb_src.fd_h=VDI_h;
 		mfdb_src.fd_wdwidth=mfdb_src.fd_w >> 4;
 		mfdb_src.fd_nplanes=surface->format->BitsPerPixel;
 		mfdb_src.fd_stand=
@@ -1045,10 +1078,10 @@ static int GEM_FlipHWSurfaceFullscreen(_THIS, SDL_Surface *surface)
 			mfdb_src.fd_addr=GEM_buffer2;
 		}
 
-		blitcoords[0] = blitcoords[4] = 0;
-		blitcoords[1] = blitcoords[5] = 0;
-		blitcoords[2] = blitcoords[6] = surface->w - 1;
-		blitcoords[3] = blitcoords[7] = surface->h - 1;
+		blitcoords[0] = blitcoords[4] = this->offset_x;
+		blitcoords[1] = blitcoords[5] = this->offset_y;
+		blitcoords[2] = blitcoords[6] = this->offset_x + surface->w - 1;
+		blitcoords[3] = blitcoords[7] = this->offset_y + surface->h - 1;
 
 		vro_cpyfm(VDI_handle, S_ONLY, blitcoords, &mfdb_src, &VDI_dst_mfdb);
 	}

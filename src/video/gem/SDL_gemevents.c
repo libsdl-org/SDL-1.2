@@ -380,6 +380,14 @@ static void do_mouse_motion(_THIS, short mx, short my)
 		y2 = GEM_work.g_y;
 		w2 = GEM_work.g_w;
 		h2 = GEM_work.g_h;
+	} else if (GEM_fullscreen && this->screen) {
+		/* A fullscreen surface smaller than the screen is centered, report
+		 * coordinates relative to it and not to the screen
+		 */
+		x2 = this->offset_x;
+		y2 = this->offset_y;
+		w2 = this->screen->w;
+		h2 = this->screen->h;
 	}
 
 	if (GEM_MouseGrabbed(this)) {
