@@ -571,6 +571,11 @@ static SDL_Surface *XBIOS_SetVideoMode(_THIS, SDL_Surface *current,
 
 #if SDL_VIDEO_OPENGL
 	if (flags & SDL_OPENGL) {
+		/* SDL_SetVideoMode() sets the offsets of a 2D surface only */
+		current->offset = 0;
+		this->offset_x = 0;
+		this->offset_y = 0;
+
 		if (!SDL_AtariGL_Init(this, current)) {
 			XBIOS_FreeBuffers(this);
 			SDL_SetError("Can not create OpenGL context");

@@ -27,6 +27,16 @@
 
 #if SDL_VIDEO_OPENGL
 #include <GL/osmesa.h>
+
+/* Keep OSMesa out of programs that don't use OpenGL; any gl*() call pulls it in */
+#pragma weak OSMesaCreateContextExt
+#pragma weak OSMesaDestroyContext
+#pragma weak OSMesaMakeCurrent
+#pragma weak OSMesaPixelStore
+#pragma weak OSMesaGetProcAddress
+#pragma weak glGetIntegerv
+#pragma weak glFinish
+#pragma weak glFlush
 #endif
 
 #include <mint/osbind.h>
@@ -336,13 +346,16 @@ int SDL_AtariGL_MakeCurrent(_THIS)
 		type = GL_UNSIGNED_BYTE;
 	}
 
-	if (!(this->gl_data->OSMesaMakeCurrent(gl_ctx, surface->pixels, type, surface->w, surface->h))) {
+	if (!(this->gl_data->OSMesaMakeCurrent(gl_ctx, (Uint8 *)surface->pixels + surface->offset, type, surface->w, surface->h))) {
 		SDL_SetError("Can not make OpenGL context current");
 		return -1;
 	}
 
 	/* OSMesa draws upside down */
 	this->gl_data->OSMesaPixelStore(OSMESA_Y_UP, 0);
+
+	/* The surface can be a part of a larger buffer */
+	this->gl_data->OSMesaPixelStore(OSMESA_ROW_LENGTH, surface->pitch / gl_pixelsize);
 
 	return 0;
 #else
@@ -411,11 +424,12 @@ static int InitNew(_THIS, SDL_Surface *current)
 	int recreatecontext;
 	GLint newaccumsize;
 
-	if (this->gl_config.dll_handle) {
-		if (this->gl_data->OSMesaCreateContextExt == NULL) {
-			return 0;
-		}
+	if (this->gl_data->OSMesaCreateContextExt == NULL) {
+		return 0;
 	}
+
+	/* SDL_SetVideoMode() looks up GL functions via SDL_GL_GetProcAddress() */
+	this->gl_config.driver_loaded = 1;
 
 	/* Init OpenGL context using OSMesa */
 	gl_convert = ConvertNull;
@@ -684,7 +698,7 @@ static void CopyShadowDirect(_THIS, SDL_Surface *surface)
 
 	srcline = gl_shadow;
 	srcpitch = surface->w * gl_pixelsize;
-	dstline = surface->pixels;
+	dstline = (void *)((Uint8 *)surface->pixels + surface->offset);
 	dstpitch = surface->pitch;
 	if (gl_upsidedown) {
 		srcline += (surface->h-1)*srcpitch;
@@ -707,7 +721,7 @@ static void CopyShadowRGBTo555(_THIS, SDL_Surface *surface)
 
 	srcline = (Uint8 *)gl_shadow;
 	srcpitch = surface->w * gl_pixelsize;
-	dstline = surface->pixels;
+	dstline = (void *)((Uint8 *)surface->pixels + surface->offset);
 	dstpitch = surface->pitch >>1;
 	if (gl_upsidedown) {
 		srcline += (surface->h-1)*srcpitch;
@@ -739,7 +753,7 @@ static void CopyShadowRGBTo565(_THIS, SDL_Surface *surface)
 
 	srcline = (Uint8 *)gl_shadow;
 	srcpitch = surface->w * gl_pixelsize;
-	dstline = surface->pixels;
+	dstline = (void *)((Uint8 *)surface->pixels + surface->offset);
 	dstpitch = surface->pitch >>1;
 	if (gl_upsidedown) {
 		srcline += (surface->h-1)*srcpitch;
@@ -772,7 +786,7 @@ static void CopyShadowRGBSwap(_THIS, SDL_Surface *surface)
 
 	srcline = (Uint8 *)gl_shadow;
 	srcpitch = surface->w * gl_pixelsize;
-	dstline = surface->pixels;
+	dstline = (void *)((Uint8 *)surface->pixels + surface->offset);
 	dstpitch = surface->pitch;
 	if (gl_upsidedown) {
 		srcline += (surface->h-1)*srcpitch;
@@ -803,7 +817,7 @@ static void CopyShadowRGBToARGB(_THIS, SDL_Surface *surface)
 
 	srcline = (Uint8 *)gl_shadow;
 	srcpitch = surface->w * gl_pixelsize;
-	dstline = surface->pixels;
+	dstline = (void *)((Uint8 *)surface->pixels + surface->offset);
 	dstpitch = surface->pitch >>2;
 	if (gl_upsidedown) {
 		srcline += (surface->h-1)*srcpitch;
@@ -837,7 +851,7 @@ static void CopyShadowRGBToABGR(_THIS, SDL_Surface *surface)
 
 	srcline = (Uint8 *)gl_shadow;
 	srcpitch = surface->w * gl_pixelsize;
-	dstline = surface->pixels;
+	dstline = (void *)((Uint8 *)surface->pixels + surface->offset);
 	dstpitch = surface->pitch >>2;
 	if (gl_upsidedown) {
 		srcline += (surface->h-1)*srcpitch;
@@ -871,7 +885,7 @@ static void CopyShadowRGBToBGRA(_THIS, SDL_Surface *surface)
 
 	srcline = (Uint8 *)gl_shadow;
 	srcpitch = surface->w * gl_pixelsize;
-	dstline = surface->pixels;
+	dstline = (void *)((Uint8 *)surface->pixels + surface->offset);
 	dstpitch = surface->pitch >>2;
 	if (gl_upsidedown) {
 		srcline += (surface->h-1)*srcpitch;
@@ -905,7 +919,7 @@ static void CopyShadowRGBToRGBA(_THIS, SDL_Surface *surface)
 
 	srcline = (Uint8 *)gl_shadow;
 	srcpitch = surface->w * gl_pixelsize;
-	dstline = surface->pixels;
+	dstline = (void *)((Uint8 *)surface->pixels + surface->offset);
 	dstpitch = surface->pitch >>2;
 	if (gl_upsidedown) {
 		srcline += (surface->h-1)*srcpitch;
@@ -939,7 +953,7 @@ static void CopyShadow8888To555(_THIS, SDL_Surface *surface)
 
 	srcline = (Uint32 *)gl_shadow;
 	srcpitch = (surface->w * gl_pixelsize) >>2;
-	dstline = surface->pixels;
+	dstline = (void *)((Uint8 *)surface->pixels + surface->offset);
 	dstpitch = surface->pitch >>1;
 	if (gl_upsidedown) {
 		srcline += (surface->h-1)*srcpitch;
@@ -973,7 +987,7 @@ static void CopyShadow8888To565(_THIS, SDL_Surface *surface)
 
 	srcline = (Uint32 *)gl_shadow;
 	srcpitch = (surface->w * gl_pixelsize) >> 2;
-	dstline = surface->pixels;
+	dstline = (void *)((Uint8 *)surface->pixels + surface->offset);
 	dstpitch = surface->pitch >>1;
 	if (gl_upsidedown) {
 		srcline += (surface->h-1)*srcpitch;
@@ -1011,7 +1025,7 @@ static void Convert565To555be(_THIS, SDL_Surface *surface)
 	int x,y, pitch;
 	unsigned short *line, *pixel;
 
-	line = surface->pixels;
+	line = (void *)((Uint8 *)surface->pixels + surface->offset);
 	pitch = surface->pitch >> 1;
 	for (y=0; y<surface->h; y++) {
 		pixel = line;
@@ -1030,7 +1044,7 @@ static void Convert565To555le(_THIS, SDL_Surface *surface)
 	int x,y, pitch;
 	unsigned short *line, *pixel;
 
-	line = surface->pixels;
+	line = (void *)((Uint8 *)surface->pixels + surface->offset);
 	pitch = surface->pitch >>1;
 	for (y=0; y<surface->h; y++) {
 		pixel = line;
@@ -1050,7 +1064,7 @@ static void Convert565le(_THIS, SDL_Surface *surface)
 	int x,y, pitch;
 	unsigned short *line, *pixel;
 
-	line = surface->pixels;
+	line = (void *)((Uint8 *)surface->pixels + surface->offset);
 	pitch = surface->pitch >>1;
 	for (y=0; y<surface->h; y++) {
 		pixel = line;
@@ -1069,7 +1083,7 @@ static void ConvertBGRAToABGR(_THIS, SDL_Surface *surface)
 	int x,y, pitch;
 	unsigned long *line, *pixel;
 
-	line = surface->pixels;
+	line = (void *)((Uint8 *)surface->pixels + surface->offset);
 	pitch = surface->pitch >>2;
 	for (y=0; y<surface->h; y++) {
 		pixel = line;

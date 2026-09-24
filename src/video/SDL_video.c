@@ -786,8 +786,6 @@ SDL_Surface * SDL_SetVideoMode (int width, int height, int bpp, Uint32 flags)
 
 #if defined(__QNXNTO__) && (_NTO_VERSION < 630)
 #define __SDL_NOGETPROCADDR__
-#elif defined(__MINT__)
-#define __SDL_NOGETPROCADDR__
 #endif
 #ifdef __SDL_NOGETPROCADDR__
     #define SDL_PROC(ret,func,params) video->func=func;

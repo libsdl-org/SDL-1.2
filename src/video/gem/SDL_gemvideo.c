@@ -655,11 +655,18 @@ static SDL_Surface *GEM_SetVideoMode(_THIS, SDL_Surface *current,
 {
 	Uint32 modeflags, screensize;
 	SDL_bool use_shadow1, use_shadow2;
+#if SDL_VIDEO_OPENGL
+	int surf_width, surf_height;
+#endif
 
 	/* width must be multiple of 16, for vro_cpyfm() and c2p_convert() */
 	if ((width & 15) != 0) {
 		width = (width | 15) +1;
 	}
+#if SDL_VIDEO_OPENGL
+	surf_width = width;
+	surf_height = height;
+#endif
 
 	/*--- Verify if asked mode can be used ---*/
 	if (VDI_bpp != bpp) {
@@ -867,6 +874,16 @@ static SDL_Surface *GEM_SetVideoMode(_THIS, SDL_Surface *current,
 
 #if SDL_VIDEO_OPENGL
 	if (flags & SDL_OPENGL) {
+		/* SDL_SetVideoMode() centers a 2D surface only */
+		if (flags & SDL_FULLSCREEN) {
+			this->offset_x = (width - surf_width) / 2;
+			this->offset_y = (height - surf_height) / 2;
+			current->offset = this->offset_y * current->pitch +
+				this->offset_x * VDI_pixelsize;
+			current->w = surf_width;
+			current->h = surf_height;
+		}
+
 		if (!SDL_AtariGL_Init(this, current)) {
 			GEM_FreeBuffers(this);
 			SDL_SetError("Can not create OpenGL context");
