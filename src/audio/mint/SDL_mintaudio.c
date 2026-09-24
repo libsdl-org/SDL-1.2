@@ -43,11 +43,17 @@
 
 #define MAX_DMA_BUF	8
 
+/* Minimum number of updates per buffer, and number of consecutive buffers
+   meeting it, before the latency is decreased */
+#define MIN_UPD_PER_BUF	4
+#define MIN_IDLE_BUFS	4
+
 SDL_AudioDevice *SDL_MintAudio_device;
 
 static int SDL_MintAudio_num_upd;	/* Number of calls to update function */
 static int SDL_MintAudio_max_buf;	/* Number of buffers to use */
 static int SDL_MintAudio_numbuf;	/* Buffer to play */
+static int SDL_MintAudio_num_idle;	/* Consecutive refills with spare time */
 
 static void SDL_MintAudio_Callback(void);
 
@@ -92,7 +98,8 @@ int SDL_MintAudio_InitBuffers(SDL_AudioSpec *spec)
 	DEBUG_PRINT((DEBUG_NAME "buffer 1 at 0x%p\n", MINTAUDIO_audiobuf[1]));
 
 	SDL_MintAudio_numbuf = SDL_MintAudio_num_its = SDL_MintAudio_num_upd = 0;
-	SDL_MintAudio_max_buf = MAX_DMA_BUF;
+	SDL_MintAudio_num_idle = 0;
+	SDL_MintAudio_max_buf = 1;
 
 	/* For filling silence when too many interrupts per update */
 	SDL_MintAudio_itbuffer = NULL;
@@ -140,16 +147,24 @@ void SDL_AtariMint_UpdateAudio(void)
 
 	SDL_MintAudio_itbuflen = 0;
 
-	if (SDL_MintAudio_num_upd < (SDL_MintAudio_num_its<<2)) {
-		/* Too many interrupts per update, increase latency */
+	if (SDL_MintAudio_num_its > 1) {
+		/* More than one buffer played since the last refill, i.e. the
+		   hardware replayed stale data: increase latency */
 		if (SDL_MintAudio_max_buf < MAX_DMA_BUF) {
 			SDL_MintAudio_max_buf <<= 1;
 		}
-	} else if (SDL_MintAudio_num_its < (SDL_MintAudio_num_upd<<2)) {
-		/* Too many updates per interrupt, decrease latency */
-		if (SDL_MintAudio_max_buf > 1) {
-			SDL_MintAudio_max_buf >>= 1;
+		SDL_MintAudio_num_idle = 0;
+	} else if (SDL_MintAudio_num_upd >= MIN_UPD_PER_BUF) {
+		/* Updates come often enough, decrease latency once this has held
+		   for several buffers in a row */
+		if (++SDL_MintAudio_num_idle >= MIN_IDLE_BUFS) {
+			if (SDL_MintAudio_max_buf > 1) {
+				SDL_MintAudio_max_buf >>= 1;
+			}
+			SDL_MintAudio_num_idle = 0;
 		}
+	} else {
+		SDL_MintAudio_num_idle = 0;
 	}
 	MINTAUDIO_audiosize = this->spec.size * SDL_MintAudio_max_buf;
 
