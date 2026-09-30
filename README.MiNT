@@ -72,12 +72,13 @@ to report this type event.
 V.  Environment variables:
 
 SDL_VIDEODRIVER:
-	Set to 'xbios' to force xbios video driver. Uses XBIOS/Ikbd events driver.
+	Set to 'xbios' to force xbios video driver. Uses XBIOS/Ikbd events
+	driver.
 	Set to 'gem' to force gem video driver. Uses an internal events driver.
 
 SDL_VIDEO_ALIGNED_WINDOWS:
-	Set to force aligning of the window's x coordinate to a 16-pixel boundary
-	(e.g. for speed reasons)
+	Set to force aligning of the window's x coordinate to a 16-pixel
+	boundary (e.g. for speed reasons)
 
 SDL_AUDIODRIVER:
 	Set to 'xbios' to force Atari Xbios audio driver
@@ -133,9 +134,9 @@ VI.  More informations about drivers:
 
 OpenGL:
 	OpenGL is provided by a statically linked OSMesa (libOSMesa.a), the
-	OpenGL context is taken care of by SDL itself, you just have to use gl*
-	functions. Programs not calling any gl* function don't link OSMesa at all.
-	SDL_GL_LoadLibrary() accepts only NULL, i.e. the linked OSMesa.
+	OpenGL context is taken care of by SDL itself, you just have to use
+	gl* functions. Programs not calling any gl* function don't link OSMesa
+	at all. SDL_GL_LoadLibrary() accepts only NULL, i.e. the linked OSMesa.
 
 Xbios video:
 	Video chip is detected using the _VDO cookie.
@@ -143,8 +144,8 @@ Xbios video:
 	them.
 
 	ST, STE, Mega ST, Mega STE:
-		320x200x4 bits, shades of grey, available only for the purpose of
-		testing SDL.
+		320x200x4 bits, shades of grey, available only for the purpose
+		of testing SDL.
 	TT:
 		320x480x8 and 320x240x8 (software double-lined mode).
 	Falcon:
@@ -152,11 +153,12 @@ Xbios video:
 		BlowUp and Centscreen: Extended modes.
 		ScreenBlaster 3: Only current mode.
 		Supervidel: Extended modes.
-		CTPCI: Only the modes supported by XBIOS (640x480, 800x600, 1024x768,
-			   1280x960, 1600x1200 in 8/16/32 bpp).
+		CTPCI: Only the modes supported by XBIOS (640x480, 800x600,
+			   1024x768, 1280x960, 1600x1200 in 8/16/32 bpp).
 	Milan:
-		Nearly identical with CTPCI driver. Works only on Milan with S3 video
-		card driver (which should be newer than 12.1.2000). To be verified.
+		Nearly identical with CTPCI driver. Works only on Milan with S3
+		video card driver (which should be newer than 12.1.2000). To be
+		verified.
 	Any machine with NOVA video card:
 		All modes with 8 bits or higher depth.
 	Clones and any machine with monochrome monitor:
@@ -171,9 +173,10 @@ Xbios video:
 	called.
 
 	The decision should depend on how the framebuffer is used. If the SDL
-	application already maintains its own framebuffer and SDL is used merely as
-	a display device, use SDL_HWSURFACE. If the framebuffer is accessed on a
-	per-pixel basis —or if pixels are read multiple times— prefer SDL_SWSURFACE.
+	application already maintains its own framebuffer and SDL is used
+	merely as a display device, use SDL_HWSURFACE. If the framebuffer is
+	accessed on a per-pixel basis —or if pixels are read multiple times—
+	prefer SDL_SWSURFACE.
 
 Gem video:
 	Automatically used if xbios not available.
@@ -185,24 +188,26 @@ Keyboard, mouse and joystick driver:
 	When unset, XBIOS video uses XBIOS where available (TOS >= 2.x and/or in
 	MagiC) and IKBD otherwise, GEM video uses GEM.
 
+	The IKBD driver hooks the ikbdsys vector from Kbdvbase() instead of the
+	ACIA interrupt vector at 0x118, so MIDI interrupts keep being serviced.
+	It is not available on FireTOS, whose ACIA handler never calls ikbdsys.
+
 	In ideal circumstances, XBIOS video supports selection of XBIOS and IKBD
-	events while GEM video supports selection of XBIOS and GEM events. Otherwise
-	XBIOS video is stuck with IKBD events and GEM video with GEM events.
+	events while GEM video supports selection of XBIOS and GEM events.
+	Otherwise XBIOS video is stuck with IKBD events and GEM video with GEM
+	events.
 
 	With GEM video the choice only decides where keyboard events come from:
-	AES message loop or XBIOS keyboard vector (which reports key press/release
-	events). Mouse buttons, relative motion and the joystick always come from the
-	XBIOS vectors (which are available on every machine).
+	AES message loop or XBIOS keyboard vector (which reports key
+	press/release events). Mouse buttons, relative motion and the joystick
+	always come from the XBIOS vectors (which are available on every
+	machine).
 
-	The AES reports key presses and their repeats but no releases, so the GEM
-	driver considers a key released once its next repeat is overdue, using
-	the delay and rate set in the Control Panel. Only the last pressed key
-	repeats, so keys held together are released early; use
+	The AES reports key presses and their repeats but no releases, so the
+	GEM driver considers a key released once its next repeat is overdue,
+	using the delay and rate set in the Control Panel. Only the last
+	pressed key repeats, so keys held together are released early; use
 	SDL_ATARI_EVENTSDRIVER=xbios where available.
-
-	As XBIOS video driver is not available on Hades, it is forced to use the
-	implicit GEM driver despite the fact that it has both IKBD and XBIOS
-	features available.
 
 Joypad driver:
 	Available if _MCH cookie is STE or Falcon. Supports teamtap.

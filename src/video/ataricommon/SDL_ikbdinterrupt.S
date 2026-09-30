@@ -41,7 +41,7 @@
 
 	.globl	SYM(Atari_UnhookXbra)
 
-/*--- Install our IKBD vector ---*/
+/*--- Install our kb_kbdsys vector ---*/
 
 SYM(SDL_AtariIkbd_Install):
 	| KBDVBASE *Kbdvbase(void);
@@ -62,6 +62,7 @@ SYM(SDL_AtariIkbd_Install):
 	moveml	sp@+,d2/a2
 #endif
 	movel	d0,a1
+	movel	a1,ikbd_kbdvecs
 
 processing_ikbd_packet_install:
 
@@ -78,59 +79,28 @@ processing_ikbd_packet_install:
 	bras	processing_ikbd_packet_install
 no_ikbd_packet_install:
 
-	| Save MFP registers used for keyboard
-
-	lea	0xfffffa00:w,a0
-	btst	#6,a0@(0x09)
-#if defined(__mcoldfire__)
-	sne	d0
-	move.b	d0,ikbd_ierb
-#else
-	sne	ikbd_ierb
-#endif
-	btst	#6,a0@(0x15)
-#if defined(__mcoldfire__)
-	sne	d0
-	move.b	d0,ikbd_imrb
-#else
-	sne	ikbd_imrb
-#endif
-
 	| Set our routine
 
-#if defined(__mcoldfire__)
-	movel	0x118:w,d0
+	lea	ikbd_packet_start,a0
+	movel	a0,ikbd_state
+
+	movel	a1@(32),d0
 	movel	d0,old_ikbd
 	lea	ikbd,a0
-	movel	a0,0x118:w
-	moveql	#6,d0
-	bset	d0,0xfffffa09:w	| IERB
-	bset	d0,0xfffffa15:w	| IMRB
-#else
-	movel	0x118:w,old_ikbd
-	movel	#ikbd,0x118:w
-	bset	#6,0xfffffa09:w	| IERB
-	bset	#6,0xfffffa15:w	| IMRB
-#endif
+	movel	a0,a1@(32)
 
 	| Set mouse relative mode
 
-#if defined(__mcoldfire__)
 	moveql	#8,d0
 	moveb	d0,0xfffffc02:w
-#else
-	moveb	#8,0xfffffc02:w
-#endif
 
 	| Reenable interrupts
 
 	movew	d1,sr
 
-	| Interrupts done
-
 	rts
 
-/*--- Uninstall our IKBD vector ---*/
+/*--- Uninstall our kb_kbdsys vector ---*/
 
 SYM(SDL_AtariIkbd_Restore):
 	tstl	old_ikbd
@@ -143,34 +113,12 @@ ikbd_installed:
 	movew	sr,d1
 	movew	#0x2700,sr
 
-	| Restore previous MFP registers
-
-	lea	0xfffffa00:w,a0
-
-	bclr	#6,a0@(0x09)
-	tstb	ikbd_ierb
-	beqs	ikbd_restoreierb
-	bset	#6,a0@(0x09)
-ikbd_restoreierb:
-
-	bclr	#6,a0@(0x15)
-	tstb	ikbd_imrb
-	beqs	ikbd_restoreimrb
-	bset	#6,a0@(0x15)
-ikbd_restoreimrb:
-
-#if defined(__mcoldfire__)
-	movel	#ikbd,d0
-	movel	d0,0x118:w
-#else
-	movel	#ikbd,0x118:w
-#endif
-
 	movew	d1,sp@-
 
-	pea	ikbd(pc)
+	pea	ikbd
 	movel	#0x4c53444c,sp@-	/* "LSDL" */
-	pea	0x118/4:w
+	movel	ikbd_kbdvecs,a0
+	pea	a0@(32)
 	jsr	SYM(Atari_UnhookXbra)
 	lea	sp@(12),sp
 
@@ -190,20 +138,20 @@ ikbd_finbuffer:
 
 	movew	d1,sr
 
-	| Interrupts done
-
 	clrl	old_ikbd
 	rts
 
 	.bss
 
 	.even
-ikbd_ierb:
-	.ds.b	1
-ikbd_imrb:
-	.ds.b	1
+ikbd_kbdvecs:
+	.ds.l	1
+ikbd_state:
+	.ds.l	1
+ikbd_mouse_entry:
+	.ds.l	1
 
-/*--- Our custom IKBD vector ---*/
+/*--- Our custom kb_kbdsys vector ---*/
 
 	.text
 	.even
@@ -219,16 +167,26 @@ ikbd:
 	moveml	d0-d1/a0,sp@-
 #endif
 
-	| Check if source is IKBD or MIDI
-#if defined(__mcoldfire__)
-	moveql	#0,d0
-	btst	d0,0xfffffc00.w
-#else
-	btst	#0,0xfffffc00.w
-#endif
-	beq	ikbd_oldmidi
+	| Interrupt request from the IKBD ACIA?
+
+	moveb	0xfffffc00:w,d1
+	bpl	ikbd_end
+
+	| Reading the data register clears both a received byte and an
+	| overrun, releasing the ACIA's interrupt line
 
 	moveb	0xfffffc02:w,d0
+	btst	#0,d1
+	beq	ikbd_end
+
+	| Continue the packet in progress
+
+	movel	ikbd_state,a0
+	jmp	a0@
+
+	| First byte of a packet
+
+ikbd_packet_start:
 
 	| Joystick packet ?
 
@@ -248,7 +206,7 @@ ikbd_yes_mouse:
 	andl	#3,d0
 	movew	d0,SYM(SDL_Atari_mouseb)
 
-	| Start the queue entry, dx and dy follow in the next two packets
+	| Start the queue entry, dx and dy follow in the next two bytes
 
 	moveql	#ATARI_QUEUE_MOUSE,d1
 	lsll	#8,d1
@@ -256,24 +214,14 @@ ikbd_yes_mouse:
 	swap	d1
 	movel	d1,ikbd_mouse_entry
 
-#if defined(__mcoldfire__)
-	movel	#ikbd_mousex,d0
-	movel	d0,0x118:w
-#else
-	movel	#ikbd_mousex,0x118:w
-#endif
-	bras	ikbd_endit_stack
+	lea	ikbd_mousex,a0
+	bras	ikbd_next_state
 
 	| Joystick packet, byte #1
 
 ikbd_yes_joystick:
-#if defined(__mcoldfire__)
-	movel	#ikbd_joystick,d0
-	movel	d0,0x118:w
-#else
-	movel	#ikbd_joystick,0x118:w
-#endif
-	bras	ikbd_endit_stack
+	lea	ikbd_joystick,a0
+	bras	ikbd_next_state
 
 	| Keyboard press/release
 
@@ -284,132 +232,40 @@ ikbd_no_mouse:
 	moveb	d1,d0
 	swap	d0
 	ATARI_QUEUE_PUSH
-
-	| End of interrupt
-
-ikbd_endit_stack:
-#if defined(__mcoldfire__)
-	moveql	#6,d0
-	bclr	d0,0xfffffa11:w
-
-	moveml	sp@,d0-d1/a0
-	lea	sp@(12),sp
-#else
-	moveml	sp@+,d0-d1/a0
-
-	bclr	#6,0xfffffa11:w
-#endif
-	rte
-
-	| Call old MIDI interrupt
-
-ikbd_oldmidi:
-#if defined(__mcoldfire__)
-	moveml	sp@,d0-d1/a0
-	lea	sp@(12),sp
-#else
-	moveml	sp@+,d0-d1/a0
-#endif
-
-	movel	old_ikbd,sp@-
-	rts
+	bras	ikbd_end
 
 	| Mouse packet, byte #2
 
 ikbd_mousex:
-#if defined(__mcoldfire__)
-	lea	sp@(-12),sp
-	moveml	d0-d1/a0,sp@
-#else
-	moveml	d0-d1/a0,sp@-
-#endif
-
-	| Check if source is IKBD or MIDI
-#if defined(__mcoldfire__)
-	moveql	#0,d0
-	btst	d0,0xfffffc00.w
-#else
-	btst	#0,0xfffffc00.w
-#endif
-	beq	ikbd_oldmidi
-
-	moveb	0xfffffc02:w,d0
 	moveb	d0,ikbd_mouse_entry+2
-#if defined(__mcoldfire__)
-	movel	#ikbd_mousey,d0
-	movel	d0,0x118:w
-#else
-	movel	#ikbd_mousey,0x118:w
-#endif
-	bra	ikbd_endit_stack
+	lea	ikbd_mousey,a0
+	bras	ikbd_next_state
 
 	| Mouse packet, byte #3
 
 ikbd_mousey:
-#if defined(__mcoldfire__)
-	lea	sp@(-12),sp
-	moveml	d0-d1/a0,sp@
-#else
-	moveml	d0-d1/a0,sp@-
-#endif
-
-	| Check if source is IKBD or MIDI
-#if defined(__mcoldfire__)
-	moveql	#0,d0
-	btst	d0,0xfffffc00.w
-#else
-	btst	#0,0xfffffc00.w
-#endif
-	beq	ikbd_oldmidi
-
-	moveb	0xfffffc02:w,d0
 	moveb	d0,ikbd_mouse_entry+3
 
 	movel	ikbd_mouse_entry,d0
 	ATARI_QUEUE_PUSH
-
-#if defined(__mcoldfire__)
-	movel	#ikbd,d0
-	movel	d0,0x118:w
-#else
-	movel	#ikbd,0x118:w
-#endif
-	bra	ikbd_endit_stack
+	bras	ikbd_packet_done
 
 	| Joystick packet, byte #2
 
 ikbd_joystick:
-#if defined(__mcoldfire__)
-	lea	sp@(-12),sp
-	moveml	d0-d1/a0,sp@
-#else
-	moveml	d0-d1/a0,sp@-
-#endif
-
-	| Check if source is IKBD or MIDI
-#if defined(__mcoldfire__)
-	moveql	#0,d0
-	btst	d0,0xfffffc00.w
-#else
-	btst	#0,0xfffffc00.w
-#endif
-	beq	ikbd_oldmidi
-
-#if defined(__mcoldfire__)
-	moveb	0xfffffc02:w,d0
 	moveb	d0,SYM(SDL_Atari_joystick)
 
-	movel	#ikbd,d0
-	movel	d0,0x118:w
+ikbd_packet_done:
+	lea	ikbd_packet_start,a0
+
+ikbd_next_state:
+	movel	a0,ikbd_state
+
+ikbd_end:
+#if defined(__mcoldfire__)
+	moveml	sp@,d0-d1/a0
+	lea	sp@(12),sp
 #else
-	moveb	0xfffffc02:w,SYM(SDL_Atari_joystick)
-
-	movel	#ikbd,0x118:w
+	moveml	sp@+,d0-d1/a0
 #endif
-	bra	ikbd_endit_stack
-
-	.bss
-
-	.even
-ikbd_mouse_entry:
-	.ds.l	1
+	rts

@@ -117,6 +117,11 @@ static SDL_bool IsIkbdSupported(void)
 {
 	long cookie_mch = SDL_Atari_GetMch();
 
+	/* FireTOS reports a Falcon but its ACIA interrupt handler never calls
+	   kb_kbdsys, which the IKBD driver replaces */
+	if (Getcookie(C__CF_, NULL) == C_FOUND)
+		return SDL_FALSE;
+
 	/* The IKBD driver talks to the keyboard chip directly, which only
 	   Atari hardware and its emulators provide */
 	return (cookie_mch == MCH_ST<<16) || ((cookie_mch>>16) == MCH_STE) ||
