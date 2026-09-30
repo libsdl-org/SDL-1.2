@@ -19,6 +19,9 @@
     Sam Lantinga
     slouken@libsdl.org
 */
+/* osmesa.h already brings in Mesa's glext.h; skip SDL_opengl.h's copy */
+#define NO_SDL_GLEXT
+
 #include "SDL_config.h"
 
 /* Atari OSMesa implementation of SDL OpenGL support */
