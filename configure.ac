@@ -2188,7 +2188,7 @@ CheckAtariLdg()
     AC_ARG_ENABLE(atari-ldg,
 [AS_HELP_STRING([--enable-atari-ldg], [use Atari LDG for shared object loading [default=yes]])],
                   , enable_atari_ldg=yes)
-    dnl LDG modules are built for the default calling convention
+    # LDG modules are built for the default calling convention.
     if $CC $CFLAGS -dM -E - </dev/null | grep -q __FASTCALL__; then
         enable_atari_ldg=no
     fi

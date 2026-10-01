@@ -21358,6 +21358,7 @@ else
   enable_atari_ldg=yes
 fi
 
+    # LDG modules are built for the default calling convention.
     if $CC $CFLAGS -dM -E - </dev/null | grep -q __FASTCALL__; then
         enable_atari_ldg=no
     fi
