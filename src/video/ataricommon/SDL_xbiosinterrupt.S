@@ -182,11 +182,19 @@ no_ikbd_packet_restore:
 #else
 	moveml	d1/a0,sp@-
 #endif
+#ifdef __FASTCALL__
+	lea	a0@(16),a1
+	movel	a1,d0
+	movel	#0x4c53444c,d1		/* "LSDL" */
+	lea	newmousevector(pc),a0
+	jsr	SYM(Atari_UnhookXbra)
+#else
 	pea	newmousevector(pc)
 	movel	#0x4c53444c,sp@-	/* "LSDL" */
 	pea	a0@(16)
 	jsr	SYM(Atari_UnhookXbra)
 	lea	sp@(12),sp
+#endif
 	clrl	oldmousevector
 
 #if defined(__mcoldfire__)
@@ -203,16 +211,33 @@ no_restore_mouse:
 	tstl	oldjoystickvector
 	beqs	no_restore_joystick
 
-	movew	d1,sp@-
-
+#if defined(__mcoldfire__)
+	lea	sp@(-8),sp
+	moveml	d1/a0,sp@
+#else
+	moveml	d1/a0,sp@-
+#endif
+#ifdef __FASTCALL__
+	lea	a0@(24),a1
+	movel	a1,d0
+	movel	#0x4c53444c,d1		/* "LSDL" */
+	lea	newjoystickvector(pc),a0
+	jsr	SYM(Atari_UnhookXbra)
+#else
 	pea	newjoystickvector(pc)
 	movel	#0x4c53444c,sp@-	/* "LSDL" */
 	pea	a0@(24)
 	jsr	SYM(Atari_UnhookXbra)
 	lea	sp@(12),sp
+#endif
 	clrl	oldjoystickvector
 
-	movew	sp@+,d1
+#if defined(__mcoldfire__)
+	moveml	sp@,d1/a0
+	lea	sp@(8),sp
+#else
+	moveml	sp@+,d1/a0
+#endif
 
 no_restore_joystick:
 
@@ -221,16 +246,33 @@ no_restore_joystick:
 	tstl	oldkeyboardvector
 	beqs	no_restore_keyboard
 
-	movew	d1,sp@-
-
+#if defined(__mcoldfire__)
+	lea	sp@(-8),sp
+	moveml	d1/a0,sp@
+#else
+	moveml	d1/a0,sp@-
+#endif
+#ifdef __FASTCALL__
+	lea	a0@(-4),a1
+	movel	a1,d0
+	movel	#0x4c53444c,d1		/* "LSDL" */
+	lea	newkeyboardvector(pc),a0
+	jsr	SYM(Atari_UnhookXbra)
+#else
 	pea	newkeyboardvector(pc)
 	movel	#0x4c53444c,sp@-	/* "LSDL" */
 	pea	a0@(-4)
 	jsr	SYM(Atari_UnhookXbra)
 	lea	sp@(12),sp
+#endif
 	clrl	oldkeyboardvector
 
-	movew	sp@+,d1
+#if defined(__mcoldfire__)
+	moveml	sp@,d1/a0
+	lea	sp@(8),sp
+#else
+	moveml	sp@+,d1/a0
+#endif
 
 no_restore_keyboard:
 

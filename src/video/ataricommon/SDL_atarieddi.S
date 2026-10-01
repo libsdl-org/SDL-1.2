@@ -35,13 +35,14 @@
 /*--- Vector installer ---*/
 
 SYM(Atari_get_EdDI_version):
-#if defined(__mcoldfire__)
+#if !defined(__FASTCALL__)
 	movel	sp@(4),a0
+#endif
 	movel	a0,eddi_cookie
+#if defined(__mcoldfire__)
 	lea	sp@(-8),sp
 	moveml	d2/a2,sp@
 #else
-	movel	sp@(4),eddi_cookie
 	moveml	d2/a2,sp@-
 #endif
 

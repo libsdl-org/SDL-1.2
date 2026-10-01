@@ -2188,6 +2188,10 @@ CheckAtariLdg()
     AC_ARG_ENABLE(atari-ldg,
 [AS_HELP_STRING([--enable-atari-ldg], [use Atari LDG for shared object loading [default=yes]])],
                   , enable_atari_ldg=yes)
+    dnl LDG modules are built for the default calling convention
+    if $CC $CFLAGS -dM -E - </dev/null | grep -q __FASTCALL__; then
+        enable_atari_ldg=no
+    fi
     if test x$video_gem = xyes -a x$enable_atari_ldg = xyes; then
         AC_CHECK_HEADER(ldg.h, have_ldg_hdr=yes)
         AC_CHECK_LIB(ldg, ldg_open, have_ldg_lib=yes, have_ldg_lib=no, -lgem)

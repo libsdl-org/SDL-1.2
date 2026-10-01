@@ -21358,6 +21358,9 @@ else
   enable_atari_ldg=yes
 fi
 
+    if $CC $CFLAGS -dM -E - </dev/null | grep -q __FASTCALL__; then
+        enable_atari_ldg=no
+    fi
     if test x$video_gem = xyes -a x$enable_atari_ldg = xyes; then
         ac_fn_c_check_header_mongrel "$LINENO" "ldg.h" "ac_cv_header_ldg_h" "$ac_includes_default"
 if test "x$ac_cv_header_ldg_h" = xyes; then :

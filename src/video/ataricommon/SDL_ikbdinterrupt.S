@@ -115,12 +115,20 @@ ikbd_installed:
 
 	movew	d1,sp@-
 
+#ifdef __FASTCALL__
+	movel	ikbd_kbdvecs,d0
+	addil	#32,d0
+	movel	#0x4c53444c,d1		/* "LSDL" */
+	lea	ikbd,a0
+	jsr	SYM(Atari_UnhookXbra)
+#else
 	pea	ikbd
 	movel	#0x4c53444c,sp@-	/* "LSDL" */
 	movel	ikbd_kbdvecs,a0
 	pea	a0@(32)
 	jsr	SYM(Atari_UnhookXbra)
 	lea	sp@(12),sp
+#endif
 
 	movew	sp@+,d1
 
