@@ -82,10 +82,10 @@ static void Mint_GsxbNullInterrupt(void);
 /* uSound state, shared between Mint_OpenAudio() and Mint_CloseAudio() */
 static USoundContext usound_context;
 
-/* Do we use GSXB's own end of frame callback instead of Timer A ? */
-#if defined(__mcoldfire__)
-#define use_gsxb 0	/* no ColdFire machine implements GSXB */
-#else
+/* Do we use GSXB's own end of frame callback instead of Timer A ?
+   ColdFire machines have neither: FireTOS raises no end of frame
+   interrupt, so the replay position is polled instead. */
+#if !defined(__mcoldfire__)
 static int use_gsxb;
 #endif
 
@@ -216,11 +216,10 @@ static void Mint_CloseAudio(_THIS)
 #if !defined(__mcoldfire__)
 	if (use_gsxb) {
 		NSetinterrupt(SI_GSXB, SI_NONE, Mint_GsxbNullInterrupt);
-	}
-#endif
-	if (!use_gsxb) {
+	} else {
 		Jdisint(MFP_DMASOUND);
 	}
+#endif
 
 	/* Restore and unlock the sound system */
 	USoundDeinitXbios(&usound_context);
@@ -281,10 +280,13 @@ static int Mint_OpenAudio(_THIS, SDL_AudioSpec *spec)
 
 	/* Set buffer */
 	MINTAUDIO_swapbuf = Mint_SwapBuffers;
+#if defined(__mcoldfire__)
+	/* Both halves of the ring at once, replayed in a loop */
+	Mint_SwapBuffers(MINTAUDIO_audiobuf[0], 2 * MINTAUDIO_audiosize);
+#else
 	Mint_SwapBuffers(MINTAUDIO_audiobuf[0], MINTAUDIO_audiosize);
 
 	/* Install interrupt */
-#if !defined(__mcoldfire__)
 	use_gsxb = Mint_GsxbAvailable();
 	if (use_gsxb) {
 		if (NSetinterrupt(SI_GSXB, SI_PLAY, SDL_MintAudio_GsxbInterrupt)<0) {
@@ -294,9 +296,7 @@ static int Mint_OpenAudio(_THIS, SDL_AudioSpec *spec)
 			SDL_MintAudio_device = NULL;
 			return(-1);
 		}
-	}
-#endif
-	if (!use_gsxb) {
+	} else {
 		Jdisint(MFP_DMASOUND);
 		Xbtimer(XB_TIMERA, 8, 1, SDL_MintAudio_XbiosInterrupt);
 		Jenabint(MFP_DMASOUND);
@@ -305,6 +305,7 @@ static int Mint_OpenAudio(_THIS, SDL_AudioSpec *spec)
 			DEBUG_PRINT((DEBUG_NAME "Setinterrupt() failed\n"));
 		}
 	}
+#endif
 
 	/* Go */
 	Buffoper(SB_PLA_ENA|SB_PLA_RPT);

@@ -42,6 +42,7 @@
 /* The audio device */
 
 #define MAX_DMA_BUF	8
+#define POLL_DMA_BUF	2
 
 /* Minimum number of updates per buffer, and number of consecutive buffers
    meeting it, before the latency is decreased */
@@ -76,7 +77,12 @@ int SDL_MintAudio_InitBuffers(SDL_AudioSpec *spec)
 	SDL_AudioDevice *this = SDL_MintAudio_device;
 
 	SDL_CalculateAudioSpec(spec);
+#if defined(__mcoldfire__)
+	/* Fixed size: both halves of the ring must stay contiguous */
+	MINTAUDIO_audiosize = spec->size * POLL_DMA_BUF;
+#else
 	MINTAUDIO_audiosize = spec->size * MAX_DMA_BUF;
+#endif
 
 	/* Allocate audio buffer memory for application in FastRAM */
 	MINTAUDIO_fastrambuf = Atari_SysMalloc(MINTAUDIO_audiosize, MX_TTRAM);
@@ -99,7 +105,11 @@ int SDL_MintAudio_InitBuffers(SDL_AudioSpec *spec)
 
 	SDL_MintAudio_numbuf = SDL_MintAudio_num_its = SDL_MintAudio_num_upd = 0;
 	SDL_MintAudio_num_idle = 0;
+#if defined(__mcoldfire__)
+	SDL_MintAudio_max_buf = POLL_DMA_BUF;
+#else
 	SDL_MintAudio_max_buf = 1;
+#endif
 
 	/* For filling silence when too many interrupts per update */
 	SDL_MintAudio_itbuffer = NULL;
@@ -138,6 +148,26 @@ void SDL_AtariMint_UpdateAudio(void)
 		return;
 	}
 
+#if defined(__mcoldfire__)
+	{
+		SndBufPtr pointers;
+		int playing;
+
+		if (Buffptr(&pointers) != 0) {
+			return;
+		}
+
+		/* Here SDL_MintAudio_numbuf is the half being replayed */
+		playing = ((Uint8 *)pointers.play >= MINTAUDIO_audiobuf[1]);
+		if (playing == SDL_MintAudio_numbuf) {
+			return;
+		}
+
+		/* Refill the half the replay has just left */
+		SDL_MintAudio_Callback();
+		SDL_MintAudio_numbuf = playing;
+	}
+#else
 	++SDL_MintAudio_num_upd;
 
 	/* No interrupt triggered? still playing current buffer */
@@ -181,6 +211,7 @@ void SDL_AtariMint_UpdateAudio(void)
 
 	SDL_MintAudio_itbuffer = MINTAUDIO_audiobuf[SDL_MintAudio_numbuf];
 	SDL_MintAudio_itbuflen = MINTAUDIO_audiosize >> 2;
+#endif
 }
 
 /* The callback function, called by each driver whenever needed */
