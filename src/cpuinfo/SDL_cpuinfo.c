@@ -69,6 +69,10 @@
 #include <swis.h>
 #endif
 
+#ifdef __MINT__
+#include <mint/cookie.h>
+#endif
+
 #define CPU_HAS_RDTSC	0x00000001
 #define CPU_HAS_MMX	0x00000002
 #define CPU_HAS_MMXEXT	0x00000004
@@ -79,6 +83,8 @@
 #define CPU_HAS_ALTIVEC	0x00000100
 #define CPU_HAS_ARM_SIMD 0x00000200
 #define CPU_HAS_NEON     0x00000400
+#define CPU_HAS_M68020   0x00000800
+#define CPU_HAS_MOVE16   0x00001000
 
 #if SDL_ALTIVEC_BLITTERS && HAVE_SETJMP && !__MACOSX__ && !__OpenBSD__
 /* This is the brute force way of detecting instruction sets...
@@ -570,6 +576,28 @@ static __inline__ int CPU_haveNEON(void)
 #endif
 }
 
+static __inline__ long CPU_getAtariCPU(void)
+{
+#if defined(__MINT__) && !defined(__mcoldfire__)
+	long cpu;
+
+	if ( Getcookie(C__CPU, &cpu) == C_FOUND ) {
+		return cpu;
+	}
+#endif
+	return 0;
+}
+
+static __inline__ int CPU_haveM68020(void)
+{
+	return CPU_getAtariCPU() >= 20;
+}
+
+static __inline__ int CPU_haveMove16(void)
+{
+	return CPU_getAtariCPU() >= 40;
+}
+
 static Uint32 SDL_CPUFeatures = 0xFFFFFFFF;
 
 static Uint32 SDL_GetCPUFeatures(void)
@@ -605,6 +633,12 @@ static Uint32 SDL_GetCPUFeatures(void)
 		}
 		if ( CPU_haveNEON() ) {
 			SDL_CPUFeatures |= CPU_HAS_NEON;
+		}
+		if ( CPU_haveM68020() ) {
+			SDL_CPUFeatures |= CPU_HAS_M68020;
+		}
+		if ( CPU_haveMove16() ) {
+			SDL_CPUFeatures |= CPU_HAS_MOVE16;
 		}
 	}
 	return SDL_CPUFeatures;
@@ -690,6 +724,22 @@ SDL_bool SDL_HasNEON(void)
 	return SDL_FALSE;
 }
 
+SDL_bool SDL_HasM68020(void)
+{
+	if ( SDL_GetCPUFeatures() & CPU_HAS_M68020 ) {
+		return SDL_TRUE;
+	}
+	return SDL_FALSE;
+}
+
+SDL_bool SDL_HasMove16(void)
+{
+	if ( SDL_GetCPUFeatures() & CPU_HAS_MOVE16 ) {
+		return SDL_TRUE;
+	}
+	return SDL_FALSE;
+}
+
 #ifdef TEST_MAIN
 
 #include <stdio.h>
@@ -706,6 +756,8 @@ int main()
 	printf("AltiVec: %d\n", SDL_HasAltiVec());
 	printf("ARM SIMD: %d\n", SDL_HasARMSIMD());
 	printf("NEON: %d\n", SDL_HasNEON());
+	printf("68020+: %d\n", SDL_HasM68020());
+	printf("MOVE16: %d\n", SDL_HasMove16());
 	return 0;
 }
 

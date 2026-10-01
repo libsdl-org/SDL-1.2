@@ -28,6 +28,8 @@
 
 extern SDL_bool SDL_HasARMSIMD(void);		/* whether CPU has ARM SIMD (ARMv6) features */
 extern SDL_bool SDL_HasNEON (void);		/* whether CPU has ARM NEON features.        */
+extern SDL_bool SDL_HasM68020(void);		/* whether CPU is 68020 or higher (Atari) */
+extern SDL_bool SDL_HasMove16(void);		/* whether CPU has MOVE16 (Atari)         */
 
 /* The structure passed to the low level blit functions */
 typedef struct {

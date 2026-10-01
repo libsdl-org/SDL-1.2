@@ -39,6 +39,10 @@
 #include "mmx.h"
 #endif
 
+#if defined(__MINT__) && !defined(__mcoldfire__)
+#include "ataricommon/SDL_ataricopy_s.h"
+#endif
+
 /* The general purpose software blit routine */
 static int SDL_SoftBlit(SDL_Surface *src, SDL_Rect *srcrect,
 			SDL_Surface *dst, SDL_Rect *dstrect)
@@ -171,6 +175,21 @@ static void SDL_BlitCopy(SDL_BlitInfo *info)
 		h = 1;
 		srcskip = dstskip = 0;
 	}
+
+#if defined(__MINT__) && !defined(__mcoldfire__)
+	/* TT RAM and VRAM are written fastest with move16 if src and dst share
+	 * the alignment, everything else (including ST RAM) with move.l */
+	if ( (w >= 16) && (w < 0x01000000) && ((unsigned long)dst >= 0x01000000UL) && SDL_HasMove16() &&
+	     ((((unsigned long)src ^ (unsigned long)dst) & 15) == 0) &&
+	     (((info->s_skip ^ info->d_skip) & 15) == 0) ) {
+		SDL_Atari_CopyMove16(dst, src, w, h, info->d_skip, info->s_skip);
+		return;
+	}
+	if ( (w >= 4) && (w < 0x01000000) && SDL_HasM68020() ) {
+		SDL_Atari_CopyLong(dst, src, w, h, info->d_skip, info->s_skip);
+		return;
+	}
+#endif
 
 #ifdef SSE_ASMBLIT
 	if(SDL_HasSSE())
