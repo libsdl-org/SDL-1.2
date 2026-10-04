@@ -30,6 +30,7 @@
 #include <mint/cookie.h>
 #include <mint/osbind.h>
 #include <mint/falcon.h>
+#include <mint/sysvars.h>
 
 #include "../ataricommon/SDL_atarimch.h"
 #include "../ataricommon/SDL_atarimxalloc_c.h"
@@ -124,6 +125,28 @@ static int setColors(_THIS, int firstcolor, int ncolors, SDL_Color *colors);
 
 static int allocVbuffers_SV(_THIS, const xbiosmode_t *new_video_mode, int num_buffers, int bufsize);
 
+static long is_emutos;
+
+static long checkEmuTOS(void)
+{
+	OSHEADER *tos_header = *((OSHEADER **)_sysbase);
+
+	/* EmuTOS stores 'ETOS' at offset 0x2C of its OS header */
+	is_emutos = ((long)tos_header->os_beg->p_rsv2 == 0x45544F53L);
+	return 0;
+}
+
+/* FireTOS and EmuTOS both set _CF_ but only FireTOS has the CTPCI-like XBIOS */
+static int isFireTOS(void)
+{
+	if (Getcookie(C__CF_, NULL) != C_FOUND) {
+		return 0;
+	}
+
+	Supexec(checkEmuTOS);
+	return !is_emutos;
+}
+
 void SDL_XBIOS_VideoInit_F30(_THIS)
 {
 	long cookie_cnts, cookie_scpn, cookie_dummy;
@@ -151,6 +174,17 @@ void SDL_XBIOS_VideoInit_F30(_THIS)
 	if (Getcookie(C_SupV, &cookie_dummy) == C_FOUND) {
 		XBIOS_allocVbuffers = allocVbuffers_SV;
 		has_supervidel = 1;
+	} else
+	/* FireBee running FireTOS ? */
+	if (isFireTOS()) {
+		unsigned long physbase = (unsigned long)Physbase();
+
+		/* Radeon frame buffer lives in the PCI memory window */
+		if (physbase >= 0x80000000UL && physbase < 0xC0000000UL) {
+			SDL_XBIOS_VideoInit_Ctpci(this);
+		} else {
+			SDL_XBIOS_VideoInit_Firebee(this);
+		}
 	} else
 	/* CTPCI ? */
 	if ((Getcookie(C_CT60, &cookie_dummy) == C_FOUND)

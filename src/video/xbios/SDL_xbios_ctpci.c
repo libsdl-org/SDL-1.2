@@ -28,8 +28,11 @@
 	Patrice Mandin
 */
 
+#include <stdio.h>
+
 #include <mint/cookie.h>
 #include <mint/falcon.h>
+#include <mint/osbind.h>
 
 #include "SDL_xbios.h"
 #include "SDL_xbios_milan.h"
@@ -75,6 +78,17 @@ static void swapVbuffers(_THIS);
 static int allocVbuffers(_THIS, const xbiosmode_t *new_video_mode, int num_buffers, int bufsize);
 static void freeVbuffers(_THIS);
 
+static void setMode_Firebee(_THIS, const xbiosmode_t *new_video_mode);
+static void swapVbuffers_Firebee(_THIS);
+static int allocVbuffers_Firebee(_THIS, const xbiosmode_t *new_video_mode, int num_buffers, int bufsize);
+static void freeVbuffers_Firebee(_THIS);
+
+/*
+ * FireTOS places the frame buffer of every mode set via CMD_SETMODE at
+ * the start of the ACP video RAM.
+ */
+#define FIREBEE_VIDEO_RAM	0x60000000UL
+
 void SDL_XBIOS_VideoInit_Ctpci(_THIS)
 {
 	XBIOS_listModes = listModes;
@@ -85,6 +99,22 @@ void SDL_XBIOS_VideoInit_Ctpci(_THIS)
 	XBIOS_swapVbuffers = swapVbuffers;
 	XBIOS_allocVbuffers = allocVbuffers;
 	XBIOS_freeVbuffers = freeVbuffers;
+}
+
+/*
+ * FireBee using the Videl (ACP) output. FireTOS implements the same
+ * Vsetscreen() extension as the CTPCI but its CMD_FLIPPAGE works only with
+ * a Radeon or Lynx card. Double buffering therefore maps both buffers to the
+ * visible screen.
+ */
+void SDL_XBIOS_VideoInit_Firebee(_THIS)
+{
+	SDL_XBIOS_VideoInit_Ctpci(this);
+
+	XBIOS_setMode = setMode_Firebee;
+	XBIOS_swapVbuffers = swapVbuffers_Firebee;
+	XBIOS_allocVbuffers = allocVbuffers_Firebee;
+	XBIOS_freeVbuffers = freeVbuffers_Firebee;
 }
 
 #ifndef CTPCI_USE_TABLE
@@ -235,4 +265,41 @@ static void freeVbuffers(_THIS)
 			XBIOS_screensmem[i]=NULL;
 		}
 	}
+}
+
+static void setMode_Firebee(_THIS, const xbiosmode_t *new_video_mode)
+{
+	long modecode = 0;
+
+	VsetScreen(-1, new_video_mode->number, VN_MAGIC, CMD_SETMODE);
+
+	/* FireTOS falls back to 640x480x16 if the monitor can't show the mode */
+	VsetScreen(-1, &modecode, VN_MAGIC, CMD_GETMODE);
+	if ((modecode & 0xFFFF) != new_video_mode->number
+	    || (unsigned long)Physbase() != (unsigned long)XBIOS_screens[0]) {
+		fprintf(stderr, "Warning: requested mode 0x%04x, got 0x%04lx at %p\n",
+			new_video_mode->number, modecode & 0xFFFF, Physbase());
+	}
+}
+
+static void swapVbuffers_Firebee(_THIS)
+{
+}
+
+static int allocVbuffers_Firebee(_THIS, const xbiosmode_t *new_video_mode, int num_buffers, int bufsize)
+{
+	int i;
+
+	for (i=0; i<num_buffers; i++) {
+		XBIOS_screensmem[i] = (void *)FIREBEE_VIDEO_RAM;
+		XBIOS_screens[i] = XBIOS_screensmem[i];
+	}
+	SDL_memset(XBIOS_screens[0], 0, bufsize);
+
+	return (1);
+}
+
+static void freeVbuffers_Firebee(_THIS)
+{
+	XBIOS_screensmem[0] = XBIOS_screensmem[1] = NULL;
 }

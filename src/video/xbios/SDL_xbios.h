@@ -168,6 +168,7 @@ void SDL_XBIOS_VideoInit_Milan(_THIS);
 
 /* SDL_xbios_ctpci.c */
 void SDL_XBIOS_VideoInit_Ctpci(_THIS);
+void SDL_XBIOS_VideoInit_Firebee(_THIS);
 
 /* SDL_xbios_nova.c */
 void SDL_XBIOS_VideoInit_Nova(_THIS, void *cookie_nova);
