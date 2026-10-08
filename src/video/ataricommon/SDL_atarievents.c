@@ -134,11 +134,11 @@ SDL_AtariEventsDriver SDL_Atari_GetEventsDriver(SDL_bool gemVideo)
 	const char *envr = SDL_getenv("SDL_ATARI_EVENTSDRIVER");
 
 	if (!envr) {
-		if (gemVideo) {
-			return ATARI_EVENTS_GEM;
-		}
 		if (SDL_AtariXbios_IsKeyboardVectorSupported()) {
 			return ATARI_EVENTS_XBIOS;
+		}
+		if (gemVideo) {
+			return ATARI_EVENTS_GEM;
 		}
 		if (IsIkbdSupported()) {
 			/* TOS 1.x */

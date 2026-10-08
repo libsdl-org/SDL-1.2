@@ -185,17 +185,12 @@ Gem video:
 		Only the current resolution, if 8 bits or higher depth.
 
 Keyboard, mouse and joystick driver:
-	When unset, XBIOS video uses XBIOS where available (TOS >= 2.x and/or in
-	MagiC) and IKBD otherwise, GEM video uses GEM.
+	When unset, both video drivers use XBIOS where available (TOS >= 2.x
+	and/or in MagiC); otherwise XBIOS video uses IKBD and GEM video uses GEM.
 
 	The IKBD driver hooks the ikbdsys vector from Kbdvbase() instead of the
 	ACIA interrupt vector at 0x118, so MIDI interrupts keep being serviced.
 	It is not available on FireTOS, whose ACIA handler never calls ikbdsys.
-
-	In ideal circumstances, XBIOS video supports selection of XBIOS and IKBD
-	events while GEM video supports selection of XBIOS and GEM events.
-	Otherwise XBIOS video is stuck with IKBD events and GEM video with GEM
-	events.
 
 	With GEM video the choice only decides where keyboard events come from:
 	AES message loop or XBIOS keyboard vector (which reports key
@@ -205,9 +200,9 @@ Keyboard, mouse and joystick driver:
 
 	The AES reports key presses and their repeats but no releases, so the
 	GEM driver considers a key released once its next repeat is overdue,
-	using the delay and rate set in the Control Panel. Only the last
-	pressed key repeats, so keys held together are released early; use
-	SDL_ATARI_EVENTSDRIVER=xbios where available.
+	using the delay and rate set in the Control Panel. A short tap is
+	therefore held for at least that delay, and only the last pressed key
+	repeats, so keys held together are released early.
 
 Joypad driver:
 	Available if _MCH cookie is STE or Falcon. Supports teamtap.

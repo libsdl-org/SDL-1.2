@@ -448,8 +448,8 @@ static int GEM_VideoInit(_THIS, SDL_PixelFormat *vformat)
 	VDI_handle = internal_vdi_handle;
 	VDI_pixelsize = internal_pixelsize;
 
-	/* Events: mouse and joystick from the XBIOS vectors, keyboard from the
-	   AES unless asked otherwise */
+	/* Events: mouse and joystick from the XBIOS vectors, keyboard too
+	   where the machine provides its vector, else from the AES */
 	events_driver = SDL_Atari_GetEventsDriver(SDL_TRUE);
 	if (events_driver == ATARI_EVENTS_INVALID) {
 		return -1;
