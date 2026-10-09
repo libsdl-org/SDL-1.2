@@ -68,8 +68,8 @@ struct SDL_PrivateAudioData {
 #define MINTAUDIO_audiosize	(this->hidden->audiosize)
 
 /* Master clocks for replay frequencies */
-#define MASTERCLOCK_STE		8010666		/* Not sure of this one */
-#define MASTERCLOCK_TT		16107953	/* Not sure of this one */
+#define MASTERCLOCK_STE		8010613		/* separate sound clock, same on PAL and NTSC */
+#define MASTERCLOCK_TT		16107953	/* 32.215905 MHz / 2 */
 #define MASTERCLOCK_FALCON1	25175000
 #define MASTERCLOCK_FALCON2	32000000	/* Only usable for DSP56K */
 #define MASTERCLOCK_FALCONEXT	-1		/* Clock on DSP56K port, unknown */
