@@ -84,8 +84,10 @@ static int allocVbuffers_Firebee(_THIS, const xbiosmode_t *new_video_mode, int n
 static void freeVbuffers_Firebee(_THIS);
 
 /*
- * FireTOS places the frame buffer of every mode set via CMD_SETMODE at
- * the start of the ACP video RAM.
+ * FireTOS places the frame buffer of a mode set via CMD_SETMODE at the start
+ * of the ACP video RAM. The exception is its 640x480x16 fallback (see
+ * setMode_Firebee()): a Falcon-compatible mode with the frame buffer in the
+ * ST-RAM window 0xD00000-0xDFFFFF.
  */
 #define FIREBEE_VIDEO_RAM	0x60000000UL
 
@@ -102,10 +104,22 @@ void SDL_XBIOS_VideoInit_Ctpci(_THIS)
 }
 
 /*
- * FireBee using the Videl (ACP) output. FireTOS implements the same
- * Vsetscreen() extension as the CTPCI but its CMD_FLIPPAGE works only with
- * a Radeon or Lynx card. Double buffering therefore maps both buffers to the
- * visible screen.
+ * FireBee using its own (ACP) video output. FireTOS implements the same
+ * Vsetscreen() extension as the CTPCI but CMD_FLIPPAGE does nothing without
+ * a Radeon or Lynx card. Setscreen() can't swap the pages either: for a new
+ * physical address FireTOS sets up the whole mode again (all timing
+ * registers and, in the ACP video RAM, the PLL), changes Logbase too, and
+ * ignores any address below the current screen base, so it never swaps back
+ * to the lower of two buffers.
+ *
+ * A second page could be allocated with CMD_ALLOCPAGE and shown by writing
+ * its address to $FFFF8200/01/03/0D; the FPGA reloads the video address once
+ * per frame, two lines after the end of the visible area, i.e. before the
+ * vertical sync interrupt. The address must therefore be written before
+ * Vsync(); one written between the reload and the interrupt is displayed a
+ * frame later ($FFFF8205/07/09 reads back the address being displayed).
+ * This is not implemented: both buffers map to the visible screen, so
+ * SDL_DOUBLEBUF renders directly into the displayed frame buffer.
  */
 void SDL_XBIOS_VideoInit_Firebee(_THIS)
 {
@@ -273,7 +287,10 @@ static void setMode_Firebee(_THIS, const xbiosmode_t *new_video_mode)
 
 	VsetScreen(-1, new_video_mode->number, VN_MAGIC, CMD_SETMODE);
 
-	/* FireTOS falls back to 640x480x16 if the monitor can't show the mode */
+	/*
+	 * FireTOS falls back to 640x480x16 if it has no timings for the requested
+	 * resolution. Its frame buffer is then in ST-RAM, not FIREBEE_VIDEO_RAM.
+	 */
 	VsetScreen(-1, &modecode, VN_MAGIC, CMD_GETMODE);
 	if ((modecode & 0xFFFF) != new_video_mode->number
 	    || (unsigned long)Physbase() != (unsigned long)XBIOS_screens[0]) {
