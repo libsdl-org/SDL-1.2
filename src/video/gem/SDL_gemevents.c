@@ -246,14 +246,20 @@ static int do_messages(_THIS, short *message, short latest_msg_id)
 			update_work_area = 1;
 			break;
 		case WM_SIZED:
-			/* width must be multiple of 16, for vro_cpyfm() and c2p_convert() */
-			if ((message[6] & 15) != 0) {
-				message[6] = (message[6] | 15) +1;
+			{
+				GRECT gr;
+
+				/* width must be multiple of 16, for vro_cpyfm() and c2p_convert() */
+				wind_calc_grect (WC_WORK, GEM_win_type, (GRECT *)&message[4], &gr);
+				if ((gr.g_w & 15) != 0) {
+					gr.g_w = (gr.g_w | 15) +1;
+				}
+				wind_calc_grect (WC_BORDER, GEM_win_type, &gr, &gr);
+				wind_set_grect (message[3], WF_CURRXYWH, &gr);
+				update_work_area = sdl_resize = 1;
+				GEM_win_fulled = SDL_FALSE;		/* Cancel maximized flag */
+				GEM_lock_redraw = SDL_TRUE;		/* Prevent redraw till buffers resized */
 			}
-			wind_set_grect (message[3], WF_CURRXYWH, (GRECT *)&message[4]);
-			update_work_area = sdl_resize = 1;
-			GEM_win_fulled = SDL_FALSE;		/* Cancel maximized flag */
-			GEM_lock_redraw = SDL_TRUE;		/* Prevent redraw till buffers resized */
 			break;
 		case WM_FULLED:
 			{
@@ -263,7 +269,14 @@ static int do_messages(_THIS, short *message, short latest_msg_id)
 					wind_get_grect (message[3], WF_PREVXYWH, &gr);
 					GEM_win_fulled = SDL_FALSE;
 				} else {
-					gr = GEM_desk;
+					/* Largest work area inside the desktop which needs no further alignment */
+					wind_calc_grect (WC_WORK, GEM_win_type, &GEM_desk, &gr);
+					if (GEM_align_windows && (gr.g_x & 15)) {
+						gr.g_w -= 16 - (gr.g_x & 15);
+						gr.g_x = (gr.g_x | 15) +1;
+					}
+					gr.g_w &= ~15;
+					wind_calc_grect (WC_BORDER, GEM_win_type, &gr, &gr);
 					GEM_win_fulled = SDL_TRUE;
 				}
 				wind_set_grect (message[3], WF_CURRXYWH, &gr);
