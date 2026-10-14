@@ -843,10 +843,12 @@ static SDL_Surface *GEM_SetVideoMode(_THIS, SDL_Surface *current,
 		} else {
 			/* Resize window to fit asked video mode */
 			wind_get_grect (GEM_handle, WF_WORKXYWH, &gr);
-			gr.g_w = width;
-			gr.g_h = height;
-			if (wind_calc_grect(WC_BORDER, GEM_win_type, &gr, &gr)) {
-				wind_set_grect (GEM_handle, WF_CURRXYWH, &gr);
+			if ((gr.g_w != width) || (gr.g_h != height)) {
+				gr.g_w = width;
+				gr.g_h = height;
+				if (wind_calc_grect(WC_BORDER, GEM_win_type, &gr, &gr)) {
+					wind_set_grect (GEM_handle, WF_CURRXYWH, &gr);
+				}
 			}
 		}
 
