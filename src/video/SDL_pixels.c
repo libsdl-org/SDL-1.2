@@ -424,7 +424,11 @@ void SDL_GetRGBA(Uint32 pixel, const SDL_PixelFormat * const fmt,
 		*r = fmt->palette->colors[pixel].r;
 		*g = fmt->palette->colors[pixel].g;
 		*b = fmt->palette->colors[pixel].b;
+#ifdef ENABLE_PALETTE_ALPHA
+		*a = fmt->palette->colors[pixel].unused;
+#else
 		*a = SDL_ALPHA_OPAQUE;
+#endif
 	}
 }
 
