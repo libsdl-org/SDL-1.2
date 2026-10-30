@@ -384,6 +384,7 @@ extern VideoBootStrap ph_bootstrap;
 extern VideoBootStrap EPOC_bootstrap;
 #endif
 #if SDL_VIDEO_DRIVER_XBIOS
+extern VideoBootStrap SHIFTER_bootstrap;
 extern VideoBootStrap XBIOS_bootstrap;
 #endif
 #if SDL_VIDEO_DRIVER_GEM

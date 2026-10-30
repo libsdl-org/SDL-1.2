@@ -91,6 +91,7 @@ struct SDL_PrivateVideoData {
 	void (*swapVbuffers)(_THIS);	/* Swap video buffers */
 	int (*allocVbuffers)(_THIS, const xbiosmode_t *new_video_mode, int num_buffers, int bufsize);	/* Allocate video buffers */
 	void (*freeVbuffers)(_THIS);	/* Free video buffers */
+	void (*flipVbuffers)(_THIS);	/* Show the buffer drawn into */
 
 	void (*updRects)(_THIS, int numrects, SDL_Rect *rects);	/* updateRects to use when video ready */
 };
@@ -144,6 +145,7 @@ enum {
 #define XBIOS_swapVbuffers	(this->hidden->swapVbuffers)
 #define XBIOS_allocVbuffers	(this->hidden->allocVbuffers)
 #define XBIOS_freeVbuffers	(this->hidden->freeVbuffers)
+#define XBIOS_flipVbuffers	(this->hidden->flipVbuffers)
 
 #define XBIOS_updRects		(this->hidden->updRects)
 

@@ -49,6 +49,7 @@ static void vsync_ST(_THIS);
 static void getScreenFormat(_THIS, int bpp, Uint32 *rmask, Uint32 *gmask, Uint32 *bmask, Uint32 *amask);
 static int getLineWidth(_THIS, const xbiosmode_t *new_video_mode, int width, int bpp);
 static void swapVbuffers(_THIS);
+static void flipVbuffers(_THIS);
 static int allocVbuffers(_THIS, const xbiosmode_t *new_video_mode, int num_buffers, int bufsize);
 static void freeVbuffers(_THIS);
 static int setColors(_THIS, int firstcolor, int ncolors, SDL_Color *colors);
@@ -65,6 +66,7 @@ void SDL_XBIOS_VideoInit_ST(_THIS, unsigned long cookie_cvdo)
 	XBIOS_swapVbuffers = swapVbuffers;
 	XBIOS_allocVbuffers = allocVbuffers;
 	XBIOS_freeVbuffers = freeVbuffers;
+	XBIOS_flipVbuffers = flipVbuffers;
 
 	this->SetColors = setColors;
 
@@ -140,6 +142,13 @@ static int getLineWidth(_THIS, const xbiosmode_t *new_video_mode, int width, int
 static void swapVbuffers(_THIS)
 {
 	Setscreen(-1,XBIOS_screens[XBIOS_fbnum],-1);
+}
+
+static void flipVbuffers(_THIS)
+{
+	XBIOS_swapVbuffers(this);
+
+	XBIOS_vsync(this);
 }
 
 static int allocVbuffers(_THIS, const xbiosmode_t *new_video_mode, int num_buffers, int bufsize)

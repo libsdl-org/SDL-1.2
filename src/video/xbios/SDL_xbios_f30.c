@@ -121,6 +121,7 @@ static void listModes(_THIS, int actually_add);
 static void saveMode(_THIS, SDL_PixelFormat *vformat);
 static void setMode(_THIS, const xbiosmode_t *new_video_mode);
 static void restoreMode(_THIS);
+static void flipVbuffers(_THIS);
 static int setColors(_THIS, int firstcolor, int ncolors, SDL_Color *colors);
 
 static int allocVbuffers_SV(_THIS, const xbiosmode_t *new_video_mode, int num_buffers, int bufsize);
@@ -155,6 +156,7 @@ void SDL_XBIOS_VideoInit_F30(_THIS)
 	XBIOS_saveMode = saveMode;
 	XBIOS_setMode = setMode;
 	XBIOS_restoreMode = restoreMode;
+	XBIOS_flipVbuffers = flipVbuffers;
 
 	/*
 	 * Must be set before others as it may or may not
@@ -265,6 +267,14 @@ static void restoreMode(_THIS)
 {
 	Setscreen(-1,XBIOS_oldvbase,-1);
 	(void) VsetMode(XBIOS_oldvmode);
+}
+
+static void flipVbuffers(_THIS)
+{
+	/* Make sure that the Videl registers are updated during vertical retrace */
+	XBIOS_vsync(this);
+
+	XBIOS_swapVbuffers(this);
 }
 
 static int setColors(_THIS, int firstcolor, int ncolors, SDL_Color *colors)

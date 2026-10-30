@@ -366,10 +366,10 @@ static int XBIOS_VideoInit(_THIS, SDL_PixelFormat *vformat)
 	vformat->BitsPerPixel = 8;
 
 	/* Save current mode, may update current screen size or preferred depth */
-	(*XBIOS_saveMode)(this, vformat);
+	XBIOS_saveMode(this, vformat);
 
 	/* First allocate room for needed video modes */
-	(*XBIOS_listModes)(this, 0);
+	XBIOS_listModes(this, 0);
 
 	for ( i=0; i<NUM_MODELISTS; ++i ) {
 		int j;
@@ -408,7 +408,7 @@ static int XBIOS_VideoInit(_THIS, SDL_PixelFormat *vformat)
 	}
 
 	/* Now fill the mode list */
-	(*XBIOS_listModes)(this, 1);
+	XBIOS_listModes(this, 1);
 
 	XBIOS_screens[0]=NULL;
 	XBIOS_screens[1]=NULL;
@@ -437,7 +437,7 @@ static SDL_Rect **XBIOS_ListModes(_THIS, SDL_PixelFormat *format, Uint32 flags)
 
 static void XBIOS_FreeBuffers(_THIS)
 {
-	(*XBIOS_freeVbuffers)(this);
+	XBIOS_freeVbuffers(this);
 
 	if (XBIOS_shadowscreenmem) {
 		Mfree(XBIOS_shadowscreenmem);
@@ -480,7 +480,7 @@ static SDL_Surface *XBIOS_SetVideoMode(_THIS, SDL_Surface *current,
 	/* Allocate needed buffers: simple/double buffer and shadow surface */
 	new_depth = new_video_mode->depth < 8 ? 8 : new_video_mode->depth;
 
-	lineWidth = (*XBIOS_getLineWidth)(this, new_video_mode, width, new_depth);
+	lineWidth = XBIOS_getLineWidth(this, new_video_mode, width, new_depth);
 
 	new_screen_size = lineWidth * height;
 	new_screen_size += 255; /* To align on a 256 byte adress */
@@ -522,7 +522,7 @@ static SDL_Surface *XBIOS_SetVideoMode(_THIS, SDL_Surface *current,
 	}
 
 	/* Allocate buffers */
-	if (!(*XBIOS_allocVbuffers)(this, new_video_mode, num_buffers, new_screen_size)) {
+	if (!XBIOS_allocVbuffers(this, new_video_mode, num_buffers, new_screen_size)) {
 		XBIOS_FreeBuffers(this);
 		return (NULL);
 	}
@@ -538,7 +538,7 @@ static SDL_Surface *XBIOS_SetVideoMode(_THIS, SDL_Surface *current,
 	}
 
 	/* Allocate the new pixel format for the screen */
-	(*XBIOS_getScreenFormat)(this, new_depth, &rmask, &gmask, &bmask, &amask);
+	XBIOS_getScreenFormat(this, new_depth, &rmask, &gmask, &bmask, &amask);
 
 	if (!SDL_ReallocFormat(current, new_depth, rmask, gmask, bmask, amask)) {
 		XBIOS_FreeBuffers(this);
@@ -547,7 +547,7 @@ static SDL_Surface *XBIOS_SetVideoMode(_THIS, SDL_Surface *current,
 	}
 
 	/* this is for C2P conversion */
-	XBIOS_pitch = (*XBIOS_getLineWidth)(this, new_video_mode, new_video_mode->width, new_video_mode->depth);
+	XBIOS_pitch = XBIOS_getLineWidth(this, new_video_mode, new_video_mode->width, new_video_mode->depth);
 
 	/* XBIOS_setMode() is going to call SetScreen(XBIOS_screens[0])
 	 * and XBIOS_swapVbuffers() is going to call Setscreen(XBIOS_screens[XBIOS_fbnum])
@@ -586,9 +586,9 @@ static SDL_Surface *XBIOS_SetVideoMode(_THIS, SDL_Surface *current,
 
 #ifndef DEBUG_VIDEO_XBIOS
 	/* Now set the video mode */
-	(*XBIOS_setMode)(this, new_video_mode);
+	XBIOS_setMode(this, new_video_mode);
 
-	(*XBIOS_vsync)(this);
+	XBIOS_vsync(this);
 #endif
 
 	this->UpdateRects = XBIOS_updRects;
@@ -660,16 +660,7 @@ static void XBIOS_UpdateRects(_THIS, int numrects, SDL_Rect *rects)
 
 	if ((surface->flags & SDL_DOUBLEBUF) == SDL_DOUBLEBUF) {
 #ifndef DEBUG_VIDEO_XBIOS
-		if ((cookie_vdo >> 16) != VDO_F30) {
-			(*XBIOS_swapVbuffers)(this);
-
-			(*XBIOS_vsync)(this);
-		} else {
-			/* Make sure that the Videl registers are updated during vertical retrace */
-			(*XBIOS_vsync)(this);
-
-			(*XBIOS_swapVbuffers)(this);
-		}
+		XBIOS_flipVbuffers(this);
 #endif
 
 		XBIOS_fbnum ^= 1;
@@ -709,16 +700,7 @@ static int XBIOS_FlipHWSurface(_THIS, SDL_Surface *surface)
 
 	if ((surface->flags & SDL_DOUBLEBUF) == SDL_DOUBLEBUF) {
 #ifndef DEBUG_VIDEO_XBIOS
-		if ((cookie_vdo >> 16) != VDO_F30) {
-			(*XBIOS_swapVbuffers)(this);
-
-			(*XBIOS_vsync)(this);
-		} else {
-			/* Make sure that the Videl registers are updated during vertical retrace */
-			(*XBIOS_vsync)(this);
-
-			(*XBIOS_swapVbuffers)(this);
-		}
+		XBIOS_flipVbuffers(this);
 #endif
 
 		XBIOS_fbnum ^= 1;
@@ -748,9 +730,9 @@ static void XBIOS_VideoQuit(_THIS)
 	 * so it is a good test whether at least that ran. */
 #ifndef DEBUG_VIDEO_XBIOS
 	if (XBIOS_oldvbase != NULL) {
-		(*XBIOS_restoreMode)(this);
+		XBIOS_restoreMode(this);
 
-		(*XBIOS_vsync)(this);
+		XBIOS_vsync(this);
 	}
 #endif
 

@@ -100,6 +100,7 @@ static VideoBootStrap *bootstrap[] = {
 	&EPOC_bootstrap,
 #endif
 #if SDL_VIDEO_DRIVER_XBIOS
+	&SHIFTER_bootstrap,
 	&XBIOS_bootstrap,
 #endif
 #if SDL_VIDEO_DRIVER_GEM

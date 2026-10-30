@@ -27,6 +27,8 @@
  *	Patrice Mandin
  */
 
+#include <mint/cookie.h>
+#include <mint/mintbind.h>
 #include <mint/osbind.h>
 
 #include "SDL_stdinc.h"
@@ -52,4 +54,20 @@ void *Atari_SysMalloc(Uint32 size, Uint16 alloc_type)
 		}
 		return (void *) Malloc(size);
 	}
+}
+
+SDL_bool Atari_CheckAccess(const void *addr, size_t length)
+{
+	Uint32 flags;
+
+	if (Getcookie(C_MiNT, NULL) != C_FOUND)
+		return SDL_TRUE;
+
+	if (Mvalidate(0, addr, length, &flags) < 0)
+		return SDL_FALSE;
+
+	if (((flags+0x10)&0xf0) != MX_SUPERVISOR && ((flags+0x10)&0xf0) != MX_GLOBAL)
+		return SDL_FALSE;
+
+	return SDL_TRUE;
 }

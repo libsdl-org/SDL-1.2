@@ -1648,6 +1648,7 @@ CheckAtariXbiosVideo()
         video_xbios=yes
         AC_DEFINE(SDL_VIDEO_DRIVER_XBIOS)
         SOURCES="$SOURCES $srcdir/src/video/xbios/*.c"
+        SOURCES="$SOURCES $srcdir/src/video/xbios/*.S"
         have_video=yes
     fi
 }

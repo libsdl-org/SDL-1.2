@@ -36,4 +36,7 @@
 
 extern void *Atari_SysMalloc(Uint32 size, Uint16 alloc_type);
 
+/* Whether interrupt handlers can access this memory, whichever process is active */
+extern SDL_bool Atari_CheckAccess(const void *addr, size_t length);
+
 #endif /* _SDL_ATARI_MXALLOC_H_ */

@@ -20307,6 +20307,7 @@ fi
         $as_echo "#define SDL_VIDEO_DRIVER_XBIOS 1" >>confdefs.h
 
         SOURCES="$SOURCES $srcdir/src/video/xbios/*.c"
+        SOURCES="$SOURCES $srcdir/src/video/xbios/*.S"
         have_video=yes
     fi
 }

@@ -72,6 +72,8 @@ to report this type event.
 V.  Environment variables:
 
 SDL_VIDEODRIVER:
+	Set to 'shifter' to force shifter video driver. Uses XBIOS/Ikbd events
+	driver.
 	Set to 'xbios' to force xbios video driver. Uses XBIOS/Ikbd events
 	driver.
 	Set to 'gem' to force gem video driver. Uses an internal events driver.
@@ -137,6 +139,13 @@ OpenGL:
 	OpenGL context is taken care of by SDL itself, you just have to use
 	gl* functions. Programs not calling any gl* function don't link OSMesa
 	at all. SDL_GL_LoadLibrary() accepts only NULL, i.e. the linked OSMesa.
+
+Shifter video:
+	Xbios video with its own VBL handler, used by default on ST, STE, TT
+	and Falcon. Not available with a NOVA card, Vampire V4, FireBee or
+	CTPCI booted on the Radeon; xbios video is used instead.
+
+	Same modes as xbios video.
 
 Xbios video:
 	Video chip is detected using the _VDO cookie.
