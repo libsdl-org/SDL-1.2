@@ -147,6 +147,9 @@ Shifter video:
 
 	Same modes as xbios video.
 
+	SDL_TRIPLEBUF is supported. Xbios video treats SDL_TRIPLEBUF as
+	SDL_DOUBLEBUF.
+
 Xbios video:
 	Video chip is detected using the _VDO cookie.
 	Screen enhancers are not supported, but could be if you know how to use

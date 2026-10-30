@@ -40,6 +40,7 @@
 #define VBL_VECTOR	0x70
 
 volatile Uint32 SDL_Shifter_vblcount;
+volatile Uint32 SDL_Shifter_pending;
 volatile Uint16 SDL_Shifter_palcount;
 Uint16 SDL_Shifter_palfirst;
 
@@ -119,6 +120,7 @@ static int allocVbuffers(_THIS, const xbiosmode_t *new_video_mode, int num_buffe
 		return 0;
 	}
 
+	SDL_Shifter_pending = 0;
 	SDL_Shifter_palcount = 0;
 
 	if (!SDL_Atari_AddProcterm(UnhookHandlers)) {

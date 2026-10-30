@@ -64,8 +64,8 @@ struct SDL_PrivateVideoData {
 	long old_video_mode;		/* Old video mode before entering SDL */
 	void *old_video_base;		/* Old pointer to screen buffer */
 
-	void *screens[2];		/* Pointers to aligned screen buffer */
-	void *screensmem[2];		/* Pointers to screen buffer */
+	void *screens[3];		/* Pointers to aligned screen buffer */
+	void *screensmem[3];		/* Pointers to screen buffer */
 	void *shadowscreen;		/* Pointer to aligned shadow screen buffer */
 	void *shadowscreenmem;		/* Pointers to shadow screen buffer */
 	int frame_number;		/* Number of frame for double buffer */
@@ -92,6 +92,7 @@ struct SDL_PrivateVideoData {
 	int (*allocVbuffers)(_THIS, const xbiosmode_t *new_video_mode, int num_buffers, int bufsize);	/* Allocate video buffers */
 	void (*freeVbuffers)(_THIS);	/* Free video buffers */
 	void (*flipVbuffers)(_THIS);	/* Show the buffer drawn into */
+	void (*flipTriple)(_THIS);	/* Same with three buffers, swaps screens[2] in as the next one; NULL if not supported */
 
 	void (*updRects)(_THIS, int numrects, SDL_Rect *rects);	/* updateRects to use when video ready */
 };
@@ -146,6 +147,7 @@ enum {
 #define XBIOS_allocVbuffers	(this->hidden->allocVbuffers)
 #define XBIOS_freeVbuffers	(this->hidden->freeVbuffers)
 #define XBIOS_flipVbuffers	(this->hidden->flipVbuffers)
+#define XBIOS_flipTriple	(this->hidden->flipTriple)
 
 #define XBIOS_updRects		(this->hidden->updRects)
 

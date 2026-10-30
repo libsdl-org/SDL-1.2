@@ -174,7 +174,7 @@ static void freeVbuffers(_THIS)
 {
 	int i;
 
-	for (i=0;i<2;i++) {
+	for (i=0;i<SDL_arraysize(XBIOS_screensmem);i++) {
 		if (XBIOS_screensmem[i]) {
 			Mfree(XBIOS_screensmem[i]);
 			XBIOS_screensmem[i]=NULL;

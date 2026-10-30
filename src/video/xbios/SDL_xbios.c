@@ -520,6 +520,10 @@ static SDL_Surface *XBIOS_SetVideoMode(_THIS, SDL_Surface *current,
 		num_buffers = 2;
 		modeflags |= SDL_DOUBLEBUF;
 	}
+	if ((flags & SDL_TRIPLEBUF) == SDL_TRIPLEBUF && XBIOS_flipTriple) {
+		num_buffers = 3;
+		modeflags |= SDL_TRIPLEBUF;
+	}
 
 	/* Allocate buffers */
 	if (!XBIOS_allocVbuffers(this, new_video_mode, num_buffers, new_screen_size)) {
@@ -553,7 +557,7 @@ static SDL_Surface *XBIOS_SetVideoMode(_THIS, SDL_Surface *current,
 	 * and XBIOS_swapVbuffers() is going to call Setscreen(XBIOS_screens[XBIOS_fbnum])
 	 * so these can't be the same buffers if double buffering has been requested.
 	 */
-	XBIOS_fbnum = num_buffers-1;
+	XBIOS_fbnum = (num_buffers > 1 ? 1 : 0);
 	XBIOS_current = new_video_mode;
 
 	current->w = width;
@@ -660,7 +664,11 @@ static void XBIOS_UpdateRects(_THIS, int numrects, SDL_Rect *rects)
 
 	if ((surface->flags & SDL_DOUBLEBUF) == SDL_DOUBLEBUF) {
 #ifndef DEBUG_VIDEO_XBIOS
-		XBIOS_flipVbuffers(this);
+		if ((surface->flags & SDL_TRIPLEBUF) == SDL_TRIPLEBUF) {
+			XBIOS_flipTriple(this);
+		} else {
+			XBIOS_flipVbuffers(this);
+		}
 #endif
 
 		XBIOS_fbnum ^= 1;
@@ -700,7 +708,11 @@ static int XBIOS_FlipHWSurface(_THIS, SDL_Surface *surface)
 
 	if ((surface->flags & SDL_DOUBLEBUF) == SDL_DOUBLEBUF) {
 #ifndef DEBUG_VIDEO_XBIOS
-		XBIOS_flipVbuffers(this);
+		if ((surface->flags & SDL_TRIPLEBUF) == SDL_TRIPLEBUF) {
+			XBIOS_flipTriple(this);
+		} else {
+			XBIOS_flipVbuffers(this);
+		}
 #endif
 
 		XBIOS_fbnum ^= 1;
