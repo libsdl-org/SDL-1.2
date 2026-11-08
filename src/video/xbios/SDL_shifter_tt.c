@@ -35,12 +35,14 @@ static void flipVbuffers(_THIS)
 	const Uint32 screen = (Uint32) XBIOS_screens[XBIOS_fbnum];
 	const int doubleline = (XBIOS_current->flags & XBIOSMODE_DOUBLELINE ? 1 : 0);
 	const Uint32 screensize = XBIOS_pitch * (XBIOS_current->height << doubleline);
+	Uint32 vbl;
 
 	XBIOS_swapVbuffers(this);
 
 	/* The other buffer is free once the video counter lies in this one */
+	vbl = SDL_Shifter_vblcount;
 	while (SDL_Shifter_counter - screen >= screensize) {
-		XBIOS_vsync(this);
+		vbl = SDL_Shifter_WaitVbl(vbl);
 	}
 }
 

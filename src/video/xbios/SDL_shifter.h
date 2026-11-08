@@ -28,10 +28,27 @@
 
 /* Private display data */
 
+extern volatile Uint32 SDL_Shifter_vblcount;	/* VBLs so far, only the handler writes it */
 extern volatile Uint16 SDL_Shifter_palcount;	/* colours to write, 0 if none */
 extern Uint16 SDL_Shifter_palfirst;
 
 extern void (*SDL_Shifter_vbl)(void);
+
+/* TRAP #12, which tos.hyp lists no users of */
+#define SHIFTER_WAIT_VECTOR	(0x80 + 12 * 4)
+
+extern void SDL_Shifter_Wait(void);
+
+/* Returns once SDL_Shifter_vblcount differs from vbl, with its value */
+static __inline__ Uint32 SDL_Shifter_WaitVbl(Uint32 vbl)
+{
+	register Uint32 count __asm__("d0") = vbl;
+	register Uint32 caller __asm__("d1") = 0x4c53444cUL;	/* 'LSDL' */
+
+	__asm__ volatile ("trap #12" : "+d" (count) : "d" (caller) : "memory");
+
+	return count;
+}
 
 /*--- Functions prototypes ---*/
 

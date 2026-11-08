@@ -29,6 +29,7 @@
 
 	.globl	SYM(SDL_Shifter_VblF30)
 
+	.globl	SYM(SDL_Shifter_vblcount)
 	.globl	SYM(SDL_Shifter_pending)
 	.globl	SYM(SDL_Shifter_palcount)
 	.globl	SYM(SDL_Shifter_palfirst)
@@ -45,6 +46,8 @@ SYM(SDL_Shifter_VblF30):
 	/* Prevent Timer C and others from delaying this VBL */
 	oriw	#0x0700,sr
 	moveml	d0-d2/a0-a1,sp@-
+
+	addql	#1,SYM(SDL_Shifter_vblcount)
 
 	movel	SYM(SDL_Shifter_pending),d0
 	beqs	vbl_palette

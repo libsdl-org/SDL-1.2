@@ -26,6 +26,7 @@
 
 	.globl	SYM(SDL_Shifter_VblST)
 
+	.globl	SYM(SDL_Shifter_vblcount)
 	.globl	SYM(SDL_Shifter_counter)
 
 	.even
@@ -38,6 +39,8 @@ SYM(SDL_Shifter_VblST):
 	movew	sr,sp@-
 	oriw	#0x0700,sr
 	moveml	d0/a0,sp@-
+
+	addql	#1,SYM(SDL_Shifter_vblcount)
 
 	lea	0xffff8203:w,a0
 	movepl	a0@(0),d0

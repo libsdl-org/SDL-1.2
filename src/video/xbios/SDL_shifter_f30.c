@@ -60,12 +60,14 @@ SDL_bool SDL_SHIFTER_F30Available(void)
 
 static void flipVbuffers(_THIS)
 {
+	Uint32 vbl;
+
 	SDL_Shifter_pending = (Uint32) XBIOS_screens[XBIOS_fbnum];
 
 	/* The other buffer is free once the handler has written this one */
+	vbl = SDL_Shifter_vblcount;
 	while (SDL_Shifter_pending) {
-		/* Vsync() prevents the OS from preempting */
-		XBIOS_vsync(this);
+		vbl = SDL_Shifter_WaitVbl(vbl);
 	}
 }
 

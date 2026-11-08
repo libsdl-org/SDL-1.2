@@ -39,6 +39,7 @@
 
 #define VBL_VECTOR	0x70
 
+volatile Uint32 SDL_Shifter_vblcount;
 volatile Uint16 SDL_Shifter_palcount;
 Uint16 SDL_Shifter_palfirst;
 
@@ -50,19 +51,19 @@ static int (*xbios_allocVbuffers)(_THIS, const xbiosmode_t *new_video_mode, int 
 static void (*xbios_freeVbuffers)(_THIS);
 static void (*xbios_restoreMode)(_THIS);
 
-static void HookVbl(void)
+static void Hook(Uint32 vector, XbraHandler handler)
 {
-	XBRA *xbra = (XBRA *)((Uint32)SDL_Shifter_vbl - sizeof(XBRA));
+	XBRA *xbra = (XBRA *)((Uint32)handler - sizeof(XBRA));
 
-	xbra->oldvec = *(volatile XbraHandler *)VBL_VECTOR;
-	*(volatile XbraHandler *)VBL_VECTOR = SDL_Shifter_vbl;
+	xbra->oldvec = *(volatile XbraHandler *)vector;
+	*(volatile XbraHandler *)vector = handler;
 }
 
-static void UnhookVbl(void)
+static void Unhook(Uint32 vector, XbraHandler handler)
 {
-	volatile XbraHandler *place = (volatile XbraHandler *)VBL_VECTOR;
+	volatile XbraHandler *place = (volatile XbraHandler *)vector;
 
-	while (*place != SDL_Shifter_vbl) {
+	while (*place != handler) {
 		XBRA *xbra = (XBRA *)((Uint32)*place - sizeof(XBRA));
 
 		if (xbra->xbra_id != XBRA_ID)
@@ -70,7 +71,19 @@ static void UnhookVbl(void)
 		place = &xbra->oldvec;
 	}
 
-	*place = ((XBRA *)((Uint32)SDL_Shifter_vbl - sizeof(XBRA)))->oldvec;
+	*place = ((XBRA *)((Uint32)handler - sizeof(XBRA)))->oldvec;
+}
+
+static void HookHandlers(void)
+{
+	Hook(SHIFTER_WAIT_VECTOR, SDL_Shifter_Wait);
+	Hook(VBL_VECTOR, SDL_Shifter_vbl);
+}
+
+static void UnhookHandlers(void)
+{
+	Unhook(VBL_VECTOR, SDL_Shifter_vbl);
+	Unhook(SHIFTER_WAIT_VECTOR, SDL_Shifter_Wait);
 }
 
 static int SHIFTER_Available(void)
@@ -108,33 +121,33 @@ static int allocVbuffers(_THIS, const xbiosmode_t *new_video_mode, int num_buffe
 
 	SDL_Shifter_palcount = 0;
 
-	if (!SDL_Atari_AddProcterm(UnhookVbl)) {
+	if (!SDL_Atari_AddProcterm(UnhookHandlers)) {
 		SDL_SetError("Can not install the VBL handler");
 		return 0;
 	}
 
-	Supexec(HookVbl);
+	Supexec(HookHandlers);
 
 	return 1;
 }
 
-static void StopVbl(void)
+static void StopHandlers(void)
 {
-	if (SDL_Atari_RemoveProcterm(UnhookVbl)) {
-		Supexec(UnhookVbl);
+	if (SDL_Atari_RemoveProcterm(UnhookHandlers)) {
+		Supexec(UnhookHandlers);
 	}
 }
 
 static void freeVbuffers(_THIS)
 {
-	StopVbl();
+	StopHandlers();
 
 	xbios_freeVbuffers(this);
 }
 
 static void restoreMode(_THIS)
 {
-	StopVbl();
+	StopHandlers();
 
 	xbios_restoreMode(this);
 }
